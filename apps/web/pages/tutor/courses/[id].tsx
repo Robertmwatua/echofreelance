@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FormEvent, useEffect, useState } from 'react'
 import DocumentHead from '../../../components/DocumentHead'
+import { CategoryField } from '../../../components/CategoryField'
 import { RequireRole } from '../../../components/RequireRole'
 import { api, CATEGORIES, Course, CourseStudentReport } from '../../../lib/api'
 
@@ -41,12 +42,15 @@ function ManageCourse() {
   const [resourceUrl, setResourceUrl] = useState('')
   const [notifyTitle, setNotifyTitle] = useState('')
   const [notifyBody, setNotifyBody] = useState('')
+  const [knownCategories, setKnownCategories] = useState<string[]>([])
 
   async function load() {
     if (!id) return
-    const [data, students] = await Promise.all([
+    const [data, students, taught, catalog] = await Promise.all([
       api.course(id),
       api.courseStudents(id).catch(() => null),
+      api.taughtCourses().catch(() => [] as Course[]),
+      api.courses().catch(() => [] as Course[]),
     ])
     setCourse(data)
     setReport(students)
@@ -56,6 +60,8 @@ function ManageCourse() {
     setLevel(data.level)
     setPriceCents(data.priceCents)
     setPublished(data.published)
+    const cats = [...taught, ...catalog].map((c) => c.category).filter(Boolean)
+    setKnownCategories(Array.from(new Set(cats)))
   }
 
   useEffect(() => {
@@ -71,7 +77,7 @@ function ManageCourse() {
       await api.updateCourse(id, {
         title,
         description,
-        category,
+        category: category.trim() || 'General',
         level,
         priceCents,
         published,
@@ -251,18 +257,12 @@ function ManageCourse() {
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm">
-                  <span className="mb-1 block font-medium">Category</span>
-                  <select
+                  <span className="mb-1.5 block font-medium text-ink/85">Category</span>
+                  <CategoryField
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="ef-input"
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setCategory}
+                    suggestions={[...CATEGORIES, ...knownCategories]}
+                  />
                 </label>
                 <label className="block text-sm">
                   <span className="mb-1 block font-medium">Level</span>
