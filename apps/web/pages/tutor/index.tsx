@@ -18,19 +18,22 @@ function TutorDesk() {
   const [courses, setCourses] = useState<Course[]>([])
   const [classes, setClasses] = useState<VirtualClass[]>([])
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
   const [instantCourseId, setInstantCourseId] = useState('')
   const [instantTitle, setInstantTitle] = useState('')
   const [instantDuration, setInstantDuration] = useState(60)
   const [starting, setStarting] = useState(false)
+  const [busyId, setBusyId] = useState('')
+
+  async function reload() {
+    const [c, cl] = await Promise.all([api.taughtCourses(), api.myClasses()])
+    setCourses(c)
+    setClasses(cl.slice(0, 8))
+    if (c[0]) setInstantCourseId((prev) => prev || c[0].id)
+  }
 
   useEffect(() => {
-    Promise.all([api.taughtCourses(), api.myClasses()])
-      .then(([c, cl]) => {
-        setCourses(c)
-        setClasses(cl.slice(0, 8))
-        if (c[0]) setInstantCourseId(c[0].id)
-      })
-      .catch((e: Error) => setError(e.message))
+    reload().catch((e: Error) => setError(e.message))
   }, [])
 
   async function startInstant(e: FormEvent) {
@@ -54,6 +57,22 @@ function TutorDesk() {
     }
   }
 
+  async function removeCourse(courseId: string, title: string) {
+    if (!window.confirm(`Delete “${title}”? This cannot be undone.`)) return
+    setBusyId(courseId)
+    setError('')
+    setMessage('')
+    try {
+      await api.deleteCourse(courseId)
+      await reload()
+      setMessage('Course deleted.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete course')
+    } finally {
+      setBusyId('')
+    }
+  }
+
   return (
     <>
       <DocumentHead title="Tutor desk — EchoFreelance" />
@@ -61,7 +80,7 @@ function TutorDesk() {
         <p className="text-xs font-semibold uppercase tracking-wider text-fern">Tutor</p>
         <h1 className="mt-1 font-display text-4xl text-moss">Tutor desk</h1>
         <p className="ef-muted mt-2">
-          Create courses, start live rooms now, or schedule sessions for later.
+          Create and manage courses, track students, notify your class, and run live sessions.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-3">
@@ -82,8 +101,8 @@ function TutorDesk() {
         <section className="ef-panel mt-10">
           <h2 className="font-display text-2xl text-moss">Start instant meeting</h2>
           <p className="ef-muted mt-2 text-sm">
-            Goes live immediately and opens the classroom (camera/mic). Enrolled students can join
-            from Live classes.
+            Goes live immediately and opens the classroom. Enrolled students can join from Live
+            classes.
           </p>
           {courses.length === 0 ? (
             <p className="mt-4 text-sm text-ink/65">
@@ -141,6 +160,7 @@ function TutorDesk() {
         </section>
 
         {error && <p className="mt-6 text-red-400">{error}</p>}
+        {message && <p className="mt-6 text-moss">{message}</p>}
 
         <section className="mt-12">
           <h2 className="font-display text-2xl text-moss">Your courses</h2>
@@ -160,12 +180,22 @@ function TutorDesk() {
                       {course.enrollmentCount ?? 0} students · {course.lessonCount ?? 0} lessons
                     </p>
                   </div>
-                  <Link
-                    href={`/tutor/courses/${course.id}`}
-                    className="text-sm font-semibold text-fern hover:underline"
-                  >
-                    Edit
-                  </Link>
+                  <div className="flex flex-wrap gap-3 text-sm font-semibold">
+                    <Link
+                      href={`/tutor/courses/${course.id}`}
+                      className="text-fern hover:underline"
+                    >
+                      Manage
+                    </Link>
+                    <button
+                      type="button"
+                      disabled={busyId === course.id}
+                      onClick={() => removeCourse(course.id, course.title)}
+                      className="text-red-400 hover:underline disabled:opacity-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </li>
             ))}

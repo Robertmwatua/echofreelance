@@ -7,6 +7,7 @@ import {
 import { Role } from '@prisma/client'
 import { AuthUser } from '../../common/current-user.decorator'
 import { PrismaService } from '../../prisma/prisma.service'
+import { NotificationsService } from '../notifications/notifications.service'
 import {
   CreateCourseDto,
   CreateLessonDto,
@@ -15,7 +16,10 @@ import {
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async list(userId?: string, category?: string, q?: string) {
     const courses = await this.prisma.course.findMany({
@@ -249,6 +253,102 @@ export class CoursesService {
         course: { select: { id: true, title: true } },
       },
     })
+  }
+
+  async studentPerformance(courseId: string, user: AuthUser) {
+    const course = await this.requireCourse(courseId)
+    this.assertCanManage(course.tutorId, user)
+
+    const lessons = await this.prisma.lesson.findMany({
+      where: { courseId },
+      select: { id: true },
+    })
+    const totalLessons = lessons.length
+    const lessonIds = lessons.map((l) => l.id)
+
+    const assignments = await this.prisma.assignment.findMany({
+      where: { courseId },
+      select: { id: true, title: true, maxPoints: true },
+    })
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: { courseId },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+      },
+      orderBy: { createdAt: 'asc' },
+    })
+
+    const students = []
+    for (const e of enrollments) {
+      const completed = totalLessons
+        ? await this.prisma.lessonProgress.count({
+            where: { userId: e.userId, lessonId: { in: lessonIds } },
+          })
+        : 0
+      const submissions = await this.prisma.assignmentSubmission.findMany({
+        where: {
+          userId: e.userId,
+          assignmentId: { in: assignments.map((a) => a.id) },
+        },
+        select: {
+          assignmentId: true,
+          status: true,
+          grade: true,
+          submittedAt: true,
+        },
+      })
+      const graded = submissions.filter((s) => s.grade != null)
+      const avgGrade =
+        graded.length === 0
+          ? null
+          : Math.round(
+              (graded.reduce((sum, s) => sum + (s.grade || 0), 0) / graded.length) * 10,
+            ) / 10
+
+      students.push({
+        id: e.user.id,
+        name: e.user.name,
+        email: e.user.email,
+        enrolledAt: e.createdAt,
+        lessonsCompleted: completed,
+        lessonsTotal: totalLessons,
+        progressPercent:
+          totalLessons === 0 ? 0 : Math.round((completed / totalLessons) * 100),
+        assignmentsSubmitted: submissions.length,
+        assignmentsTotal: assignments.length,
+        avgGrade,
+      })
+    }
+
+    return {
+      courseId,
+      title: course.title,
+      studentCount: students.length,
+      students,
+    }
+  }
+
+  async notifyEnrolled(
+    courseId: string,
+    user: AuthUser,
+    dto: { title: string; body: string },
+  ) {
+    const course = await this.requireCourse(courseId)
+    this.assertCanManage(course.tutorId, user)
+
+    const enrolled = await this.prisma.enrollment.findMany({
+      where: { courseId },
+      select: { userId: true },
+    })
+    const ids = enrolled.map((e) => e.userId).filter((id) => id !== user.id)
+    await this.notifications.notifyMany(
+      ids,
+      dto.title.trim(),
+      dto.body.trim().slice(0, 280),
+      `/courses/${courseId}`,
+    )
+    return { ok: true, notified: ids.length }
   }
 
   async myCourses(userId: string) {

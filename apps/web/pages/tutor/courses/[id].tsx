@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { FormEvent, useEffect, useState } from 'react'
 import DocumentHead from '../../../components/DocumentHead'
 import { RequireRole } from '../../../components/RequireRole'
-import { api, CATEGORIES, Course } from '../../../lib/api'
+import { api, CATEGORIES, Course, CourseStudentReport } from '../../../lib/api'
 
 export default function TutorCourseManagePage() {
   return (
@@ -17,6 +17,7 @@ function ManageCourse() {
   const router = useRouter()
   const id = typeof router.query.id === 'string' ? router.query.id : ''
   const [course, setCourse] = useState<Course | null>(null)
+  const [report, setReport] = useState<CourseStudentReport | null>(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
@@ -38,11 +39,17 @@ function ManageCourse() {
   const [resourceLessonId, setResourceLessonId] = useState('')
   const [resourceTitle, setResourceTitle] = useState('')
   const [resourceUrl, setResourceUrl] = useState('')
+  const [notifyTitle, setNotifyTitle] = useState('')
+  const [notifyBody, setNotifyBody] = useState('')
 
   async function load() {
     if (!id) return
-    const data = await api.course(id)
+    const [data, students] = await Promise.all([
+      api.course(id),
+      api.courseStudents(id).catch(() => null),
+    ])
     setCourse(data)
+    setReport(students)
     setTitle(data.title)
     setDescription(data.description)
     setCategory(data.category || 'Cybersecurity')
@@ -164,6 +171,41 @@ function ManageCourse() {
     }
   }
 
+  async function sendNotify(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    setMessage('')
+    try {
+      const res = await api.notifyCourse(id, {
+        title: notifyTitle,
+        body: notifyBody,
+      })
+      setNotifyTitle('')
+      setNotifyBody('')
+      setMessage(`Notification sent to ${res.notified} student(s).`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not send notification')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function deleteCourse() {
+    if (!window.confirm('Delete this course and all its lessons, classes, and enrollments?')) {
+      return
+    }
+    setBusy(true)
+    setError('')
+    try {
+      await api.deleteCourse(id)
+      router.push('/tutor')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not delete course')
+      setBusy(false)
+    }
+  }
+
   return (
     <>
       <DocumentHead title={course ? `Manage ${course.title}` : 'Manage course'} />
@@ -251,7 +293,85 @@ function ManageCourse() {
               >
                 Save course
               </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={deleteCourse}
+                className="ml-3 rounded-md border border-red-500/40 px-5 py-3 text-sm font-semibold text-red-400 hover:bg-red-500/10 disabled:opacity-60"
+              >
+                Delete course
+              </button>
             </form>
+
+            <section className="mt-12">
+              <h2 className="font-display text-2xl text-moss">Student performance</h2>
+              <p className="ef-muted mt-1 text-sm">
+                {report ? `${report.studentCount} enrolled` : 'Loading roster…'}
+              </p>
+              {report && report.students.length === 0 && (
+                <p className="mt-4 text-sm text-ink/55">No students enrolled yet.</p>
+              )}
+              {report && report.students.length > 0 && (
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full min-w-[520px] text-left text-sm">
+                    <thead className="border-b border-line/40 text-xs uppercase tracking-wide text-ink/50">
+                      <tr>
+                        <th className="py-2 pr-3 font-medium">Student</th>
+                        <th className="py-2 pr-3 font-medium">Progress</th>
+                        <th className="py-2 pr-3 font-medium">Assignments</th>
+                        <th className="py-2 font-medium">Avg grade</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.students.map((s) => (
+                        <tr key={s.id} className="border-b border-line/20">
+                          <td className="py-3 pr-3">
+                            <p className="font-medium">{s.name || 'Student'}</p>
+                            <p className="text-xs text-ink/45">{s.email}</p>
+                          </td>
+                          <td className="py-3 pr-3">
+                            {s.progressPercent}% ({s.lessonsCompleted}/{s.lessonsTotal})
+                          </td>
+                          <td className="py-3 pr-3">
+                            {s.assignmentsSubmitted}/{s.assignmentsTotal}
+                          </td>
+                          <td className="py-3">
+                            {s.avgGrade != null ? s.avgGrade : '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </section>
+
+            <section className="mt-12">
+              <h2 className="font-display text-2xl text-moss">Notify students</h2>
+              <p className="ef-muted mt-1 text-sm">
+                Sends an in-app alert to everyone enrolled (shows under Alerts).
+              </p>
+              <form onSubmit={sendNotify} className="mt-4 space-y-3">
+                <input
+                  required
+                  placeholder="Notification title"
+                  value={notifyTitle}
+                  onChange={(e) => setNotifyTitle(e.target.value)}
+                  className="ef-input text-sm"
+                />
+                <textarea
+                  required
+                  placeholder="Short message"
+                  rows={3}
+                  value={notifyBody}
+                  onChange={(e) => setNotifyBody(e.target.value)}
+                  className="ef-input text-sm"
+                />
+                <button type="submit" disabled={busy} className="ef-btn-ghost">
+                  Send notification
+                </button>
+              </form>
+            </section>
 
             <section className="mt-12">
               <h2 className="font-display text-2xl text-moss">Lessons</h2>

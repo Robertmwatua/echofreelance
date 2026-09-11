@@ -112,6 +112,26 @@ export type LessonNoteRow = {
   }
 }
 
+export type CourseStudentRow = {
+  id: string
+  name?: string | null
+  email: string
+  enrolledAt: string
+  lessonsCompleted: number
+  lessonsTotal: number
+  progressPercent: number
+  assignmentsSubmitted: number
+  assignmentsTotal: number
+  avgGrade: number | null
+}
+
+export type CourseStudentReport = {
+  courseId: string
+  title: string
+  studentCount: number
+  students: CourseStudentRow[]
+}
+
 export type Assignment = {
   id: string
   courseId: string
@@ -461,6 +481,13 @@ export const api = {
     request<LessonNoteRow>(`/lessons/${lessonId}/notes`, {
       method: 'PUT',
       body: JSON.stringify({ body }),
+    }),
+  courseStudents: (courseId: string) =>
+    request<CourseStudentReport>(`/courses/${courseId}/students`),
+  notifyCourse: (courseId: string, body: { title: string; body: string }) =>
+    request<{ ok: boolean; notified: number }>(`/courses/${courseId}/notify`, {
+      method: 'POST',
+      body: JSON.stringify(body),
     }),
 }
 

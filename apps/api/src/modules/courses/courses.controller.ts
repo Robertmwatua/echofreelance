@@ -21,6 +21,7 @@ import {
   CreateLessonDto,
   UpdateCourseDto,
 } from './dto/create-course.dto'
+import { NotifyCourseDto } from './dto/notify-course.dto'
 
 @Controller('courses')
 export class CoursesController {
@@ -46,10 +47,28 @@ export class CoursesController {
   @Roles(Role.Tutor, Role.Admin)
   @Get('taught')
   taught(@CurrentUser() user: AuthUser) {
-    if (user.role === Role.Admin) {
+    if (user!.role === Role.Admin) {
       return this.coursesService.listAllAdmin()
     }
-    return this.coursesService.listTaughtBy(user.id)
+    return this.coursesService.listTaughtBy(user!.id)
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Tutor, Role.Admin)
+  @Get(':id/students')
+  students(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.coursesService.studentPerformance(id, user!)
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Tutor, Role.Admin)
+  @Post(':id/notify')
+  notify(
+    @Param('id') id: string,
+    @Body() dto: NotifyCourseDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.coursesService.notifyEnrolled(id, user!, dto)
   }
 
   @UseGuards(OptionalJwtAuthGuard)
