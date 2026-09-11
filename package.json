@@ -1,0 +1,19 @@
+{
+  "name": "echofreelance",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev --workspace=echofreelance-web",
+    "dev:api": "npm run start:dev --workspace=echofreelance-api",
+    "dev": "docker compose up --build",
+    "db:local": "./scripts/dev-db.sh",
+    "db:up": "docker compose up -d db",
+    "setup": "npm install && npm run prisma:generate --workspace=echofreelance-api",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "format": "prettier --write ."
+  }
+}

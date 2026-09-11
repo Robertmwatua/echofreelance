@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.next/
+coverage/
+venv/
+.env
+**/node_modules/
+apps/web/.next
+apps/api/dist
+packages/*/node_modules
+*.log
+.pgdata/
