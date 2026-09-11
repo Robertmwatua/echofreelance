@@ -172,16 +172,21 @@ export default function Home() {
             <div className="absolute inset-0 bg-panel/88 backdrop-blur-sm" aria-hidden />
             <div className="relative mx-auto max-w-6xl">
               <h2 className="font-display text-3xl text-moss sm:text-4xl">Upcoming live sessions</h2>
-              <ul className="mt-10 space-y-6">
+              <ul className="mt-10 grid gap-4 sm:grid-cols-2">
                 {classes.map((c) => (
-                  <li key={c.id}>
+                  <li key={c.id} className="ef-session-card !bg-panel/70">
+                    <p className="text-xs uppercase tracking-wide text-ink/45">
+                      {c.status} · {formatWhen(c.startsAt)}
+                    </p>
                     <Link
                       href={`/classes/${c.id}`}
-                      className="font-display text-xl text-ink transition hover:text-moss sm:text-2xl"
+                      className="mt-2 block font-display text-xl text-ink transition hover:text-moss sm:text-2xl"
                     >
                       {c.title}
                     </Link>
-                    <p className="mt-1 text-sm text-ink/55">{formatWhen(c.startsAt)}</p>
+                    <Link href={`/classes/${c.id}`} className="ef-btn mt-4 inline-flex !py-2 text-xs">
+                      View session
+                    </Link>
                   </li>
                 ))}
               </ul>

@@ -232,30 +232,38 @@ function TutorDesk() {
 
         <section className="mt-12">
           <h2 className="font-display text-2xl text-moss">Your live classes</h2>
-          <ul className="mt-4 space-y-4">
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {classes.map((item) => (
-              <li key={item.id} className="border-t border-line/30 pt-4">
+              <li key={item.id} className="ef-session-card !py-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
+                    <p className="text-xs uppercase tracking-wide text-ink/45">
+                      {item.status} · {formatWhen(item.startsAt)}
+                    </p>
                     <Link
                       href={`/classes/${item.id}`}
-                      className="font-display text-xl hover:text-moss"
+                      className="mt-1 block font-display text-xl hover:text-moss"
                     >
                       {item.title}
                     </Link>
-                    <p className="text-sm text-ink/55">
-                      {formatWhen(item.startsAt)} · {item.status}
-                    </p>
                   </div>
-                  {item.status === 'Live' && (
-                    <Link href={`/classes/${item.id}/room`} className="ef-btn !py-2">
-                      Rejoin room
+                  <div className="flex flex-wrap gap-2">
+                    {item.status === 'Live' && (
+                      <Link href={`/classes/${item.id}/room`} className="ef-btn !py-2 text-xs">
+                        Rejoin
+                      </Link>
+                    )}
+                    <Link href={`/classes/${item.id}`} className="ef-btn-ghost !py-2 text-xs">
+                      Roster
                     </Link>
-                  )}
+                  </div>
                 </div>
               </li>
             ))}
           </ul>
+          {classes.length === 0 && (
+            <p className="mt-4 text-ink/60">No sessions yet — start an instant meeting above.</p>
+          )}
         </section>
       </main>
     </>

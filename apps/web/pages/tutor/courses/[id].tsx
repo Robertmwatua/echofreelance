@@ -311,18 +311,23 @@ function ManageCourse() {
             <section className="ef-panel mt-10">
               <h2 className="font-display text-2xl text-moss">Student performance</h2>
               <p className="ef-muted mt-1 text-sm">
-                {report ? `${report.studentCount} enrolled` : 'Loading roster…'}
+                {report
+                  ? `${report.studentCount} enrolled${
+                      report.sessionsTotal != null ? ` · ${report.sessionsTotal} live sessions` : ''
+                    }`
+                  : 'Loading roster…'}
               </p>
               {report && report.students.length === 0 && (
                 <p className="mt-4 text-sm text-ink/55">No students enrolled yet.</p>
               )}
               {report && report.students.length > 0 && (
                 <div className="mt-4 overflow-x-auto">
-                  <table className="w-full min-w-[520px] text-left text-sm">
+                  <table className="w-full min-w-[640px] text-left text-sm">
                     <thead className="border-b border-line/40 text-xs uppercase tracking-wide text-ink/50">
                       <tr>
                         <th className="py-2 pr-3 font-medium">Student</th>
                         <th className="py-2 pr-3 font-medium">Progress</th>
+                        <th className="py-2 pr-3 font-medium">Attendance</th>
                         <th className="py-2 pr-3 font-medium">Assignments</th>
                         <th className="py-2 font-medium">Avg grade</th>
                       </tr>
@@ -336,6 +341,11 @@ function ManageCourse() {
                           </td>
                           <td className="py-3 pr-3">
                             {s.progressPercent}% ({s.lessonsCompleted}/{s.lessonsTotal})
+                          </td>
+                          <td className="py-3 pr-3">
+                            {s.attendancePercent != null
+                              ? `${s.attendancePercent}% (${s.sessionsAttended}/${s.sessionsTotal})`
+                              : '—'}
                           </td>
                           <td className="py-3 pr-3">
                             {s.assignmentsSubmitted}/{s.assignmentsTotal}

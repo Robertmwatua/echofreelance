@@ -131,9 +131,37 @@ export class CoursesService {
     const total = course.lessons.length
     const completedCount = completedIds.size
 
+    const canSeeSessions = enrolled || isOwner || role === Role.Admin
+    const sessions = canSeeSessions
+      ? await this.prisma.virtualClass.findMany({
+          where: { courseId: id, status: { not: 'Cancelled' } },
+          orderBy: { startsAt: 'desc' },
+          take: 40,
+          select: {
+            id: true,
+            title: true,
+            startsAt: true,
+            endsAt: true,
+            status: true,
+            recordingUrl: true,
+            _count: { select: { attendances: true } },
+          },
+        })
+      : []
+
     return {
       ...this.mapCourse(course, enrolled),
       lessons,
+      sessions: sessions.map((s) => ({
+        id: s.id,
+        title: s.title,
+        startsAt: s.startsAt,
+        endsAt: s.endsAt,
+        status: s.status,
+        recordingUrl: s.recordingUrl,
+        attendanceCount: s._count.attendances,
+        hasRecording: Boolean(s.recordingUrl),
+      })),
       progress:
         userId && enrolled
           ? {
@@ -279,6 +307,33 @@ export class CoursesService {
       orderBy: { createdAt: 'asc' },
     })
 
+    const sessions = await this.prisma.virtualClass.findMany({
+      where: {
+        courseId,
+        status: { in: ['Scheduled', 'Live', 'Completed'] },
+      },
+      select: { id: true },
+    })
+    const sessionIds = sessions.map((s) => s.id)
+    const sessionsTotal = sessionIds.length
+
+    const attendanceRows =
+      sessionsTotal === 0
+        ? []
+        : await this.prisma.classAttendance.findMany({
+            where: {
+              classId: { in: sessionIds },
+              enteredAt: { not: null },
+            },
+            select: { userId: true, classId: true },
+          })
+    const attendedByUser = new Map<string, Set<string>>()
+    for (const row of attendanceRows) {
+      const set = attendedByUser.get(row.userId) || new Set<string>()
+      set.add(row.classId)
+      attendedByUser.set(row.userId, set)
+    }
+
     const students = []
     for (const e of enrollments) {
       const completed = totalLessons
@@ -306,6 +361,8 @@ export class CoursesService {
               (graded.reduce((sum, s) => sum + (s.grade || 0), 0) / graded.length) * 10,
             ) / 10
 
+      const sessionsAttended = attendedByUser.get(e.userId)?.size || 0
+
       students.push({
         id: e.user.id,
         name: e.user.name,
@@ -318,6 +375,10 @@ export class CoursesService {
         assignmentsSubmitted: submissions.length,
         assignmentsTotal: assignments.length,
         avgGrade,
+        sessionsAttended,
+        sessionsTotal,
+        attendancePercent:
+          sessionsTotal === 0 ? null : Math.round((sessionsAttended / sessionsTotal) * 100),
       })
     }
 
@@ -325,6 +386,7 @@ export class CoursesService {
       courseId,
       title: course.title,
       studentCount: students.length,
+      sessionsTotal,
       students,
     }
   }

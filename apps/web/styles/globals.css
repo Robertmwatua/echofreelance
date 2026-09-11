@@ -132,6 +132,50 @@ a {
   .ef-page {
     @apply relative mx-auto max-w-3xl px-5 py-12;
   }
+
+  .ef-pill {
+    @apply inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide;
+  }
+
+  .ef-pill-live {
+    @apply inline-flex items-center gap-1.5 rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-300 ring-1 ring-emerald-400/30;
+  }
+
+  .ef-pill-scheduled {
+    @apply inline-flex items-center gap-1.5 rounded-md bg-sky-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-sky-300 ring-1 ring-sky-400/25;
+  }
+
+  .ef-pill-done {
+    @apply inline-flex items-center gap-1.5 rounded-md bg-ink/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink/55 ring-1 ring-line/40;
+  }
+
+  .ef-session-card {
+    @apply relative overflow-hidden rounded-2xl border border-line/30 bg-panel/80 p-5
+      transition duration-300 hover:-translate-y-0.5 hover:border-moss/35 hover:shadow-glow;
+  }
+
+  .ef-session-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: linear-gradient(180deg, rgb(var(--c-moss)), rgb(var(--c-fern)));
+    opacity: 0.85;
+  }
+
+  .ef-pulse-dot {
+    @apply relative inline-flex h-2 w-2;
+  }
+
+  .ef-pulse-dot::before {
+    content: '';
+    @apply absolute inset-0 animate-ping rounded-full bg-emerald-400 opacity-60;
+  }
+
+  .ef-pulse-dot::after {
+    content: '';
+    @apply relative inline-flex h-2 w-2 rounded-full bg-emerald-400;
+  }
 }
 
 /* —— Motion & atmosphere —— */

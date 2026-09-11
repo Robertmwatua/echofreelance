@@ -37,6 +37,17 @@ export type CourseProgress = {
   percent: number
 }
 
+export type CourseSession = {
+  id: string
+  title: string
+  startsAt: string
+  endsAt: string
+  status: string
+  recordingUrl?: string | null
+  attendanceCount?: number
+  hasRecording?: boolean
+}
+
 export type Course = {
   id: string
   title: string
@@ -54,6 +65,7 @@ export type Course = {
   enrolled?: boolean
   canManage?: boolean
   lessons?: Lesson[]
+  sessions?: CourseSession[]
   progress?: CourseProgress
   avgRating?: number | null
   reviewCount?: number
@@ -123,12 +135,16 @@ export type CourseStudentRow = {
   assignmentsSubmitted: number
   assignmentsTotal: number
   avgGrade: number | null
+  sessionsAttended?: number
+  sessionsTotal?: number
+  attendancePercent?: number | null
 }
 
 export type CourseStudentReport = {
   courseId: string
   title: string
   studentCount: number
+  sessionsTotal?: number
   students: CourseStudentRow[]
 }
 
@@ -515,6 +531,33 @@ export function formatWhen(iso: string) {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+/** Google Calendar “Add event” link (opens in a new tab). */
+export function googleCalendarUrl(opts: {
+  title: string
+  details?: string
+  startsAt: string
+  endsAt: string
+  location?: string
+}) {
+  const stamp = (iso: string) =>
+    new Date(iso).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: opts.title,
+    dates: `${stamp(opts.startsAt)}/${stamp(opts.endsAt)}`,
+  })
+  if (opts.details) params.set('details', opts.details)
+  if (opts.location) params.set('location', opts.location)
+  return `https://calendar.google.com/calendar/render?${params.toString()}`
+}
+
+export function classStatusLabel(status: string) {
+  if (status === 'Live') return 'Live now'
+  if (status === 'Completed') return 'Completed'
+  if (status === 'Cancelled') return 'Cancelled'
+  return 'Scheduled'
 }
 
 export const CATEGORIES = [

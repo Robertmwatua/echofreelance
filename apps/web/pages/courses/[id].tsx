@@ -11,6 +11,7 @@ import {
   CourseReview,
   DiscussionPost,
   formatPrice,
+  formatWhen,
   getStoredUser,
 } from '../../lib/api'
 
@@ -253,6 +254,53 @@ export default function CourseDetailPage() {
                       <p className="mt-2 text-xs text-ink/45">
                         {a.author?.name || 'Tutor'} · {new Date(a.createdAt).toLocaleDateString()}
                       </p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {course.sessions && course.sessions.length > 0 && (
+              <section className="mt-10">
+                <h2 className="font-display text-2xl text-moss">Live sessions & recordings</h2>
+                <p className="ef-muted mt-1 text-sm">
+                  Upcoming classes and saved replays for this course.
+                </p>
+                <ul className="mt-4 space-y-3">
+                  {course.sessions.map((s) => (
+                    <li key={s.id} className="ef-session-card !py-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-ink/45">
+                            {s.status} · {formatWhen(s.startsAt)}
+                          </p>
+                          <Link
+                            href={`/classes/${s.id}`}
+                            className="mt-1 block font-display text-xl hover:text-moss"
+                          >
+                            {s.title}
+                          </Link>
+                          <p className="mt-1 text-xs text-ink/45">
+                            {s.attendanceCount ?? 0} registered
+                            {s.hasRecording ? ' · Recording available' : ''}
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Link href={`/classes/${s.id}`} className="ef-btn-ghost !py-2 text-xs">
+                            Open
+                          </Link>
+                          {s.recordingUrl && (
+                            <a
+                              href={s.recordingUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="ef-btn !py-2 text-xs"
+                            >
+                              Watch recording
+                            </a>
+                          )}
+                        </div>
+                      </div>
                     </li>
                   ))}
                 </ul>

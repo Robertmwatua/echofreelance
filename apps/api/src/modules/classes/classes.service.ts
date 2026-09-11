@@ -138,6 +138,7 @@ export class ClassesService {
       : false
 
     const canJoin = isHost || isAdmin || registered
+    const canSeeRecording = canJoin || enrolled || isHost || isAdmin
 
     return {
       id: virtualClass.id,
@@ -151,6 +152,7 @@ export class ClassesService {
       attendanceCount: virtualClass._count.attendances,
       registered,
       enrolled,
+      recordingUrl: canSeeRecording ? virtualClass.recordingUrl : undefined,
       meetingUrl: canJoin ? virtualClass.meetingUrl : undefined,
       roomUrl: canJoin ? virtualClass.meetingUrl : undefined,
       canManage: isHost || isAdmin,
