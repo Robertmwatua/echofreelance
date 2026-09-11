@@ -209,25 +209,34 @@ function ManageCourse() {
   return (
     <>
       <DocumentHead title={course ? `Manage ${course.title}` : 'Manage course'} />
-      <main className="mx-auto max-w-3xl px-5 py-12">
-        <Link href="/tutor" className="text-sm text-fern hover:underline">
+      <main className="relative mx-auto max-w-3xl px-5 py-12">
+        <div
+          className="pointer-events-none absolute inset-x-0 -top-8 h-40 opacity-25"
+          style={{
+            background:
+              'radial-gradient(ellipse 60% 80% at 10% 0%, rgba(45,212,191,0.3), transparent)',
+          }}
+          aria-hidden
+        />
+        <div className="relative">
+        <Link href="/tutor" className="ef-link text-sm">
           ← Tutor desk
         </Link>
-        <h1 className="mt-4 font-display text-4xl text-moss">Manage course</h1>
+        <h1 className="mt-4 font-display text-4xl text-moss sm:text-5xl">Manage course</h1>
         {!course && !error && <p className="mt-6 text-ink/60">Loading…</p>}
-        {error && <p className="mt-6 text-red-700">{error}</p>}
-        {message && <p className="mt-4 text-fern">{message}</p>}
+        {error && <p className="mt-6 text-red-400">{error}</p>}
+        {message && <p className="mt-4 text-moss">{message}</p>}
 
         {course && (
           <>
-            <form onSubmit={saveCourse} className="mt-8 space-y-4">
+            <form onSubmit={saveCourse} className="ef-panel mt-8 space-y-4">
               <label className="block text-sm">
-                <span className="mb-1 block font-medium">Title</span>
+                <span className="mb-1.5 block font-medium text-ink/85">Title</span>
                 <input
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full rounded-md border border-moss/20 bg-white/70 px-3 py-2"
+                  className="ef-input"
                 />
               </label>
               <label className="block text-sm">
@@ -237,7 +246,7 @@ function ManageCourse() {
                   rows={4}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full rounded-md border border-moss/20 bg-white/70 px-3 py-2"
+                  className="ef-input"
                 />
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -246,7 +255,7 @@ function ManageCourse() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full rounded-md border border-moss/20 bg-white/70 px-3 py-2"
+                    className="ef-input"
                   >
                     {CATEGORIES.map((c) => (
                       <option key={c} value={c}>
@@ -260,7 +269,7 @@ function ManageCourse() {
                   <select
                     value={level}
                     onChange={(e) => setLevel(e.target.value)}
-                    className="w-full rounded-md border border-moss/20 bg-white/70 px-3 py-2"
+                    className="ef-input"
                   >
                     <option>Beginner</option>
                     <option>Intermediate</option>
@@ -275,7 +284,7 @@ function ManageCourse() {
                   min={0}
                   value={priceCents}
                   onChange={(e) => setPriceCents(Number(e.target.value))}
-                  className="w-full rounded-md border border-moss/20 bg-white/70 px-3 py-2"
+                  className="ef-input"
                 />
               </label>
               <label className="flex items-center gap-2 text-sm">
@@ -286,11 +295,7 @@ function ManageCourse() {
                 />
                 Published in catalog
               </label>
-              <button
-                type="submit"
-                disabled={busy}
-                className="rounded-md bg-moss px-5 py-3 text-sm font-semibold text-sand disabled:opacity-60"
-              >
+              <button type="submit" disabled={busy} className="ef-btn">
                 Save course
               </button>
               <button
@@ -303,7 +308,7 @@ function ManageCourse() {
               </button>
             </form>
 
-            <section className="mt-12">
+            <section className="ef-panel mt-10">
               <h2 className="font-display text-2xl text-moss">Student performance</h2>
               <p className="ef-muted mt-1 text-sm">
                 {report ? `${report.studentCount} enrolled` : 'Loading roster…'}
@@ -346,7 +351,7 @@ function ManageCourse() {
               )}
             </section>
 
-            <section className="mt-12">
+            <section className="ef-panel mt-8">
               <h2 className="font-display text-2xl text-moss">Notify students</h2>
               <p className="ef-muted mt-1 text-sm">
                 Sends an in-app alert to everyone enrolled (shows under Alerts).
@@ -373,7 +378,7 @@ function ManageCourse() {
               </form>
             </section>
 
-            <section className="mt-12">
+            <section className="ef-panel mt-8">
               <h2 className="font-display text-2xl text-moss">Lessons</h2>
               <ul className="mt-4 space-y-3">
                 {(course.lessons || []).map((lesson) => (
@@ -462,7 +467,7 @@ function ManageCourse() {
               )}
             </section>
 
-            <section className="mt-12">
+            <section className="ef-panel mt-8">
               <h2 className="font-display text-2xl text-moss">Announcements</h2>
               <form onSubmit={postAnnouncement} className="mt-4 space-y-3">
                 <input
@@ -486,7 +491,7 @@ function ManageCourse() {
               </form>
             </section>
 
-            <section className="mt-12">
+            <section className="ef-panel mt-8">
               <h2 className="font-display text-2xl text-moss">Assignments</h2>
               <form onSubmit={addAssignment} className="mt-4 space-y-3">
                 <input
@@ -511,6 +516,7 @@ function ManageCourse() {
             </section>
           </>
         )}
+        </div>
       </main>
     </>
   )

@@ -58,24 +58,38 @@ a {
 
 @layer components {
   .ef-input {
-    @apply w-full rounded-lg border border-line/50 bg-panel px-3 py-2.5 text-ink outline-none
-      placeholder:text-ink/45 focus:border-moss focus:ring-2 focus:ring-moss/30;
+    @apply w-full rounded-lg border border-line/50 px-3 py-2.5 outline-none
+      focus:border-moss focus:ring-2 focus:ring-moss/30;
+    background-color: rgb(var(--c-mist) / 0.55) !important;
     color: rgb(var(--c-ink)) !important;
     caret-color: rgb(var(--c-moss));
-    -webkit-text-fill-color: rgb(var(--c-ink));
+    -webkit-text-fill-color: rgb(var(--c-ink)) !important;
+  }
+
+  html.dark .ef-input {
+    background-color: rgb(30 41 59) !important;
+    border-color: rgb(var(--c-line) / 0.7);
   }
 
   .ef-input::placeholder {
-    color: rgb(var(--c-ink) / 0.45);
-    -webkit-text-fill-color: rgb(var(--c-ink) / 0.45);
+    color: rgb(var(--c-ink) / 0.4) !important;
+    -webkit-text-fill-color: rgb(var(--c-ink) / 0.4) !important;
+    opacity: 1;
   }
 
   .ef-input:-webkit-autofill,
   .ef-input:-webkit-autofill:hover,
   .ef-input:-webkit-autofill:focus {
-    -webkit-text-fill-color: rgb(var(--c-ink));
-    box-shadow: 0 0 0 1000px rgb(var(--c-panel)) inset;
+    -webkit-text-fill-color: rgb(var(--c-ink)) !important;
+    caret-color: rgb(var(--c-moss));
+    box-shadow: 0 0 0 1000px rgb(30 41 59) inset;
     transition: background-color 9999s ease-in-out 0s;
+  }
+
+  html:not(.dark) .ef-input:-webkit-autofill,
+  html:not(.dark) .ef-input:-webkit-autofill:hover,
+  html:not(.dark) .ef-input:-webkit-autofill:focus {
+    box-shadow: 0 0 0 1000px rgb(248 250 252) inset;
   }
 
   textarea.ef-input {
@@ -85,6 +99,12 @@ a {
 
   select.ef-input {
     color: rgb(var(--c-ink)) !important;
+    -webkit-text-fill-color: rgb(var(--c-ink)) !important;
+  }
+
+  select.ef-input option {
+    background-color: rgb(var(--c-panel));
+    color: rgb(var(--c-ink));
   }
 
   .ef-btn {
@@ -98,7 +118,7 @@ a {
   }
 
   .ef-panel {
-    @apply rounded-2xl border border-line/30 bg-panel/85 p-5 shadow-glow backdrop-blur-md;
+    @apply rounded-2xl border border-line/30 bg-panel/90 p-6 shadow-glow backdrop-blur-md;
   }
 
   .ef-muted {
@@ -107,6 +127,10 @@ a {
 
   .ef-link {
     @apply text-fern underline-offset-2 transition hover:text-moss hover:underline;
+  }
+
+  .ef-page {
+    @apply relative mx-auto max-w-3xl px-5 py-12;
   }
 }
 
