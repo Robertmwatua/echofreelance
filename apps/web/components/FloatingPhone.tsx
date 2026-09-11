@@ -1,7 +1,7 @@
 /** Floating device mock for the landing hero — CSS-only, no assets required. */
 export function FloatingPhone() {
   return (
-    <div className="ef-float relative mx-auto w-[min(100%,220px)] select-none sm:w-[240px] lg:w-[280px]">
+    <div className="ef-float relative mx-auto w-[min(100%,200px)] select-none sm:w-[220px] lg:w-[240px]">
       <div className="ef-phone relative aspect-[9/19] overflow-hidden rounded-[2.4rem] border border-white/20 bg-slate-950 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.65)]">
         <div className="absolute left-1/2 top-2.5 z-20 h-6 w-24 -translate-x-1/2 rounded-full bg-black" />
         <div className="absolute inset-[3px] overflow-hidden rounded-[2.15rem] bg-gradient-to-b from-slate-900 to-slate-950">

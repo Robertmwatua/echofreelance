@@ -159,13 +159,28 @@ a {
   filter: drop-shadow(0 28px 40px rgba(0, 0, 0, 0.45));
 }
 
+.ef-float-laptop {
+  animation: ef-float 6.2s ease-in-out 0.4s infinite;
+  will-change: transform;
+  filter: drop-shadow(0 32px 48px rgba(0, 0, 0, 0.5));
+}
+
 .ef-phone {
   transform: perspective(900px) rotateY(-8deg) rotateX(4deg);
   transition: transform 0.5s ease;
 }
 
+.ef-laptop {
+  transform: perspective(1200px) rotateY(6deg) rotateX(6deg);
+  transition: transform 0.5s ease;
+}
+
 .ef-float:hover .ef-phone {
   transform: perspective(900px) rotateY(-2deg) rotateX(1deg) scale(1.02);
+}
+
+.ef-float-laptop:hover .ef-laptop {
+  transform: perspective(1200px) rotateY(2deg) rotateX(2deg) scale(1.02);
 }
 
 .ef-rise {
@@ -174,6 +189,18 @@ a {
 
 .ef-rise-delay {
   animation-delay: 0.18s;
+}
+
+.ef-stagger {
+  animation: ef-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ef-page-enter {
+  animation: ef-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ef-menu-panel {
+  animation: ef-rise 0.28s ease-out both;
 }
 
 .ef-phone-row:nth-child(1) {
@@ -217,10 +244,14 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .ef-float,
+  .ef-float-laptop,
   .ef-rise,
   .ef-rise-delay,
   .ef-phone-row,
-  .ef-hero-bg {
+  .ef-hero-bg,
+  .ef-stagger,
+  .ef-page-enter,
+  .ef-menu-panel {
     animation: none !important;
   }
 }

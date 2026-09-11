@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import DocumentHead from '../components/DocumentHead'
-import { RequireRole } from '../components/RequireRole'
-import { api, Course, DiscussionPost } from '../lib/api'
+import DocumentHead from '../../components/DocumentHead'
+import { RequireRole } from '../../components/RequireRole'
+import { api, Course, DiscussionPost } from '../../lib/api'
 
 export default function DiscussionsPage() {
   return (

@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import DocumentHead from '../components/DocumentHead'
-import { RequireRole } from '../components/RequireRole'
-import { api, LessonNoteRow } from '../lib/api'
+import DocumentHead from '../../components/DocumentHead'
+import { RequireRole } from '../../components/RequireRole'
+import { api, LessonNoteRow } from '../../lib/api'
 
 export default function NotesPage() {
   return (
