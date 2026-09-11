@@ -76,7 +76,7 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
 
   return (
     <>
-      <DocumentHead title="Settings — EchoFreelance" />
+      <DocumentHead title="Settings — EchoFreelance Tech School" />
       <main className="mx-auto max-w-2xl px-5 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-fern">Account</p>
         <h1 className="mt-1 font-display text-4xl text-moss">Settings</h1>

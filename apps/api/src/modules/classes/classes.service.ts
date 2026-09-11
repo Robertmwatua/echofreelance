@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common'
 import { Role } from '@prisma/client'
 import { AuthUser } from '../../common/current-user.decorator'
@@ -201,7 +202,18 @@ export class ClassesService {
     return created
   }
 
+  liveClassroomStatus() {
+    return this.jaas.status()
+  }
+
   async createInstant(user: AuthUser, dto: InstantMeetingDto) {
+    // Fail fast with a clear message before writing a Live class row
+    if (!this.jaas.isConfigured()) {
+      throw new ServiceUnavailableException(
+        'Live classroom is not configured. Set JAAS_APP_ID, JAAS_API_KEY_ID, and JAAS_PRIVATE_KEY on the API (Render).',
+      )
+    }
+
     const course = await this.prisma.course.findUnique({ where: { id: dto.courseId } })
     if (!course) {
       throw new NotFoundException('Course not found')
@@ -255,12 +267,16 @@ export class ClassesService {
       where: { courseId: dto.courseId },
       select: { userId: true },
     })
-    await this.notifications.notifyMany(
-      enrolled.map((e) => e.userId).filter((id) => id !== user.id),
-      'Live class started',
-      `${title} is live now — join from the schedule.`,
-      `/classes/${meeting.id}`,
-    )
+    try {
+      await this.notifications.notifyMany(
+        enrolled.map((e) => e.userId).filter((id) => id !== user.id),
+        'Live class started',
+        `${title} is live now — join from the schedule.`,
+        `/classes/${meeting.id}`,
+      )
+    } catch {
+      // Don't block starting the room if notifications fail
+    }
 
     const { roomUrl } = this.jaas.buildParticipantToken(user, meeting.id, true)
 

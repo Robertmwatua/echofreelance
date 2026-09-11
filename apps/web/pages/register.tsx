@@ -31,7 +31,7 @@ export default function RegisterPage() {
 
   return (
     <>
-      <DocumentHead title="Apply — EchoFreelance" />
+      <DocumentHead title="Apply — EchoFreelance Tech School" />
       <main className="ef-auth-shell">
         <div className="mx-auto grid min-h-[calc(100vh-4.25rem)] max-w-6xl lg:grid-cols-2">
           <div
@@ -49,7 +49,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="flex flex-col justify-center px-5 py-14 sm:px-10">
-            <p className="font-display text-4xl text-moss sm:text-5xl">EchoFreelance</p>
+            <p className="font-display text-3xl text-moss sm:text-4xl">EchoFreelance Tech School</p>
             <h1 className="mt-3 text-xl font-medium text-ink/85">Student application</h1>
             <p className="ef-muted mt-2 text-sm">
               New accounts start as students. Admins promote tutors from the console.

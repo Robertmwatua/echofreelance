@@ -66,7 +66,7 @@ export default function LiveRoomPage() {
         {embedUrl && !error && (
           <div className="overflow-hidden rounded-2xl border border-line/40 bg-black shadow-glow">
             <iframe
-              title="EchoFreelance live classroom"
+              title="EchoFreelance Tech School live classroom"
               src={embedUrl}
               allow="camera; microphone; fullscreen; display-capture; autoplay"
               className="h-[min(78vh,820px)] w-full border-0"

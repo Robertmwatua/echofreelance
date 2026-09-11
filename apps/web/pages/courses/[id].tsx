@@ -189,7 +189,7 @@ export default function CourseDetailPage() {
 
   return (
     <>
-      <DocumentHead title={course ? `${course.title} — EchoFreelance` : 'Course'} />
+      <DocumentHead title={course ? `${course.title} — EchoFreelance Tech School` : 'Course'} />
       <main className="mx-auto max-w-3xl px-5 py-12">
         <Link href="/courses" className="text-sm text-fern hover:underline">
           ← Catalog

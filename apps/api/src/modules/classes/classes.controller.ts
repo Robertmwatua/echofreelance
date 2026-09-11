@@ -38,6 +38,13 @@ export class ClassesController {
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.Tutor, Role.Admin)
+  @Get('live-status')
+  liveStatus() {
+    return this.classesService.liveClassroomStatus()
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Tutor, Role.Admin)
   @Post('instant')
   instant(@Body() dto: InstantMeetingDto, @CurrentUser() user: AuthUser) {
     return this.classesService.createInstant(user!, dto)

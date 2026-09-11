@@ -25,7 +25,7 @@ function MyCerts() {
 
   return (
     <>
-      <DocumentHead title="My certificates — EchoFreelance" />
+      <DocumentHead title="My certificates — EchoFreelance Tech School" />
       <main className="mx-auto max-w-3xl px-5 py-12">
         <h1 className="font-display text-4xl text-moss">Certificates</h1>
         <p className="ef-muted mt-2">

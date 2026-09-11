@@ -390,6 +390,14 @@ export const api = {
   ) => request<VirtualClass>(`/classes/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   registerClass: (id: string) => request(`/classes/${id}/register`, { method: 'POST' }),
   enterClass: (id: string) => request<VirtualClass>(`/classes/${id}/enter`, { method: 'POST' }),
+  liveClassroomStatus: () =>
+    request<{
+      configured: boolean
+      appIdSet: boolean
+      keyIdSet: boolean
+      privateKeyLooksValid: boolean
+      privateKeyLineCount: number
+    }>('/classes/live-status'),
   startInstantMeeting: (body: {
     courseId: string
     title?: string

@@ -38,7 +38,7 @@ function StudentHub({ userName }: { userName: string }) {
 
   return (
     <>
-      <DocumentHead title="Student hub — EchoFreelance" />
+      <DocumentHead title="Student hub — EchoFreelance Tech School" />
       <main className="mx-auto max-w-6xl px-5 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-fern">Student</p>
         <h1 className="mt-1 font-display text-4xl text-moss">Welcome, {userName}</h1>

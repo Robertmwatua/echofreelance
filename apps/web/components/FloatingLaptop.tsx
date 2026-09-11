@@ -9,7 +9,7 @@ export function FloatingLaptop() {
             <span className="h-2 w-2 rounded-full bg-amber-400/80" />
             <span className="h-2 w-2 rounded-full bg-emerald-400/80" />
             <span className="ml-3 truncate text-[10px] text-white/40">
-              echofreelance · live classroom
+              echofreelance tech school · live
             </span>
           </div>
           <div
@@ -21,7 +21,7 @@ export function FloatingLaptop() {
               backgroundPosition: 'center',
             }}
           >
-            <p className="font-display text-lg text-teal-300">EchoFreelance</p>
+            <p className="font-display text-lg text-teal-300">EchoFreelance Tech School</p>
             <p className="mt-1 text-[11px] text-white/55">Tutor desk · Instant meeting</p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               <div className="rounded-lg bg-white/10 p-2.5 ring-1 ring-white/10 backdrop-blur">

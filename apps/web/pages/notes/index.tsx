@@ -25,7 +25,7 @@ function NotesHome() {
 
   return (
     <>
-      <DocumentHead title="My notes — EchoFreelance" />
+      <DocumentHead title="My notes — EchoFreelance Tech School" />
       <main className="mx-auto max-w-3xl px-5 py-12">
         <h1 className="font-display text-4xl text-moss">My notes</h1>
         <p className="ef-muted mt-2">

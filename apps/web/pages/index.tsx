@@ -4,6 +4,7 @@ import DocumentHead from '../components/DocumentHead'
 import { FloatingLaptop } from '../components/FloatingLaptop'
 import { FloatingPhone } from '../components/FloatingPhone'
 import { api, Course, formatWhen, VirtualClass } from '../lib/api'
+import { SITE_NAME } from '../lib/brand'
 
 const HERO_WALLS = [
   '/wallpapers/campus.jpg',
@@ -31,7 +32,7 @@ export default function Home() {
 
   return (
     <>
-      <DocumentHead title="EchoFreelance — Online tech school" />
+      <DocumentHead title={SITE_NAME} />
       <main>
         <section className="relative min-h-[calc(100vh-4.25rem)] overflow-hidden">
           {HERO_WALLS.map((src, i) => (
@@ -62,8 +63,11 @@ export default function Home() {
 
           <div className="relative mx-auto flex min-h-[calc(100vh-4.25rem)] max-w-6xl flex-col justify-center gap-10 px-5 py-12 lg:flex-row lg:items-center lg:justify-between lg:gap-8 lg:py-10">
             <div className="ef-rise max-w-xl shrink-0 lg:max-w-[46%]">
-              <p className="font-display text-5xl leading-[0.92] tracking-tight text-sand drop-shadow-sm sm:text-6xl lg:text-8xl">
+              <p className="font-display text-4xl leading-[0.95] tracking-tight text-sand drop-shadow-sm sm:text-5xl lg:text-7xl">
                 EchoFreelance
+                <span className="mt-1 block text-[0.55em] font-medium tracking-wide text-sand/90 sm:mt-2">
+                  Tech School
+                </span>
               </p>
               <h1 className="mt-5 max-w-md font-display text-xl font-medium leading-snug text-sand sm:text-2xl lg:text-3xl">
                 Learn tech live — courses, labs, and classrooms in one campus.

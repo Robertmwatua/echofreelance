@@ -9,6 +9,7 @@ import {
   normalizeRole,
   UserProfile,
 } from '../lib/api'
+import { SITE_NAME } from '../lib/brand'
 import { applyTheme, getStoredTheme, Theme, toggleTheme } from '../lib/theme'
 
 export function SiteShell({ children }: { children: ReactNode }) {
@@ -106,9 +107,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3.5">
           <Link
             href="/"
-            className="font-display text-2xl tracking-tight text-moss transition hover:brightness-110"
+            className="font-display text-lg leading-tight tracking-tight text-moss transition hover:brightness-110 sm:text-xl md:text-2xl"
           >
-            EchoFreelance
+            {SITE_NAME}
           </Link>
 
           <div className="flex items-center gap-2">

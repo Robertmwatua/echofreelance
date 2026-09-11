@@ -29,7 +29,7 @@ export default function CertificatePage() {
         {cert && (
           <div className="ef-panel mt-6 border border-moss/30 text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-fern">
-              EchoFreelance
+              EchoFreelance Tech School
             </p>
             <h1 className="mt-4 font-display text-3xl text-moss">Certificate of completion</h1>
             <p className="ef-muted mt-6 text-lg">This certifies that</p>

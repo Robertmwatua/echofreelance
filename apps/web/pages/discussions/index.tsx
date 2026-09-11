@@ -35,7 +35,7 @@ function DiscussionsHome() {
 
   return (
     <>
-      <DocumentHead title="Discussions — EchoFreelance" />
+      <DocumentHead title="Discussions — EchoFreelance Tech School" />
       <main className="mx-auto max-w-3xl px-5 py-12">
         <h1 className="font-display text-4xl text-moss">Discussions</h1>
         <p className="ef-muted mt-2">

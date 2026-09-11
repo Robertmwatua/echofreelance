@@ -12,7 +12,7 @@ export default function ChallengesRedirect() {
 
   return (
     <>
-      <DocumentHead title="Discussions — EchoFreelance" />
+      <DocumentHead title="Discussions — EchoFreelance Tech School" />
       <main className="mx-auto max-w-3xl px-5 py-16">
         <p className="ef-muted">Redirecting to discussions…</p>
         <Link href="/discussions" className="ef-link mt-4 inline-block">

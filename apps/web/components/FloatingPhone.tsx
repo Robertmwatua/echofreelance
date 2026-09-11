@@ -17,7 +17,7 @@ export function FloatingPhone() {
               EchoFreelance
             </p>
             <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/45">
-              Live campus
+              Tech School
             </p>
 
             <div className="mt-5 space-y-2.5">

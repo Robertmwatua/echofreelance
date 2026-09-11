@@ -6,7 +6,7 @@ export default function Document() {
       <Head>
         <meta
           name="description"
-          content="EchoFreelance — online tech school with live virtual classes."
+          content="EchoFreelance Tech School — live courses, labs, and virtual classrooms."
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />

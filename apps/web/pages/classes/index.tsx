@@ -18,7 +18,7 @@ export default function ClassesPage() {
 
   return (
     <>
-      <DocumentHead title="Live classes — EchoFreelance" />
+      <DocumentHead title="Live classes — EchoFreelance Tech School" />
       <main className="mx-auto max-w-6xl px-5 py-12">
         <h1 className="font-display text-4xl text-moss">Virtual classroom</h1>
         <p className="mt-2 max-w-xl text-ink/70">

@@ -24,6 +24,7 @@ function TutorDesk() {
   const [instantDuration, setInstantDuration] = useState(60)
   const [starting, setStarting] = useState(false)
   const [busyId, setBusyId] = useState('')
+  const [liveOk, setLiveOk] = useState<boolean | null>(null)
 
   async function reload() {
     const [c, cl] = await Promise.all([api.taughtCourses(), api.myClasses()])
@@ -34,6 +35,10 @@ function TutorDesk() {
 
   useEffect(() => {
     reload().catch((e: Error) => setError(e.message))
+    api
+      .liveClassroomStatus()
+      .then((s) => setLiveOk(s.configured))
+      .catch(() => setLiveOk(null))
   }, [])
 
   async function startInstant(e: FormEvent) {
@@ -75,7 +80,7 @@ function TutorDesk() {
 
   return (
     <>
-      <DocumentHead title="Tutor desk — EchoFreelance" />
+      <DocumentHead title="Tutor desk — EchoFreelance Tech School" />
       <main className="mx-auto max-w-6xl px-5 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-fern">Tutor</p>
         <h1 className="mt-1 font-display text-4xl text-moss">Tutor desk</h1>
@@ -104,6 +109,13 @@ function TutorDesk() {
             Goes live immediately and opens the classroom. Enrolled students can join from Live
             classes.
           </p>
+          {liveOk === false && (
+            <p className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+              Live video keys are missing or incomplete on the API (Render). Ask admin to check{' '}
+              <code className="text-xs">JAAS_APP_ID</code>, <code className="text-xs">JAAS_API_KEY_ID</code>, and{' '}
+              <code className="text-xs">JAAS_PRIVATE_KEY</code> — then redeploy.
+            </p>
+          )}
           {courses.length === 0 ? (
             <p className="mt-4 text-sm text-ink/65">
               You need a course first.{' '}

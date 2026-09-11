@@ -30,7 +30,7 @@ export default function CoursesPage() {
 
   return (
     <>
-      <DocumentHead title="Courses — EchoFreelance" />
+      <DocumentHead title="Courses — EchoFreelance Tech School" />
       <main className="relative mx-auto max-w-6xl px-5 py-12">
         <div
           className="pointer-events-none absolute inset-x-0 -top-12 h-56 opacity-[0.18]"

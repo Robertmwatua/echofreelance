@@ -61,7 +61,7 @@ function AdminConsole() {
 
   return (
     <>
-      <DocumentHead title="Admin — EchoFreelance" />
+      <DocumentHead title="Admin — EchoFreelance Tech School" />
       <main className="mx-auto max-w-6xl px-5 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-fern">Admin</p>
         <h1 className="mt-1 font-display text-4xl text-moss">Campus control</h1>
