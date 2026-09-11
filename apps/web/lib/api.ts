@@ -395,8 +395,11 @@ export const api = {
       configured: boolean
       appIdSet: boolean
       keyIdSet: boolean
-      privateKeyLooksValid: boolean
+      privateKeySet: boolean
+      privateKeyParseOk: boolean
+      privateKeyHint: string
       privateKeyLineCount: number
+      privateKeyCharCount: number
     }>('/classes/live-status'),
   startInstantMeeting: (body: {
     courseId: string

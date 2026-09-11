@@ -25,6 +25,7 @@ function TutorDesk() {
   const [starting, setStarting] = useState(false)
   const [busyId, setBusyId] = useState('')
   const [liveOk, setLiveOk] = useState<boolean | null>(null)
+  const [liveHint, setLiveHint] = useState('')
 
   async function reload() {
     const [c, cl] = await Promise.all([api.taughtCourses(), api.myClasses()])
@@ -37,7 +38,10 @@ function TutorDesk() {
     reload().catch((e: Error) => setError(e.message))
     api
       .liveClassroomStatus()
-      .then((s) => setLiveOk(s.configured))
+      .then((s) => {
+        setLiveOk(s.configured)
+        setLiveHint(s.privateKeyHint || '')
+      })
       .catch(() => setLiveOk(null))
   }, [])
 
@@ -111,9 +115,18 @@ function TutorDesk() {
           </p>
           {liveOk === false && (
             <p className="mt-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
-              Live video keys are missing or incomplete on the API (Render). Ask admin to check{' '}
-              <code className="text-xs">JAAS_APP_ID</code>, <code className="text-xs">JAAS_API_KEY_ID</code>, and{' '}
-              <code className="text-xs">JAAS_PRIVATE_KEY</code> — then redeploy.
+              Live video key problem on the API (Render).{' '}
+              {liveHint && liveHint !== 'ok' ? (
+                <>
+                  Hint: <span className="text-amber-100">{liveHint}</span>
+                </>
+              ) : (
+                <>
+                  Check <code className="text-xs">JAAS_PRIVATE_KEY</code> is the{' '}
+                  <strong>private</strong> PEM (BEGIN PRIVATE KEY), not the public .pub file — then
+                  Manual Deploy.
+                </>
+              )}
             </p>
           )}
           {courses.length === 0 ? (
