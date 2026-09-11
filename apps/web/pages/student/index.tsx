@@ -42,14 +42,17 @@ function StudentHub({ userName }: { userName: string }) {
       <main className="mx-auto max-w-6xl px-5 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-fern">Student</p>
         <h1 className="mt-1 font-display text-4xl text-moss">Welcome, {userName}</h1>
-        <p className="ef-muted mt-2">Track course progress, live classes, and the CTF arena.</p>
+        <p className="ef-muted mt-2">Track course progress, live classes, and discussions.</p>
 
         <div className="mt-6 flex flex-wrap gap-3">
           <Link href="/courses" className="ef-btn-ghost">
             Catalog
           </Link>
-          <Link href="/challenges" className="ef-btn">
-            CTF arena
+          <Link href="/discussions" className="ef-btn">
+            Discussions
+          </Link>
+          <Link href="/notes" className="ef-btn-ghost">
+            Notes
           </Link>
           <Link href="/classes" className="ef-btn-ghost">
             Live classes

@@ -11,9 +11,6 @@ export default function LiveRoomPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
-  const user = getStoredUser()
-  const displayName = encodeURIComponent(user?.name || user?.email || 'Student')
-
   useEffect(() => {
     if (!id) return
     if (!getStoredUser()) {
@@ -28,18 +25,8 @@ export default function LiveRoomPage() {
   }, [id, router])
 
   const embedUrl = useMemo(() => {
-    const url = session?.roomUrl || session?.meetingUrl
-    if (!url) return ''
-    try {
-      const u = new URL(url)
-      if (u.hostname.includes('jit.si')) {
-        return `${url}#userInfo.displayName="${displayName}"&config.prejoinPageEnabled=false`
-      }
-      return url
-    } catch {
-      return url
-    }
-  }, [session, displayName])
+    return session?.roomUrl || ''
+  }, [session])
 
   return (
     <>
@@ -55,7 +42,7 @@ export default function LiveRoomPage() {
             </h1>
             {session && (
               <p className="text-sm text-ink/65">
-                {session.status} · camera & mic run in-browser (Jitsi)
+                {session.status} · secure in-browser classroom
               </p>
             )}
           </div>
@@ -82,7 +69,7 @@ export default function LiveRoomPage() {
               title="EchoFreelance live classroom"
               src={embedUrl}
               allow="camera; microphone; fullscreen; display-capture; autoplay"
-              className="h-[72vh] w-full min-h-[480px] border-0"
+              className="h-[min(78vh,820px)] w-full border-0"
             />
           </div>
         )}

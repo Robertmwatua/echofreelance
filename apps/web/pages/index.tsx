@@ -71,19 +71,19 @@ export default function Home() {
 
         <section className="relative mx-auto max-w-6xl px-5 py-20">
           <div className="ef-section-wash pointer-events-none absolute inset-x-0 top-0 h-40" aria-hidden />
-          <h2 className="font-display text-3xl text-moss sm:text-4xl">Published programs</h2>
+          <h2 className="font-display text-3xl text-moss sm:text-4xl">Featured programs</h2>
           <p className="ef-muted mt-3 max-w-2xl text-base">
-            Courses appear when tutors publish them — built on campus, not hard-coded.
+            Explore published courses from campus tutors — enroll and join live sessions.
           </p>
           {courses.length === 0 ? (
             <div className="ef-panel mt-10 max-w-xl">
-              <p className="text-ink/85">No published courses yet.</p>
+              <p className="text-ink/85">New courses are on the way.</p>
               <p className="mt-2 text-sm text-ink/55">
-                Tutors: open the{' '}
-                <Link href="/tutor" className="text-fern hover:underline">
-                  Tutor desk
-                </Link>{' '}
-                to create your first course.
+                Check back soon, or{' '}
+                <Link href="/register" className="ef-link">
+                  join as a student
+                </Link>
+                .
               </p>
             </div>
           ) : (

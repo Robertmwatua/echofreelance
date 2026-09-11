@@ -92,6 +92,26 @@ export type Certificate = {
   user?: { id: string; name?: string | null; email: string }
 }
 
+export type DiscussionPost = {
+  id: string
+  body: string
+  createdAt: string
+  author: { id: string; name?: string | null; role?: string }
+}
+
+export type LessonNoteRow = {
+  id: string
+  lessonId: string
+  body: string
+  updatedAt: string
+  lesson?: {
+    id: string
+    title: string
+    courseId: string
+    course: { id: string; title: string }
+  }
+}
+
 export type Assignment = {
   id: string
   courseId: string
@@ -427,6 +447,21 @@ export const api = {
   claimCertificate: (courseId: string) =>
     request<Certificate>(`/courses/${courseId}/certificate`, { method: 'POST' }),
   getCertificate: (code: string) => request<Certificate>(`/certificates/${code}`),
+  courseDiscussions: (courseId: string) =>
+    request<DiscussionPost[]>(`/courses/${courseId}/discussions`),
+  postDiscussion: (courseId: string, body: string) =>
+    request<DiscussionPost>(`/courses/${courseId}/discussions`, {
+      method: 'POST',
+      body: JSON.stringify({ body }),
+    }),
+  myNotes: () => request<LessonNoteRow[]>('/notes/mine'),
+  getLessonNote: (lessonId: string) =>
+    request<LessonNoteRow | null>(`/lessons/${lessonId}/notes`),
+  saveLessonNote: (lessonId: string, body: string) =>
+    request<LessonNoteRow>(`/lessons/${lessonId}/notes`, {
+      method: 'PUT',
+      body: JSON.stringify({ body }),
+    }),
 }
 
 export function formatPrice(cents: number) {

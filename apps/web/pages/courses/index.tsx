@@ -104,13 +104,9 @@ export default function CoursesPage() {
         {error && <p className="mt-10 text-red-400">{error}</p>}
         {!loading && !error && courses.length === 0 && (
           <div className="ef-panel mt-10">
-            <p className="text-ink/85">No matching courses.</p>
+            <p className="text-ink/85">No courses match your filters.</p>
             <p className="mt-2 text-sm text-ink/60">
-              Tutors publish programs from the{' '}
-              <Link href="/tutor" className="text-fern hover:underline">
-                Tutor desk
-              </Link>
-              .
+              Try clearing search, or browse the full catalog again.
             </p>
           </div>
         )}

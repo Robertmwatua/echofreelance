@@ -4,8 +4,8 @@ import { HealthController } from './health.controller'
 import { AssignmentsModule } from './modules/assignments/assignments.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { CampusModule } from './modules/campus/campus.module'
-import { ChallengesModule } from './modules/challenges/challenges.module'
 import { ClassesModule } from './modules/classes/classes.module'
+import { CommunityModule } from './modules/community/community.module'
 import { CoursesModule } from './modules/courses/courses.module'
 import { NotificationsModule } from './modules/notifications/notifications.module'
 import { ProgressModule } from './modules/progress/progress.module'
@@ -22,9 +22,9 @@ import { PrismaModule } from './prisma/prisma.module'
     ClassesModule,
     ProgressModule,
     AssignmentsModule,
-    ChallengesModule,
     NotificationsModule,
     CampusModule,
+    CommunityModule,
   ],
   controllers: [HealthController],
 })

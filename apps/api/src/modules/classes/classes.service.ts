@@ -13,12 +13,14 @@ import {
   InstantMeetingDto,
   UpdateVirtualClassDto,
 } from './dto/virtual-class.dto'
+import { JaasService } from './jaas.service'
 
 @Injectable()
 export class ClassesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly jaas: JaasService,
   ) {}
 
   async listUpcoming(userId?: string) {
@@ -175,7 +177,7 @@ export class ClassesService {
         description: dto.description,
         startsAt: new Date(dto.startsAt),
         endsAt: new Date(dto.endsAt),
-        meetingUrl: dto.meetingUrl || 'https://meet.jit.si/pending',
+        meetingUrl: dto.meetingUrl || 'jaas:pending',
       },
       include: {
         course: { select: { id: true, title: true } },
@@ -187,7 +189,7 @@ export class ClassesService {
       return this.prisma.virtualClass.update({
         where: { id: created.id },
         data: {
-          meetingUrl: `https://meet.jit.si/EchoFreelance-${created.id}`,
+          meetingUrl: this.jaas.meetingUrlForClass(created.id),
         },
         include: {
           course: { select: { id: true, title: true } },
@@ -223,7 +225,7 @@ export class ClassesService {
           'Live session started now. Enrolled students can register and join.',
         startsAt,
         endsAt,
-        meetingUrl: 'https://meet.jit.si/pending',
+        meetingUrl: 'jaas:pending',
         status: 'Live',
       },
     })
@@ -231,7 +233,7 @@ export class ClassesService {
     const meeting = await this.prisma.virtualClass.update({
       where: { id: created.id },
       data: {
-        meetingUrl: `https://meet.jit.si/EchoFreelance-${created.id}`,
+        meetingUrl: this.jaas.meetingUrlForClass(created.id),
       },
       include: {
         course: { select: { id: true, title: true, category: true } },
@@ -260,9 +262,11 @@ export class ClassesService {
       `/classes/${meeting.id}`,
     )
 
+    const { roomUrl } = this.jaas.buildParticipantToken(user, meeting.id, true)
+
     return {
       ...meeting,
-      roomUrl: meeting.meetingUrl,
+      roomUrl,
       meetingUrl: meeting.meetingUrl,
       canEnterRoom: true,
       canManage: true,
@@ -294,10 +298,22 @@ export class ClassesService {
       },
     })
 
+    const isModerator = this.jaas.isHostRole(user, detail.host?.id || '')
+    const { roomUrl } = this.jaas.buildParticipantToken(user, id, isModerator)
+
+    // Migrate legacy public Jitsi URLs to JaaS when entering
+    if (!detail.meetingUrl?.includes('8x8.vc')) {
+      await this.prisma.virtualClass.update({
+        where: { id },
+        data: { meetingUrl: this.jaas.meetingUrlForClass(id) },
+      })
+    }
+
     return {
       ...detail,
       status: detail.status === 'Scheduled' ? 'Live' : detail.status,
-      roomUrl: detail.meetingUrl,
+      meetingUrl: this.jaas.meetingUrlForClass(id),
+      roomUrl,
     }
   }
 

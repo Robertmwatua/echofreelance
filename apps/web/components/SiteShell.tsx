@@ -100,8 +100,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
             <Link href="/classes" className="hover:text-moss">
               Live classes
             </Link>
-            <Link href="/challenges" className="hover:text-moss">
-              CTF
+            <Link href="/discussions" className="hover:text-moss">
+              Discussions
             </Link>
             {user ? (
               <>
@@ -120,6 +120,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
                     Admin
                   </Link>
                 )}
+                <Link href="/notes" className="hover:text-moss">
+                  Notes
+                </Link>
                 <Link href="/certificates/mine" className="hover:text-moss">
                   Certs
                 </Link>

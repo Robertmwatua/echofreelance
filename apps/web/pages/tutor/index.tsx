@@ -71,8 +71,8 @@ function TutorDesk() {
           <Link href="/tutor/classes/new" className="ef-btn-ghost">
             Schedule live class
           </Link>
-          <Link href="/tutor/challenges/new" className="ef-btn-ghost">
-            New CTF challenge
+          <Link href="/discussions" className="ef-btn-ghost">
+            Discussions
           </Link>
           <Link href="/settings" className="ef-btn-ghost">
             Settings

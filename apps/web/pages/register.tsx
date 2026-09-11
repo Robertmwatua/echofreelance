@@ -43,7 +43,7 @@ export default function RegisterPage() {
             <div className="absolute inset-0 flex flex-col justify-end p-10">
               <p className="font-display text-4xl text-sand">Join the school</p>
               <p className="mt-3 max-w-sm text-sand/75">
-                Start as a student — live classes, CTF, and certificates await.
+                Start as a student — live classes, notes, and certificates await.
               </p>
             </div>
           </div>

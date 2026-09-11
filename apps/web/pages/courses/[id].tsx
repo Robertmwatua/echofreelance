@@ -9,6 +9,7 @@ import {
   Course,
   CourseAnnouncement,
   CourseReview,
+  DiscussionPost,
   formatPrice,
   getStoredUser,
 } from '../../lib/api'
@@ -19,6 +20,7 @@ export default function CourseDetailPage() {
   const [course, setCourse] = useState<Course | null>(null)
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [announcements, setAnnouncements] = useState<CourseAnnouncement[]>([])
+  const [discussions, setDiscussions] = useState<DiscussionPost[]>([])
   const [reviews, setReviews] = useState<{
     average: number
     count: number
@@ -31,19 +33,24 @@ export default function CourseDetailPage() {
   const [submitText, setSubmitText] = useState('')
   const [rating, setRating] = useState(5)
   const [reviewComment, setReviewComment] = useState('')
+  const [discussBody, setDiscussBody] = useState('')
+  const [noteLessonId, setNoteLessonId] = useState<string | null>(null)
+  const [noteBody, setNoteBody] = useState('')
 
   async function load() {
     if (!id) return
-    const [c, a, an, r] = await Promise.all([
+    const [c, a, an, r, d] = await Promise.all([
       api.course(id),
       api.courseAssignments(id).catch(() => [] as Assignment[]),
       api.courseAnnouncements(id).catch(() => [] as CourseAnnouncement[]),
       api.courseReviews(id).catch(() => null),
+      api.courseDiscussions(id).catch(() => [] as DiscussionPost[]),
     ])
     setCourse(c)
     setAssignments(a)
     setAnnouncements(an)
     setReviews(r)
+    setDiscussions(d)
   }
 
   useEffect(() => {
@@ -130,6 +137,51 @@ export default function CourseDetailPage() {
       setMessage('Thanks for your review.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Review failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function submitDiscussion(e: FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      await api.postDiscussion(id, discussBody)
+      setDiscussBody('')
+      await load()
+      setMessage('Posted to discussion.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not post')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function openNote(lessonId: string) {
+    setNoteLessonId(lessonId)
+    setBusy(true)
+    try {
+      const note = await api.getLessonNote(lessonId)
+      setNoteBody(note?.body || '')
+    } catch {
+      setNoteBody('')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function saveNote(e: FormEvent) {
+    e.preventDefault()
+    if (!noteLessonId) return
+    setBusy(true)
+    setError('')
+    try {
+      await api.saveLessonNote(noteLessonId, noteBody)
+      setMessage('Note saved.')
+      setNoteLessonId(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not save note')
     } finally {
       setBusy(false)
     }
@@ -245,20 +297,96 @@ export default function CourseDetailPage() {
                           </ul>
                         )}
                       </div>
-                      {!lesson.locked && course.enrolled && !lesson.completed && (
-                        <button
-                          type="button"
-                          disabled={busy}
-                          className="ef-btn-ghost !py-1.5 text-xs"
-                          onClick={() => completeLesson(lesson.id)}
-                        >
-                          Mark complete
-                        </button>
+                      {!lesson.locked && course.enrolled && (
+                        <div className="flex flex-col gap-2">
+                          {!lesson.completed && (
+                            <button
+                              type="button"
+                              disabled={busy}
+                              className="ef-btn-ghost !py-1.5 text-xs"
+                              onClick={() => completeLesson(lesson.id)}
+                            >
+                              Mark complete
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            className="ef-btn-ghost !py-1.5 text-xs"
+                            onClick={() => openNote(lesson.id)}
+                          >
+                            Notes
+                          </button>
+                        </div>
                       )}
                     </div>
                   </li>
                 ))}
               </ul>
+
+              {noteLessonId && (
+                <form onSubmit={saveNote} className="ef-panel mt-4 space-y-3">
+                  <h3 className="font-semibold">Lesson notes</h3>
+                  <textarea
+                    rows={5}
+                    className="ef-input"
+                    value={noteBody}
+                    onChange={(e) => setNoteBody(e.target.value)}
+                    placeholder="Private notes for this lesson…"
+                  />
+                  <div className="flex gap-2">
+                    <button type="submit" disabled={busy} className="ef-btn">
+                      Save note
+                    </button>
+                    <button
+                      type="button"
+                      className="ef-btn-ghost"
+                      onClick={() => setNoteLessonId(null)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </form>
+              )}
+            </section>
+
+            <section id="discussion" className="mt-10 scroll-mt-24">
+              <h2 className="font-display text-2xl text-moss">Discussion</h2>
+              <p className="ef-muted mt-1 text-sm">Ask questions and share insights with the class.</p>
+              <ul className="mt-4 space-y-3">
+                {discussions.length === 0 && (
+                  <li className="ef-muted text-sm">No posts yet.</li>
+                )}
+                {discussions.map((p) => (
+                  <li key={p.id} className="ef-panel !p-4">
+                    <p className="text-sm font-medium text-ink">
+                      {p.author.name || 'Member'}
+                      <span className="ml-2 text-xs font-normal uppercase text-ink/40">
+                        {p.author.role}
+                      </span>
+                    </p>
+                    <p className="ef-muted mt-2 whitespace-pre-wrap text-sm">{p.body}</p>
+                    <p className="mt-2 text-xs text-ink/40">
+                      {new Date(p.createdAt).toLocaleString()}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              {(course.enrolled || course.canManage) && (
+                <form onSubmit={submitDiscussion} className="ef-panel mt-4 space-y-3">
+                  <textarea
+                    required
+                    minLength={2}
+                    rows={3}
+                    className="ef-input"
+                    value={discussBody}
+                    onChange={(e) => setDiscussBody(e.target.value)}
+                    placeholder="Write a comment…"
+                  />
+                  <button type="submit" disabled={busy} className="ef-btn">
+                    Post
+                  </button>
+                </form>
+              )}
             </section>
 
             <section className="mt-10">

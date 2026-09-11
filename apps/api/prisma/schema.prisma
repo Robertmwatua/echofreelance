@@ -59,6 +59,8 @@ model User {
   certificates          Certificate[]
   resourcesAdded        LessonResource[]       @relation("ResourceAuthor")
   announcements         CourseAnnouncement[]   @relation("AnnouncementAuthor")
+  discussionPosts       DiscussionPost[]
+  lessonNotes           LessonNote[]
 }
 
 model Course {
@@ -81,6 +83,7 @@ model Course {
   reviews        CourseReview[]
   certificates   Certificate[]
   announcements  CourseAnnouncement[]
+  discussions    DiscussionPost[]
 }
 
 model Lesson {
@@ -96,6 +99,7 @@ model Lesson {
   updatedAt       DateTime         @updatedAt
   progress        LessonProgress[]
   resources       LessonResource[]
+  notes           LessonNote[]
 
   @@index([courseId, order])
 }
@@ -291,5 +295,32 @@ model Certificate {
   issuedAt    DateTime @default(now())
 
   @@unique([userId, courseId])
+  @@index([userId])
+}
+
+model DiscussionPost {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId, createdAt])
+}
+
+model LessonNote {
+  id        String   @id @default(cuid())
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lessonId])
   @@index([userId])
 }

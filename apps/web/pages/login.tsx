@@ -9,8 +9,8 @@ const AUTH_WALL = '/wallpapers/learn.jpg'
 export default function LoginPage() {
   const router = useRouter()
   const next = typeof router.query.next === 'string' ? router.query.next : ''
-  const [email, setEmail] = useState('tutor@echofreelance.dev')
-  const [password, setPassword] = useState('password123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -50,9 +50,9 @@ export default function LoginPage() {
 
           <div className="flex flex-col justify-center px-5 py-14 sm:px-10">
             <p className="font-display text-4xl text-moss sm:text-5xl">EchoFreelance</p>
-            <h1 className="mt-3 text-xl font-medium text-ink/85">Campus login</h1>
+            <h1 className="mt-3 text-xl font-medium text-ink/85">Sign in</h1>
             <p className="ef-muted mt-2 text-sm">
-              Demo: student@ · tutor@ · admin@echofreelance.dev
+              Access your courses, live classrooms, and learning hub.
             </p>
             <form onSubmit={onSubmit} className="ef-panel mt-8 max-w-md space-y-4">
               <label className="block text-sm">
@@ -63,6 +63,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="ef-input"
+                  autoComplete="email"
                 />
               </label>
               <label className="block text-sm">
@@ -74,6 +75,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="ef-input"
+                  autoComplete="current-password"
                 />
               </label>
               {error && <p className="text-sm text-red-400">{error}</p>}

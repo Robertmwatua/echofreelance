@@ -36,8 +36,8 @@ export function FloatingPhone() {
                 <p className="mt-1.5 text-[9px] text-white/40">72% complete</p>
               </div>
               <div className="ef-phone-row rounded-xl bg-white/5 p-3 ring-1 ring-white/10">
-                <p className="text-[11px] font-medium text-white/85">CTF · Pwn 200</p>
-                <p className="mt-1 text-[10px] text-sky-300/80">Flag submitted · +200 pts</p>
+                <p className="text-[11px] font-medium text-white/85">Discussion</p>
+                <p className="mt-1 text-[10px] text-sky-300/80">3 new replies in Web Sec</p>
               </div>
             </div>
 
