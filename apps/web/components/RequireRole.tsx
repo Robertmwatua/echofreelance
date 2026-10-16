@@ -31,7 +31,7 @@ export function RequireRole({
 
   if (!ready || !user) {
     return (
-      <main className="mx-auto max-w-6xl px-5 py-16 text-ink/60">Checking access…</main>
+      <main className="mx-auto max-w-6xl px-5 py-16 ef-muted">Checking access…</main>
     )
   }
 

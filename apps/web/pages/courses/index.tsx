@@ -1,7 +1,8 @@
-import Link from 'next/link'
+import { CardSkeletons, FeedbackCard, PageHero } from '../../components/PageFeedback'
 import { useEffect, useMemo, useState } from 'react'
+import { CourseCard } from '../../components/CourseCard'
 import DocumentHead from '../../components/DocumentHead'
-import { api, CATEGORIES, Course, formatPrice } from '../../lib/api'
+import { api, CATEGORIES, Course } from '../../lib/api'
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([])
@@ -10,18 +11,22 @@ export default function CoursesPage() {
   const [search, setSearch] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
+    let active = true
     setLoading(true)
+    setError('')
     api
       .courses({
         category: category || undefined,
         q: search || undefined,
       })
-      .then(setCourses)
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [category, search])
+      .then(data => { if (active) setCourses(data) })
+      .catch((e: Error) => { if (active) setError(e.message) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [category, search, attempt])
 
   const cats = useMemo(() => {
     const fromData = Array.from(new Set(courses.map((c) => c.category).filter(Boolean)))
@@ -31,20 +36,9 @@ export default function CoursesPage() {
   return (
     <>
       <DocumentHead title="Courses — EchoFreelance Tech School" />
-      <main className="relative mx-auto max-w-6xl px-5 py-12">
-        <div
-          className="pointer-events-none absolute inset-x-0 -top-12 h-56 opacity-[0.18]"
-          style={{
-            backgroundImage:
-              'radial-gradient(ellipse 70% 80% at 10% 0%, rgba(45,212,191,0.35), transparent), radial-gradient(ellipse 50% 60% at 90% 10%, rgba(56,189,248,0.25), transparent)',
-          }}
-          aria-hidden
-        />
+      <main className="relative mx-auto max-w-6xl px-6 py-12">
         <div className="relative">
-        <h1 className="font-display text-4xl text-moss sm:text-5xl">Course catalog</h1>
-        <p className="mt-2 max-w-xl text-ink/70">
-          Cybersecurity, engineering, cloud, and more — taught by campus tutors with live labs.
-        </p>
+        <PageHero eyebrow="Find your direction" title="Courses" description="Practical skills, thoughtful guidance, and a clear path forward. Find the course that fits your next chapter." />
 
         <form
           className="mt-6 flex flex-wrap gap-2"
@@ -56,6 +50,7 @@ export default function CoursesPage() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
+            aria-label="Search courses"
             placeholder="Search courses…"
             className="ef-input max-w-md flex-1 text-sm"
           />
@@ -80,9 +75,8 @@ export default function CoursesPage() {
           <button
             type="button"
             onClick={() => setCategory('')}
-            className={`rounded-md px-3 py-1.5 text-sm ${
-              !category ? 'bg-moss text-sand' : 'border border-moss/20 hover:bg-mist'
-            }`}
+            aria-pressed={!category}
+            className="ef-filter"
           >
             All
           </button>
@@ -91,61 +85,23 @@ export default function CoursesPage() {
               key={cat}
               type="button"
               onClick={() => setCategory(cat)}
-              className={`rounded-md px-3 py-1.5 text-sm ${
-                category === cat ? 'bg-moss text-sand' : 'border border-moss/20 hover:bg-mist'
-              }`}
+              aria-pressed={category === cat}
+              className="ef-filter"
             >
               {cat}
             </button>
           ))}
         </div>
 
-        {loading && <p className="mt-10 text-ink/60">Loading courses…</p>}
-        {error && <p className="mt-10 text-red-400">{error}</p>}
+        {loading && <CardSkeletons label="Loading courses" />}
+        {error && <FeedbackCard error title="Unable to load courses" description="Your next course is still here. We just couldn’t reach the catalog. Check your connection and try again." retry={() => setAttempt(a => a + 1)} />}
         {!loading && !error && courses.length === 0 && (
-          <div className="ef-panel mt-10">
-            <p className="text-ink/85">No courses match your filters.</p>
-            <p className="mt-2 text-sm text-ink/60">
-              Try clearing search, or browse the full catalog again.
-            </p>
-          </div>
+          <FeedbackCard title="No courses match just yet" description="Try another search or choose a different category to find your next course." />
         )}
 
-        <ul className="mt-10 space-y-8">
-          {courses.map((course) => (
-            <li key={course.id} className="border-t border-moss/15 pt-8 first:border-t-0 first:pt-0">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-fern">
-                    {course.category} · {course.level} · {formatPrice(course.priceCents)}
-                    {course.lessonCount ? ` · ${course.lessonCount} lessons` : ''}
-                    {course.avgRating != null
-                      ? ` · ${course.avgRating}★ (${course.reviewCount || 0})`
-                      : ''}
-                  </p>
-                  <Link
-                    href={`/courses/${course.id}`}
-                    className="mt-1 block font-display text-2xl text-ink hover:text-moss"
-                  >
-                    {course.title}
-                  </Link>
-                  <p className="mt-2 max-w-2xl text-ink/70">{course.description}</p>
-                  {(course.tutor?.name || course.instructor?.name) && (
-                    <p className="mt-2 text-sm text-ink/50">
-                      Tutor: {course.tutor?.name || course.instructor?.name}
-                    </p>
-                  )}
-                </div>
-                <Link
-                  href={`/courses/${course.id}`}
-                  className="shrink-0 self-start rounded-md bg-moss px-4 py-2 text-sm font-semibold text-sand hover:bg-fern"
-                >
-                  {course.enrolled ? 'Continue' : 'View'}
-                </Link>
-              </div>
-            </li>
-          ))}
-        </ul>
+        {!loading && !error && <ul className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {courses.map(course => <li key={course.id}><CourseCard course={course} /></li>)}
+        </ul>}
         </div>
       </main>
     </>

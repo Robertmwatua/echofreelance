@@ -64,15 +64,7 @@ function NewCourseForm() {
   return (
     <>
       <DocumentHead title="New course — Tutor" />
-      <main className="relative mx-auto max-w-2xl px-5 py-12">
-        <div
-          className="pointer-events-none absolute inset-x-0 -top-8 h-48 opacity-30"
-          style={{
-            background:
-              'radial-gradient(ellipse 70% 80% at 20% 0%, rgba(45,212,191,0.25), transparent)',
-          }}
-          aria-hidden
-        />
+      <main className="relative mx-auto max-w-2xl px-6 py-12">
         <div className="relative">
           <Link href="/tutor" className="ef-link text-sm">
             ← Tutor desk
@@ -137,7 +129,7 @@ function NewCourseForm() {
                 onChange={(e) => setPriceCents(Number(e.target.value))}
                 className="ef-input"
               />
-              <span className="mt-1 block text-xs text-ink/45">0 = free</span>
+              <span className="mt-1 block text-xs ef-muted">0 = free</span>
             </label>
             <label className="flex items-center gap-2.5 text-sm text-ink/85">
               <input

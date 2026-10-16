@@ -59,7 +59,7 @@ function NewClassForm() {
   return (
     <>
       <DocumentHead title="Schedule live class — Tutor" />
-      <main className="mx-auto max-w-2xl px-5 py-12">
+      <main className="mx-auto max-w-2xl px-6 py-12">
         <Link href="/tutor" className="text-sm text-fern hover:underline">
           ← Tutor desk
         </Link>

@@ -1,3 +1,4 @@
+import { CardSkeletons, FeedbackCard, PageHero } from '../../components/PageFeedback'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import DocumentHead from '../../components/DocumentHead'
@@ -14,37 +15,37 @@ export default function MyCertificatesPage() {
 
 function MyCerts() {
   const [certs, setCerts] = useState<Certificate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [attempt, setAttempt] = useState(0)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    let active = true
+    setLoading(true)
+    setError('')
     api
       .myCertificates()
-      .then(setCerts)
-      .catch((e: Error) => setError(e.message))
-  }, [])
+      .then(data => { if (active) setCerts(data) })
+      .catch((e: Error) => { if (active) setError(e.message) })
+      .finally(() => { if (active) setLoading(false) })
+    return () => { active = false }
+  }, [attempt])
 
   return (
     <>
       <DocumentHead title="My certificates — EchoFreelance Tech School" />
-      <main className="mx-auto max-w-3xl px-5 py-12">
-        <h1 className="font-display text-4xl text-moss">Certificates</h1>
-        <p className="ef-muted mt-2">
-          Finish every lesson in a course to earn a verifiable completion certificate.
-        </p>
-        {error && <p className="mt-6 text-red-400">{error}</p>}
-        {certs.length === 0 && !error && (
-          <div className="ef-panel mt-8">
-            <p className="text-ink/80">No certificates yet.</p>
-            <Link href="/courses" className="mt-2 inline-block text-sm text-fern hover:underline">
-              Continue learning →
-            </Link>
-          </div>
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        <PageHero eyebrow="Progress worth keeping" title="Certificates" description="A record of the skills you’ve built and the courses you’ve completed." />
+        {loading && <CardSkeletons label="Loading certificates" />}
+        {error && <FeedbackCard error title="Unable to load certificates" description="We couldn’t connect right now. Please check your connection and try again." retry={() => setAttempt(a => a + 1)} />}
+        {certs.length === 0 && !loading && !error && (
+          <FeedbackCard title="Your next milestone is ahead" description="Complete every lesson in a course to earn your certificate." action={{ href: '/courses', label: 'Explore courses' }} />
         )}
-        <ul className="mt-8 space-y-4">
+        {!loading && !error && <ul className="mt-8 grid gap-6 md:grid-cols-2">
           {certs.map((c) => (
             <li key={c.id} className="ef-panel !p-4">
               <p className="font-display text-xl text-ink">{c.course.title}</p>
-              <p className="mt-1 text-sm text-ink/55">
+              <p className="mt-1 text-sm ef-muted">
                 {c.course.category || 'Course'} · Issued{' '}
                 {new Date(c.issuedAt).toLocaleDateString()}
               </p>
@@ -57,7 +58,7 @@ function MyCerts() {
               </Link>
             </li>
           ))}
-        </ul>
+        </ul>}
       </main>
     </>
   )

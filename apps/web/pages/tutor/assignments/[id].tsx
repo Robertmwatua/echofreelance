@@ -57,7 +57,7 @@ function GradePanel() {
   return (
     <>
       <DocumentHead title="Grade submissions — Tutor" />
-      <main className="mx-auto max-w-3xl px-5 py-12">
+      <main className="mx-auto max-w-3xl px-6 py-12">
         <Link href="/tutor" className="text-sm text-fern hover:underline">
           ← Tutor desk
         </Link>
@@ -68,7 +68,7 @@ function GradePanel() {
             <li key={row.id} className="ef-panel">
               <p className="font-medium">{row.user.name || row.user.email}</p>
               <p className="ef-muted mt-2 whitespace-pre-wrap text-sm">{row.content}</p>
-              <p className="mt-2 text-xs text-ink/50">
+              <p className="mt-2 text-xs ef-muted">
                 {row.status}
                 {row.grade != null ? ` · ${row.grade}` : ''}
               </p>

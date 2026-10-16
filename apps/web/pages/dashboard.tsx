@@ -9,5 +9,5 @@ export default function DashboardRedirect() {
     const user = getStoredUser()
     router.replace(user ? homeForRole(user.role) : '/login')
   }, [router])
-  return <main className="px-5 py-16 text-ink/60">Redirecting…</main>
+  return <main className="px-5 py-16 ef-muted">Redirecting…</main>
 }

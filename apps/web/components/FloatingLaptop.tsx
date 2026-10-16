@@ -16,7 +16,7 @@ export function FloatingLaptop() {
             className="relative aspect-[16/10] p-4"
             style={{
               backgroundImage:
-                'linear-gradient(160deg, rgba(15,23,42,0.92), rgba(15,23,42,0.7)), url(/wallpapers/code.jpg)',
+                'linear-gradient(160deg, rgba(15,23,42,0.92), rgba(15,23,42,0.7))',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}

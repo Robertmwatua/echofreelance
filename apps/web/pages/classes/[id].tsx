@@ -1,3 +1,4 @@
+import { LiveDot } from '../../components/LiveDot'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
@@ -16,7 +17,7 @@ function StatusPill({ status }: { status: string }) {
   if (status === 'Live') {
     return (
       <span className="ef-pill-live">
-        <span className="ef-pulse-dot" aria-hidden />
+        <LiveDot />
         {classStatusLabel(status)}
       </span>
     )
@@ -108,7 +109,7 @@ export default function ClassDetailPage() {
   return (
     <>
       <DocumentHead title={item ? `${item.title} — Live class` : 'Live class'} />
-      <main className="mx-auto max-w-3xl px-5 py-12">
+      <main className="mx-auto max-w-3xl px-6 py-12">
         <Link href="/classes" className="text-sm text-fern hover:underline">
           ← Schedule
         </Link>
@@ -116,21 +117,17 @@ export default function ClassDetailPage() {
         {item && (
           <div className="ef-panel ef-rise mt-6 !p-0 overflow-hidden">
             <div
-              className="border-b border-line/25 px-6 py-6 sm:px-8"
-              style={{
-                background:
-                  'linear-gradient(135deg, rgba(45,212,191,0.12), transparent 55%), linear-gradient(225deg, rgba(125,211,252,0.08), transparent 40%)',
-              }}
+              className="border-b border-line px-6 py-6 sm:px-8"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <StatusPill status={item.status} />
-                <span className="text-xs text-ink/50">
+                <span className="text-xs ef-muted">
                   {formatWhen(item.startsAt)} – {formatWhen(item.endsAt)}
                 </span>
               </div>
               <h1 className="mt-3 font-display text-4xl text-moss">{item.title}</h1>
               {item.description && <p className="ef-muted mt-3 text-lg">{item.description}</p>}
-              <p className="mt-4 text-sm text-ink/60">
+              <p className="mt-4 text-sm ef-muted">
                 Course:{' '}
                 {item.course ? (
                   <Link href={`/courses/${item.course.id}`} className="text-fern hover:underline">
@@ -199,9 +196,9 @@ export default function ClassDetailPage() {
               {error && item && <p className="mt-4 text-red-400">{error}</p>}
 
               {item.canManage && (
-                <div className="mt-8 border-t border-line/30 pt-6">
+                <div className="mt-8 border-t border-line pt-6">
                   <h2 className="font-display text-xl text-moss">Recording library</h2>
-                  <p className="mt-1 text-sm text-ink/55">
+                  <p className="mt-1 text-sm ef-muted">
                     Paste a replay link after the session (YouTube, Drive, Loom…). Students see it
                     here and on the course page.
                   </p>
@@ -226,11 +223,11 @@ export default function ClassDetailPage() {
               )}
 
               {roster && (
-                <div className="mt-8 border-t border-line/30 pt-6">
+                <div className="mt-8 border-t border-line pt-6">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                       <h2 className="font-display text-xl text-moss">Attendance roster</h2>
-                      <p className="mt-1 text-sm text-ink/55">
+                      <p className="mt-1 text-sm ef-muted">
                         {roster.entered}/{roster.registered} entered the room
                       </p>
                     </div>
@@ -255,7 +252,7 @@ export default function ClassDetailPage() {
                       >
                         <div>
                           <p className="font-medium">{a.name || a.email}</p>
-                          {a.name && <p className="text-xs text-ink/45">{a.email}</p>}
+                          {a.name && <p className="text-xs ef-muted">{a.email}</p>}
                         </div>
                         <span
                           className={
@@ -269,7 +266,7 @@ export default function ClassDetailPage() {
                       </li>
                     ))}
                     {roster.attendees.length === 0 && (
-                      <li className="py-3 text-sm text-ink/50">No registrations yet.</li>
+                      <li className="py-3 text-sm ef-muted">No registrations yet.</li>
                     )}
                   </ul>
                 </div>

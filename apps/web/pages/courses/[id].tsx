@@ -27,6 +27,8 @@ export default function CourseDetailPage() {
     count: number
     reviews: CourseReview[]
   } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [attempt, setAttempt] = useState(0)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
@@ -55,8 +57,11 @@ export default function CourseDetailPage() {
   }
 
   useEffect(() => {
-    load().catch((e: Error) => setError(e.message))
-  }, [id])
+    if (!id) return
+    setLoading(true)
+    setError('')
+    load().catch((e: Error) => setError(e.message)).finally(() => setLoading(false))
+  }, [id, attempt])
 
   async function enroll() {
     if (!getStoredUser()) {
@@ -191,11 +196,12 @@ export default function CourseDetailPage() {
   return (
     <>
       <DocumentHead title={course ? `${course.title} — EchoFreelance Tech School` : 'Course'} />
-      <main className="mx-auto max-w-3xl px-5 py-12">
+      <main className="mx-auto max-w-3xl px-6 py-12">
         <Link href="/courses" className="text-sm text-fern hover:underline">
-          ← Catalog
+          ← Courses
         </Link>
-        {error && !course && <p className="mt-8 text-red-400">{error}</p>}
+        {loading && !course && <p role="status" className="ef-panel mt-8">Loading course…</p>}
+        {error && !course && <div className="ef-panel mt-8" role="alert"><p>{error}</p><button className="ef-btn-ghost mt-4" onClick={() => setAttempt(a => a + 1)}>Try again</button></div>}
         {course && (
           <>
             <div className="ef-panel mt-6">
@@ -203,12 +209,12 @@ export default function CourseDetailPage() {
                 {course.category} · {course.level} · {formatPrice(course.priceCents)}
                 {reviews && reviews.count > 0 ? ` · ${reviews.average}★ (${reviews.count})` : ''}
               </p>
-              <h1 className="mt-2 font-display text-4xl text-moss">{course.title}</h1>
+              <h1 className="mt-2 ef-title">{course.title}</h1>
               <p className="ef-muted mt-4 text-lg">{course.description}</p>
 
               {course.progress && (
                 <div className="mt-6">
-                  <div className="mb-2 flex justify-between text-sm text-ink/70">
+                  <div className="mb-2 flex justify-between text-sm ef-muted">
                     <span>Your progress</span>
                     <span>
                       {course.progress.completed}/{course.progress.total} · {course.progress.percent}%
@@ -221,7 +227,7 @@ export default function CourseDetailPage() {
               <div className="mt-8 flex flex-wrap gap-3">
                 {course.enrolled ? (
                   <Link href="/student" className="ef-btn">
-                    Student hub
+                    My learning
                   </Link>
                 ) : (
                   <button type="button" disabled={busy} onClick={enroll} className="ef-btn">
@@ -239,8 +245,8 @@ export default function CourseDetailPage() {
                   </Link>
                 )}
               </div>
-              {message && <p className="mt-4 text-moss">{message}</p>}
-              {error && course && <p className="mt-4 text-red-400">{error}</p>}
+              {message && <p role="status" className="mt-4 text-moss">{message}</p>}
+              {error && course && <p role="alert" className="mt-4 text-red-400">{error}</p>}
             </div>
 
             {announcements.length > 0 && (
@@ -251,7 +257,7 @@ export default function CourseDetailPage() {
                     <li key={a.id} className="ef-panel !p-4">
                       <p className="font-medium">{a.title}</p>
                       <p className="ef-muted mt-1 text-sm whitespace-pre-wrap">{a.body}</p>
-                      <p className="mt-2 text-xs text-ink/45">
+                      <p className="mt-2 text-xs ef-muted">
                         {a.author?.name || 'Tutor'} · {new Date(a.createdAt).toLocaleDateString()}
                       </p>
                     </li>
@@ -271,7 +277,7 @@ export default function CourseDetailPage() {
                     <li key={s.id} className="ef-session-card !py-4">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="text-xs uppercase tracking-wide text-ink/45">
+                          <p className="text-xs uppercase tracking-wide ef-muted">
                             {s.status} · {formatWhen(s.startsAt)}
                           </p>
                           <Link
@@ -280,7 +286,7 @@ export default function CourseDetailPage() {
                           >
                             {s.title}
                           </Link>
-                          <p className="mt-1 text-xs text-ink/45">
+                          <p className="mt-1 text-xs ef-muted">
                             {s.attendanceCount ?? 0} registered
                             {s.hasRecording ? ' · Recording available' : ''}
                           </p>
@@ -309,23 +315,15 @@ export default function CourseDetailPage() {
 
             <section className="mt-10">
               <h2 className="font-display text-2xl text-moss">Syllabus</h2>
+              {course.lessons?.length === 0 && <p className="ef-panel mt-4 ef-muted">The tutor hasn’t added lessons yet.</p>}
               <ul className="mt-4 space-y-4">
                 {(course.lessons || []).map((lesson) => (
-                  <li key={lesson.id} className="ef-panel !p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
+                  <li key={lesson.id}><details className="ef-lesson rounded-xl border border-line bg-panel">
+                    <summary><span className="font-semibold">{lesson.order + 1}. {lesson.title}</span><span className="ef-meta ml-3">{lesson.durationMinutes} min · {lesson.locked ? 'Locked' : lesson.completed ? 'Completed' : 'Not completed'}</span></summary>
+                    <div className="ef-lesson-body flex flex-col gap-6">
                       <div>
-                        <p className="font-medium">
-                          {lesson.order + 1}. {lesson.title}
-                          {lesson.locked ? (
-                            <span className="ml-2 text-xs uppercase text-ink/40">Locked</span>
-                          ) : null}
-                          {lesson.completed ? (
-                            <span className="ml-2 text-xs uppercase text-moss">Done</span>
-                          ) : null}
-                        </p>
-                        <p className="text-sm text-ink/55">{lesson.durationMinutes} min</p>
                         {!lesson.locked && lesson.content && (
-                          <p className="ef-muted mt-2 text-sm">{lesson.content}</p>
+                          <p className="ef-muted whitespace-pre-wrap text-base leading-8">{lesson.content}</p>
                         )}
                         {!lesson.locked && lesson.resources && lesson.resources.length > 0 && (
                           <ul className="mt-3 space-y-1 text-sm">
@@ -339,14 +337,14 @@ export default function CourseDetailPage() {
                                 >
                                   {r.title}
                                 </a>
-                                <span className="ml-2 text-xs uppercase text-ink/40">{r.kind}</span>
+                                <span className="ml-2 text-xs uppercase ef-muted">{r.kind}</span>
                               </li>
                             ))}
                           </ul>
                         )}
                       </div>
                       {!lesson.locked && course.enrolled && (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-wrap gap-3">
                           {!lesson.completed && (
                             <button
                               type="button"
@@ -367,7 +365,7 @@ export default function CourseDetailPage() {
                         </div>
                       )}
                     </div>
-                  </li>
+                    </details></li>
                 ))}
               </ul>
 
@@ -376,6 +374,7 @@ export default function CourseDetailPage() {
                   <h3 className="font-semibold">Lesson notes</h3>
                   <textarea
                     rows={5}
+                    aria-label="Private lesson notes"
                     className="ef-input"
                     value={noteBody}
                     onChange={(e) => setNoteBody(e.target.value)}
@@ -408,12 +407,12 @@ export default function CourseDetailPage() {
                   <li key={p.id} className="ef-panel !p-4">
                     <p className="text-sm font-medium text-ink">
                       {p.author.name || 'Member'}
-                      <span className="ml-2 text-xs font-normal uppercase text-ink/40">
+                      <span className="ml-2 text-xs font-normal uppercase ef-muted">
                         {p.author.role}
                       </span>
                     </p>
                     <p className="ef-muted mt-2 whitespace-pre-wrap text-sm">{p.body}</p>
-                    <p className="mt-2 text-xs text-ink/40">
+                    <p className="mt-2 text-xs ef-muted">
                       {new Date(p.createdAt).toLocaleString()}
                     </p>
                   </li>
@@ -425,6 +424,7 @@ export default function CourseDetailPage() {
                     required
                     minLength={2}
                     rows={3}
+                    aria-label="Comment"
                     className="ef-input"
                     value={discussBody}
                     onChange={(e) => setDiscussBody(e.target.value)}
@@ -447,7 +447,7 @@ export default function CourseDetailPage() {
                   <li key={a.id} className="ef-panel !p-4">
                     <p className="font-display text-xl text-ink">{a.title}</p>
                     <p className="ef-muted mt-2 text-sm whitespace-pre-wrap">{a.instructions}</p>
-                    <p className="mt-2 text-xs text-ink/50">
+                    <p className="mt-2 text-xs ef-muted">
                       Max {a.maxPoints} pts
                       {a.mySubmission
                         ? ` · ${a.mySubmission.status}${
@@ -483,6 +483,7 @@ export default function CourseDetailPage() {
                     required
                     minLength={5}
                     rows={4}
+                    aria-label="Assignment answer"
                     className="ef-input"
                     value={submitText}
                     onChange={(e) => setSubmitText(e.target.value)}
@@ -511,7 +512,7 @@ export default function CourseDetailPage() {
               )}
               <ul className="mt-4 space-y-3">
                 {(reviews?.reviews || []).map((r) => (
-                  <li key={r.id} className="border-t border-line/30 pt-3 first:border-t-0 first:pt-0">
+                  <li key={r.id} className="border-t border-line pt-3 first:border-t-0 first:pt-0">
                     <p className="text-sm font-medium">
                       {r.rating}/5 · {r.user.name || 'Student'}
                     </p>
@@ -523,7 +524,7 @@ export default function CourseDetailPage() {
                 <form onSubmit={submitReview} className="ef-panel mt-6 space-y-3">
                   <h3 className="font-semibold">Leave a review</h3>
                   <label className="block text-sm">
-                    <span className="mb-1 block text-ink/70">Rating</span>
+                    <span className="mb-1 block ef-muted">Rating</span>
                     <select
                       value={rating}
                       onChange={(e) => setRating(Number(e.target.value))}
@@ -538,6 +539,7 @@ export default function CourseDetailPage() {
                   </label>
                   <textarea
                     rows={3}
+                    aria-label="Comment"
                     className="ef-input"
                     value={reviewComment}
                     onChange={(e) => setReviewComment(e.target.value)}

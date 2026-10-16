@@ -43,6 +43,16 @@ export function SiteShell({ children }: { children: ReactNode }) {
   }, [router.pathname, refreshUnread])
 
   useEffect(() => {
+    const close = (event: MouseEvent | KeyboardEvent) => {
+      const account = document.querySelector<HTMLDetailsElement>('.ef-account')
+      if (account && (event instanceof KeyboardEvent ? event.key === 'Escape' : !account.contains(event.target as Node))) account.open = false
+    }
+    document.addEventListener('click', close)
+    document.addEventListener('keydown', close)
+    return () => { document.removeEventListener('click', close); document.removeEventListener('keydown', close) }
+  }, [])
+
+  useEffect(() => {
     if (!menuOpen) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMenuOpen(false)
@@ -96,6 +106,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
     router.push('/')
   }
 
+  const isActive = (href: string) => router.pathname === href || (href !== '/' && router.pathname.startsWith(`${href}/`))
+
   const role = user ? normalizeRole(user.role) : null
 
   const linkClass =
@@ -103,11 +115,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen font-sans text-ink">
-      <header className="sticky top-0 z-40 border-b border-line/30 bg-panel/75 backdrop-blur-2xl">
+      <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-md dark:border-slate-800/60 dark:bg-slate-950/70">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-3.5">
           <Link
             href="/"
-            className="font-display text-lg leading-tight tracking-tight text-moss transition hover:brightness-110 sm:text-xl md:text-2xl"
+            className="font-display text-base leading-tight tracking-tight text-moss transition hover:brightness-110 sm:text-lg md:text-xl"
           >
             {SITE_NAME}
           </Link>
@@ -146,42 +158,33 @@ export function SiteShell({ children }: { children: ReactNode }) {
               </span>
             </button>
 
-            <nav className="hidden items-center gap-x-3 text-sm font-medium text-ink/85 md:flex">
-              <Link href="/courses" className="hover:text-moss">
+            <nav className="hidden items-center gap-x-1 text-sm font-medium text-ink/85 md:flex">
+              <Link href="/courses" aria-current={isActive('/courses') ? 'page' : undefined} className="ef-nav-link">
                 Courses
               </Link>
-              <Link href="/classes" className="hover:text-moss">
+              <Link href="/classes" aria-current={isActive('/classes') ? 'page' : undefined} className="ef-nav-link">
                 Live classes
               </Link>
-              <Link href="/discussions" className="hover:text-moss">
-                Discussions
+              <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-nav-link">
+                Community
               </Link>
               {user ? (
                 <>
                   {role === 'Student' && (
-                    <Link href="/student" className="hover:text-moss">
-                      Hub
+                    <Link href="/student" aria-current={isActive('/student') ? 'page' : undefined} className="ef-nav-link">
+                      My learning
                     </Link>
                   )}
                   {role === 'Tutor' && (
-                    <Link href="/tutor" className="hover:text-moss">
+                    <Link href="/tutor" aria-current={isActive('/tutor') ? 'page' : undefined} className="ef-nav-link">
                       Tutor
                     </Link>
                   )}
                   {role === 'Admin' && (
-                    <Link href="/admin" className="hover:text-moss">
+                    <Link href="/admin" aria-current={isActive('/admin') ? 'page' : undefined} className="ef-nav-link">
                       Admin
                     </Link>
                   )}
-                  <Link href="/notes" className="hover:text-moss">
-                    Notes
-                  </Link>
-                  <Link href="/certificates/mine" className="hover:text-moss">
-                    Certs
-                  </Link>
-                  <Link href="/settings" className="hover:text-moss">
-                    Settings
-                  </Link>
                   <div className="relative">
                     <button
                       type="button"
@@ -192,7 +195,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                       Alerts{unread > 0 ? ` (${unread})` : ''}
                     </button>
                     {openNotifs && (
-                      <div className="absolute right-0 mt-2 w-80 max-w-[90vw] rounded-md border border-line/50 bg-panel p-3 shadow-lg">
+                      <div className="absolute right-0 mt-2 w-80 max-w-[90vw] rounded-md border border-line bg-panel p-3 shadow-lg">
                         <div className="mb-2 flex items-center justify-between gap-2">
                           <p className="text-xs font-semibold uppercase tracking-wide text-fern">
                             Notifications
@@ -208,7 +211,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                           )}
                         </div>
                         {notifs.length === 0 ? (
-                          <p className="text-sm text-ink/55">No notifications yet.</p>
+                          <p className="text-sm ef-muted">No notifications yet.</p>
                         ) : (
                           <ul className="max-h-72 space-y-2 overflow-y-auto">
                             {notifs.map((n) => (
@@ -221,7 +224,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                                   }`}
                                 >
                                   <span className="block font-medium text-ink">{n.title}</span>
-                                  <span className="mt-0.5 block text-xs text-ink/60">{n.body}</span>
+                                  <span className="mt-0.5 block text-xs ef-muted">{n.body}</span>
                                 </button>
                               </li>
                             ))}
@@ -230,7 +233,19 @@ export function SiteShell({ children }: { children: ReactNode }) {
                       </div>
                     )}
                   </div>
-                  <span className="hidden text-ink/55 lg:inline">
+                  <details className="ef-account relative" key={router.asPath} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node)) event.currentTarget.open = false }}>
+                    <summary className="ef-btn-ghost cursor-pointer">Account <span aria-hidden>⌄</span></summary>
+                    <div className="absolute right-0 mt-3 w-60 rounded-2xl border border-line bg-panel p-2 shadow-xl">
+                  <Link href="/notes" className="ef-account-action">
+                    Notes
+                  </Link>
+                  <Link href="/certificates/mine" className="ef-account-action">
+                    Certificates
+                  </Link>
+                  <Link href="/settings" className="ef-account-action">
+                    Settings
+                  </Link>
+                  <span className="block border-b border-line px-3 pb-3 ef-muted">
                     {user.name || user.email}
                     <span className="ml-1 text-[10px] uppercase tracking-wider text-fern">
                       {role}
@@ -239,14 +254,15 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   <button
                     type="button"
                     onClick={() => setTheme(toggleTheme())}
-                    className="ef-btn-ghost !px-2.5 !py-1.5 text-xs"
+                    className="ef-account-action"
                     aria-label="Toggle theme"
                   >
                     {theme === 'dark' ? 'Light' : 'Dark'}
                   </button>
-                  <button type="button" onClick={logout} className="ef-btn-ghost !py-1.5">
+                  <button type="button" onClick={logout} className="ef-account-action">
                     Log out
-                  </button>
+                  </button>                    </div>
+                  </details>
                 </>
               ) : (
                 <>
@@ -270,31 +286,31 @@ export function SiteShell({ children }: { children: ReactNode }) {
         </div>
 
         {menuOpen && (
-          <div className="border-t border-line/30 bg-panel/95 px-5 py-4 shadow-lg md:hidden">
+          <div className="border-t border-line bg-panel px-5 py-4 shadow-lg md:hidden">
             <nav className="ef-menu-panel flex flex-col gap-1 text-sm font-medium">
-              <Link href="/courses" className={linkClass} onClick={() => setMenuOpen(false)}>
+              <Link href="/courses" aria-current={isActive('/courses') ? 'page' : undefined} className={`${linkClass} ef-nav-link`} onClick={() => setMenuOpen(false)}>
                 Courses
               </Link>
-              <Link href="/classes" className={linkClass} onClick={() => setMenuOpen(false)}>
+              <Link href="/classes" aria-current={isActive('/classes') ? 'page' : undefined} className={`${linkClass} ef-nav-link`} onClick={() => setMenuOpen(false)}>
                 Live classes
               </Link>
-              <Link href="/discussions" className={linkClass} onClick={() => setMenuOpen(false)}>
-                Discussions
+              <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className={`${linkClass} ef-nav-link`} onClick={() => setMenuOpen(false)}>
+                Community
               </Link>
               {user ? (
                 <>
                   {role === 'Student' && (
-                    <Link href="/student" className={linkClass} onClick={() => setMenuOpen(false)}>
-                      Hub
+                    <Link href="/student" aria-current={isActive('/student') ? 'page' : undefined} className={`${linkClass} ef-nav-link`} onClick={() => setMenuOpen(false)}>
+                      My learning
                     </Link>
                   )}
                   {role === 'Tutor' && (
-                    <Link href="/tutor" className={linkClass} onClick={() => setMenuOpen(false)}>
+                    <Link href="/tutor" aria-current={isActive('/tutor') ? 'page' : undefined} className={`${linkClass} ef-nav-link`} onClick={() => setMenuOpen(false)}>
                       Tutor
                     </Link>
                   )}
                   {role === 'Admin' && (
-                    <Link href="/admin" className={linkClass} onClick={() => setMenuOpen(false)}>
+                    <Link href="/admin" aria-current={isActive('/admin') ? 'page' : undefined} className={`${linkClass} ef-nav-link`} onClick={() => setMenuOpen(false)}>
                       Admin
                     </Link>
                   )}
@@ -306,12 +322,12 @@ export function SiteShell({ children }: { children: ReactNode }) {
                     className={linkClass}
                     onClick={() => setMenuOpen(false)}
                   >
-                    Certs
+                    Certificates
                   </Link>
                   <Link href="/settings" className={linkClass} onClick={() => setMenuOpen(false)}>
                     Settings
                   </Link>
-                  <p className="px-3 pt-2 text-xs text-ink/50">
+                  <p className="px-3 pt-2 text-xs ef-muted">
                     {user.name || user.email} · {role}
                   </p>
                   <button
@@ -355,7 +371,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
         )}
 
         {openNotifs && (
-          <div className="border-t border-line/30 bg-panel px-5 py-3 md:hidden">
+          <div className="border-t border-line bg-panel px-5 py-3 md:hidden">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide text-fern">
                 Notifications
@@ -367,7 +383,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
               )}
             </div>
             {notifs.length === 0 ? (
-              <p className="text-sm text-ink/55">No notifications yet.</p>
+              <p className="text-sm ef-muted">No notifications yet.</p>
             ) : (
               <ul className="max-h-64 space-y-2 overflow-y-auto">
                 {notifs.map((n) => (
@@ -380,7 +396,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                       }`}
                     >
                       <span className="block font-medium">{n.title}</span>
-                      <span className="mt-0.5 block text-xs text-ink/60">{n.body}</span>
+                      <span className="mt-0.5 block text-xs ef-muted">{n.body}</span>
                     </button>
                   </li>
                 ))}
@@ -389,7 +405,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
           </div>
         )}
       </header>
-      <div className="ef-page-enter">{children}</div>
+      <a href="#main-content" className="ef-skip-link">Skip to content</a>
+      <div id="main-content" tabIndex={-1}>{children}</div>
     </div>
   )
 }

@@ -77,7 +77,7 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
   return (
     <>
       <DocumentHead title="Settings — EchoFreelance Tech School" />
-      <main className="mx-auto max-w-2xl px-5 py-12">
+      <main className="mx-auto max-w-2xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-fern">Account</p>
         <h1 className="mt-1 font-display text-4xl text-moss">Settings</h1>
         <p className="ef-muted mt-2">
@@ -112,7 +112,7 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
               onChange={(e) => setBio(e.target.value)}
             />
           </label>
-          <p className="text-sm text-ink/55">Email: {initial.email}</p>
+          <p className="text-sm ef-muted">Email: {initial.email}</p>
           <button type="submit" disabled={busy} className="ef-btn">
             Save profile
           </button>
@@ -158,7 +158,7 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
           </button>
         </form>
 
-        <p className="mt-8 text-sm text-ink/55">
+        <p className="mt-8 text-sm ef-muted">
           <Link href="/" className="text-fern hover:underline">
             ← Back to campus
           </Link>

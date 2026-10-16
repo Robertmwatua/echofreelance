@@ -41,7 +41,7 @@ export default function LiveRoomPage() {
               {session?.title || 'Live classroom'}
             </h1>
             {session && (
-              <p className="text-sm text-ink/65">
+              <p className="text-sm ef-muted">
                 {session.status} · secure in-browser classroom
               </p>
             )}
@@ -57,14 +57,14 @@ export default function LiveRoomPage() {
         {error && (
           <div className="ef-panel border-red-500/30">
             <p className="text-red-400">{error}</p>
-            <p className="mt-2 text-sm text-ink/65">
+            <p className="mt-2 text-sm ef-muted">
               Enroll in the course, register for the session, then enter again.
             </p>
           </div>
         )}
 
         {embedUrl && !error && (
-          <div className="overflow-hidden rounded-2xl border border-line/40 bg-black shadow-glow">
+          <div className="overflow-hidden rounded-2xl border border-line bg-black shadow-glow">
             <iframe
               title="EchoFreelance Tech School live classroom"
               src={embedUrl}

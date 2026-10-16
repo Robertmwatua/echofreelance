@@ -18,7 +18,7 @@ module.exports = {
         sans: ['"Manrope"', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
-        glow: '0 0 0 1px rgb(var(--c-line) / 0.8), 0 18px 50px rgb(0 0 0 / 0.35)',
+        glow: '0 1px 2px rgb(0 0 0 / 0.05)',
       },
     },
   },

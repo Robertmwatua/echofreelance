@@ -21,7 +21,7 @@ export default function CertificatePage() {
   return (
     <>
       <DocumentHead title={cert ? `Certificate ${cert.code}` : 'Certificate'} />
-      <main className="mx-auto max-w-2xl px-5 py-12">
+      <main className="mx-auto max-w-2xl px-6 py-12">
         <Link href="/certificates/mine" className="text-sm text-fern hover:underline">
           ← My certificates
         </Link>
@@ -38,10 +38,10 @@ export default function CertificatePage() {
             </p>
             <p className="ef-muted mt-6">has completed</p>
             <p className="mt-2 font-display text-2xl text-moss">{cert.course.title}</p>
-            <p className="mt-2 text-sm text-ink/55">
+            <p className="mt-2 text-sm ef-muted">
               {[cert.course.category, cert.course.level].filter(Boolean).join(' · ')}
             </p>
-            <p className="mt-8 text-sm text-ink/60">
+            <p className="mt-8 text-sm ef-muted">
               Issued {new Date(cert.issuedAt).toLocaleDateString()}
             </p>
             <p className="mt-2 font-mono text-xs text-fern">{cert.code}</p>

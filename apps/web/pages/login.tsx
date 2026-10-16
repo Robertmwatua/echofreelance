@@ -1,10 +1,10 @@
+import { TechPhoto } from '../components/TechPhoto'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FormEvent, useState } from 'react'
 import DocumentHead from '../components/DocumentHead'
 import { api, homeForRole, setAuth } from '../lib/api'
 
-const AUTH_WALL = '/wallpapers/learn.jpg'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,28 +33,16 @@ export default function LoginPage() {
     <>
       <DocumentHead title="Log in — EchoFreelance Tech School" />
       <main className="ef-auth-shell">
-        <div className="mx-auto grid min-h-[calc(100vh-4.25rem)] max-w-6xl lg:grid-cols-2">
-          <div
-            className="ef-auth-wall relative hidden min-h-[280px] lg:block"
-            style={{
-              backgroundImage: `linear-gradient(160deg, rgba(2,6,23,0.75), rgba(2,6,23,0.35)), url(${AUTH_WALL})`,
-            }}
-          >
-            <div className="absolute inset-0 flex flex-col justify-end p-10">
-              <p className="font-display text-4xl text-sand">Campus access</p>
-              <p className="mt-3 max-w-sm text-sand/75">
-                Sign in to classes, labs, and your learning hub.
-              </p>
-            </div>
-          </div>
+        <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:grid-cols-2 lg:py-12">
+          <TechPhoto variant="login" />
 
-          <div className="flex flex-col justify-center px-5 py-14 sm:px-10">
+          <div className="flex flex-col justify-center py-6 sm:px-6 lg:px-8">
             <p className="font-display text-3xl text-moss sm:text-4xl">EchoFreelance Tech School</p>
             <h1 className="mt-3 text-xl font-medium text-ink/85">Sign in</h1>
             <p className="ef-muted mt-2 text-sm">
               Access your courses, live classrooms, and learning hub.
             </p>
-            <form onSubmit={onSubmit} className="ef-panel mt-8 max-w-md space-y-4">
+            <form onSubmit={onSubmit} className="ef-panel mt-8 w-full space-y-4">
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Email</span>
                 <input
@@ -83,7 +71,7 @@ export default function LoginPage() {
                 {busy ? 'Signing in…' : 'Sign in'}
               </button>
             </form>
-            <p className="mt-6 text-sm text-ink/60">
+            <p className="mt-6 text-sm ef-muted">
               New student?{' '}
               <Link href="/register" className="text-fern hover:underline">
                 Create an account

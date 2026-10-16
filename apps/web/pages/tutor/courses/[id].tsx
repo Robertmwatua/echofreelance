@@ -215,21 +215,13 @@ function ManageCourse() {
   return (
     <>
       <DocumentHead title={course ? `Manage ${course.title}` : 'Manage course'} />
-      <main className="relative mx-auto max-w-3xl px-5 py-12">
-        <div
-          className="pointer-events-none absolute inset-x-0 -top-8 h-40 opacity-25"
-          style={{
-            background:
-              'radial-gradient(ellipse 60% 80% at 10% 0%, rgba(45,212,191,0.3), transparent)',
-          }}
-          aria-hidden
-        />
+      <main className="relative mx-auto max-w-3xl px-6 py-12">
         <div className="relative">
         <Link href="/tutor" className="ef-link text-sm">
           ← Tutor desk
         </Link>
         <h1 className="mt-4 font-display text-4xl text-moss sm:text-5xl">Manage course</h1>
-        {!course && !error && <p className="mt-6 text-ink/60">Loading…</p>}
+        {!course && !error && <p className="mt-6 ef-muted">Loading…</p>}
         {error && <p className="mt-6 text-red-400">{error}</p>}
         {message && <p className="mt-4 text-moss">{message}</p>}
 
@@ -318,12 +310,12 @@ function ManageCourse() {
                   : 'Loading roster…'}
               </p>
               {report && report.students.length === 0 && (
-                <p className="mt-4 text-sm text-ink/55">No students enrolled yet.</p>
+                <p className="mt-4 text-sm ef-muted">No students enrolled yet.</p>
               )}
               {report && report.students.length > 0 && (
                 <div className="mt-4 overflow-x-auto">
                   <table className="w-full min-w-[640px] text-left text-sm">
-                    <thead className="border-b border-line/40 text-xs uppercase tracking-wide text-ink/50">
+                    <thead className="border-b border-line text-xs uppercase tracking-wide ef-muted">
                       <tr>
                         <th className="py-2 pr-3 font-medium">Student</th>
                         <th className="py-2 pr-3 font-medium">Progress</th>
@@ -334,10 +326,10 @@ function ManageCourse() {
                     </thead>
                     <tbody>
                       {report.students.map((s) => (
-                        <tr key={s.id} className="border-b border-line/20">
+                        <tr key={s.id} className="border-b border-line">
                           <td className="py-3 pr-3">
                             <p className="font-medium">{s.name || 'Student'}</p>
-                            <p className="text-xs text-ink/45">{s.email}</p>
+                            <p className="text-xs ef-muted">{s.email}</p>
                           </td>
                           <td className="py-3 pr-3">
                             {s.progressPercent}% ({s.lessonsCompleted}/{s.lessonsTotal})
@@ -396,9 +388,9 @@ function ManageCourse() {
                     <p className="font-medium">
                       {lesson.order + 1}. {lesson.title}
                     </p>
-                    <p className="text-sm text-ink/55">{lesson.durationMinutes} min</p>
+                    <p className="text-sm ef-muted">{lesson.durationMinutes} min</p>
                     {(lesson.resources || []).length > 0 && (
-                      <ul className="mt-1 text-xs text-ink/50">
+                      <ul className="mt-1 text-xs ef-muted">
                         {lesson.resources!.map((r) => (
                           <li key={r.id}>
                             Resource: {r.title}
@@ -410,7 +402,7 @@ function ManageCourse() {
                 ))}
               </ul>
 
-              <form onSubmit={addLesson} className="mt-6 space-y-3 border-t border-line/30 pt-6">
+              <form onSubmit={addLesson} className="mt-6 space-y-3 border-t border-line pt-6">
                 <h3 className="font-semibold">Add lesson</h3>
                 <input
                   required
@@ -440,7 +432,7 @@ function ManageCourse() {
               </form>
 
               {(course.lessons || []).length > 0 && (
-                <form onSubmit={addResource} className="mt-6 space-y-3 border-t border-line/30 pt-6">
+                <form onSubmit={addResource} className="mt-6 space-y-3 border-t border-line pt-6">
                   <h3 className="font-semibold">Add lesson resource</h3>
                   <select
                     required

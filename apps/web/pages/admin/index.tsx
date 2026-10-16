@@ -62,7 +62,7 @@ function AdminConsole() {
   return (
     <>
       <DocumentHead title="Admin — EchoFreelance Tech School" />
-      <main className="mx-auto max-w-6xl px-5 py-12">
+      <main className="mx-auto max-w-6xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-fern">Admin</p>
         <h1 className="mt-1 font-display text-4xl text-moss">Campus control</h1>
         <p className="ef-muted mt-2">
@@ -89,7 +89,7 @@ function AdminConsole() {
               ['Upcoming classes', stats.upcomingClasses],
             ].map(([label, value]) => (
               <div key={label as string} className="ef-panel !p-4">
-                <dt className="text-xs uppercase tracking-wide text-ink/50">{label}</dt>
+                <dt className="text-xs uppercase tracking-wide ef-muted">{label}</dt>
                 <dd className="mt-1 font-display text-3xl text-moss">{value}</dd>
               </div>
             ))}
@@ -104,7 +104,7 @@ function AdminConsole() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="font-medium text-ink">{user.name || 'Unnamed'}</p>
-                    <p className="text-sm text-ink/60">
+                    <p className="text-sm ef-muted">
                       {user.email} · {user.role}
                     </p>
                   </div>
@@ -133,9 +133,9 @@ function AdminConsole() {
                   </div>
                 </div>
                 {resetId === user.id && (
-                  <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-line/30 pt-4">
+                  <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-line pt-4">
                     <label className="block flex-1 text-sm">
-                      <span className="mb-1 block text-ink/70">New password</span>
+                      <span className="mb-1 block ef-muted">New password</span>
                       <input
                         type="password"
                         minLength={8}

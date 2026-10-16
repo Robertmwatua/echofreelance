@@ -85,7 +85,7 @@ function TutorDesk() {
   return (
     <>
       <DocumentHead title="Tutor desk — EchoFreelance Tech School" />
-      <main className="mx-auto max-w-6xl px-5 py-12">
+      <main className="mx-auto max-w-6xl px-6 py-12">
         <p className="text-xs font-semibold uppercase tracking-wider text-fern">Tutor</p>
         <h1 className="mt-1 font-display text-4xl text-moss">Tutor desk</h1>
         <p className="ef-muted mt-2">
@@ -130,7 +130,7 @@ function TutorDesk() {
             </p>
           )}
           {courses.length === 0 ? (
-            <p className="mt-4 text-sm text-ink/65">
+            <p className="mt-4 text-sm ef-muted">
               You need a course first.{' '}
               <Link href="/tutor/courses/new" className="text-fern hover:underline">
                 Create one →
@@ -191,7 +191,7 @@ function TutorDesk() {
           <h2 className="font-display text-2xl text-moss">Your courses</h2>
           <ul className="mt-4 space-y-4">
             {courses.map((course) => (
-              <li key={course.id} className="border-t border-line/30 pt-4">
+              <li key={course.id} className="border-t border-line pt-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <Link
@@ -200,7 +200,7 @@ function TutorDesk() {
                     >
                       {course.title}
                     </Link>
-                    <p className="text-sm text-ink/55">
+                    <p className="text-sm ef-muted">
                       {course.category} · {course.published ? 'Published' : 'Draft'} ·{' '}
                       {course.enrollmentCount ?? 0} students · {course.lessonCount ?? 0} lessons
                     </p>
@@ -226,7 +226,7 @@ function TutorDesk() {
             ))}
           </ul>
           {courses.length === 0 && (
-            <p className="mt-4 text-ink/60">No courses yet — create your first program.</p>
+            <p className="mt-4 ef-muted">No courses yet — create your first program.</p>
           )}
         </section>
 
@@ -237,7 +237,7 @@ function TutorDesk() {
               <li key={item.id} className="ef-session-card !py-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-ink/45">
+                    <p className="text-xs uppercase tracking-wide ef-muted">
                       {item.status} · {formatWhen(item.startsAt)}
                     </p>
                     <Link
@@ -262,7 +262,7 @@ function TutorDesk() {
             ))}
           </ul>
           {classes.length === 0 && (
-            <p className="mt-4 text-ink/60">No sessions yet — start an instant meeting above.</p>
+            <p className="mt-4 ef-muted">No sessions yet — start an instant meeting above.</p>
           )}
         </section>
       </main>

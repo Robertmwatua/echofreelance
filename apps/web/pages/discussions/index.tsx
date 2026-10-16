@@ -1,3 +1,4 @@
+import { CardSkeletons, FeedbackCard, PageHero } from '../../components/PageFeedback'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import DocumentHead from '../../components/DocumentHead'
@@ -15,9 +16,13 @@ export default function DiscussionsPage() {
 function DiscussionsHome() {
   const [courses, setCourses] = useState<Course[]>([])
   const [previews, setPreviews] = useState<Record<string, DiscussionPost[]>>({})
+  const [loading, setLoading] = useState(true)
+  const [attempt, setAttempt] = useState(0)
   const [error, setError] = useState('')
 
   useEffect(() => {
+    setLoading(true)
+    setError('')
     api
       .myCourses()
       .then(async (list) => {
@@ -31,26 +36,20 @@ function DiscussionsHome() {
         setPreviews(Object.fromEntries(entries))
       })
       .catch((e: Error) => setError(e.message))
-  }, [])
+      .finally(() => setLoading(false))
+  }, [attempt])
 
   return (
     <>
-      <DocumentHead title="Discussions — EchoFreelance Tech School" />
-      <main className="mx-auto max-w-3xl px-5 py-12">
-        <h1 className="font-display text-4xl text-moss">Discussions</h1>
-        <p className="ef-muted mt-2">
-          Course threads for questions, ideas, and peer help.
-        </p>
-        {error && <p className="mt-6 text-red-400">{error}</p>}
-        {courses.length === 0 && !error && (
-          <div className="ef-panel mt-8">
-            <p>Enroll in a course to join its discussion.</p>
-            <Link href="/courses" className="ef-link mt-2 inline-block text-sm">
-              Browse catalog →
-            </Link>
-          </div>
+      <DocumentHead title="Community — EchoFreelance Tech School" />
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        <PageHero eyebrow="Better together" title="Community" description="Bring your questions, share what you’re building, and learn alongside your classmates." />
+        {loading && <CardSkeletons label="Loading community" />}
+        {error && <FeedbackCard error title="Unable to load your community" description="We couldn’t reach your course discussions. Try again in a moment." retry={() => setAttempt(a => a + 1)} />}
+        {!loading && courses.length === 0 && !error && (
+          <FeedbackCard title="Your community starts with a course" description="Enroll in a course to ask questions, exchange ideas, and meet your classmates." action={{ href: '/courses', label: 'Explore courses' }} />
         )}
-        <ul className="mt-8 space-y-6">
+        {!loading && !error && <ul className="mt-8 space-y-6">
           {courses.map((c) => (
             <li key={c.id} className="ef-panel !p-4">
               <Link href={`/courses/${c.id}#discussion`} className="font-display text-xl hover:text-moss">
@@ -62,7 +61,7 @@ function DiscussionsHome() {
               ) : (
                 <ul className="mt-3 space-y-2">
                   {previews[c.id].map((p) => (
-                    <li key={p.id} className="text-sm text-ink/75">
+                    <li key={p.id} className="text-sm ef-muted">
                       <span className="font-medium text-ink">{p.author.name || 'Member'}:</span>{' '}
                       {p.body.slice(0, 120)}
                       {p.body.length > 120 ? '…' : ''}
@@ -72,7 +71,7 @@ function DiscussionsHome() {
               )}
             </li>
           ))}
-        </ul>
+        </ul>}
       </main>
     </>
   )
