@@ -33,16 +33,16 @@ export default function LoginPage() {
     <>
       <DocumentHead title="Log in — EchoFreelance Tech School" />
       <main className="ef-auth-shell">
-        <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:grid-cols-2 lg:py-12">
+        <div className="ef-auth-layout mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 sm:py-10 lg:grid-cols-2 lg:gap-10 lg:py-12">
           <TechPhoto variant="login" />
 
-          <div className="flex flex-col justify-center py-6 sm:px-6 lg:px-8">
+          <div className="min-w-0 flex flex-col justify-center py-2 sm:px-4 lg:px-4">
             <p className="font-display text-3xl text-moss sm:text-4xl">EchoFreelance Tech School</p>
             <h1 className="mt-3 text-xl font-medium text-ink/85">Sign in</h1>
             <p className="ef-muted mt-2 text-sm">
               Access your courses, live classrooms, and learning hub.
             </p>
-            <form onSubmit={onSubmit} className="ef-panel mt-8 w-full space-y-4">
+            <form onSubmit={onSubmit} className="ef-panel ef-glass-form mt-6 w-full space-y-4">
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Email</span>
                 <input

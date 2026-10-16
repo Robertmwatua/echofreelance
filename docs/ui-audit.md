@@ -89,3 +89,7 @@ Removed stock-photo panels from the homepage, login, and registration. `componen
 ## Photo correction
 
 Restored photographic layouts per the user's clarification. `TechPhoto.tsx` replaces terminal panels on homepage/login/registration with locally stored Unsplash developer-workspace photos, dark tints, readable captions, and source links. `LabPreview.tsx` remains available but is not used in these layouts. TypeScript and whitespace checks passed; the homepage photo was visually verified in the browser.
+
+## Responsive photo and glass polish
+
+Removed visible image-credit captions; source records remain in `docs/photo-credits.md`. Shared photo layout now uses responsive aspect ratios, compact mobile auth banners, a tinted glass caption, and smaller mobile typography. Auth forms use translucent surfaces, responsive gutters, and minimum-width guards. Navigation switches to the mobile menu through tablet widths to prevent crowded desktop links. Homepage and registration were checked at 375px, and homepage width checked at 768px without horizontal overflow. TypeScript and whitespace checks passed.

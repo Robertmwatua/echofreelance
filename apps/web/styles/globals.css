@@ -106,3 +106,23 @@ p { overflow-wrap: anywhere; }
   outline-offset: 3px;
   box-shadow: 0 0 0 3px #0f172a;
 }
+
+/* Image proportions respond to the device rather than a fixed desktop height. */
+.ef-tech-photo-hero { aspect-ratio: 4 / 3; }
+.ef-tech-photo-auth { height: 210px; }
+.ef-glass-form { background: rgb(var(--c-panel) / 0.8); backdrop-filter: blur(16px); border-color: rgb(var(--c-line) / 0.8); }
+@media (min-width: 640px) {
+  .ef-tech-photo-hero { aspect-ratio: 5 / 4; }
+  .ef-tech-photo-auth { height: 280px; }
+}
+@media (min-width: 1024px) {
+  .ef-tech-photo-hero { aspect-ratio: 1 / 1; }
+  .ef-tech-photo-auth { height: auto; min-height: 580px; }
+}
+@media (max-width: 399px) {
+  .ef-micro-stats { gap: 0.5rem; }
+  .ef-micro-stats > div { padding-left: 0.5rem; padding-right: 0; }
+  .ef-micro-stats dt { font-size: 10px; }
+  .ef-micro-stats dd { font-size: 12px; overflow-wrap: anywhere; }
+  .ef-glass-form { padding: 1rem; }
+}

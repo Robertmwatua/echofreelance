@@ -34,16 +34,16 @@ export default function RegisterPage() {
     <>
       <DocumentHead title="Create account — EchoFreelance Tech School" />
       <main className="ef-auth-shell">
-        <div className="mx-auto grid max-w-6xl gap-8 px-6 py-10 lg:min-h-[calc(100vh-5rem)] lg:grid-cols-2 lg:py-12">
+        <div className="ef-auth-layout mx-auto grid max-w-6xl gap-6 px-4 py-6 sm:px-6 sm:py-10 lg:min-h-[calc(100vh-5rem)] lg:grid-cols-2 lg:gap-10 lg:py-12">
           <TechPhoto variant="register" />
 
-          <div className="flex flex-col justify-center py-6 sm:px-6 lg:px-8">
+          <div className="min-w-0 flex flex-col justify-center py-2 sm:px-4 lg:px-4">
             <p className="ef-eyebrow">A new chapter starts here</p>
             <h1 className="ef-title mt-4">Create your account.</h1>
             <p className="ef-muted mt-2 text-sm">
               Find your course, meet your tutors, and keep your learning in one place.
             </p>
-            <form onSubmit={onSubmit} className="ef-panel mt-8 w-full space-y-5">
+            <form onSubmit={onSubmit} className="ef-panel ef-glass-form mt-6 w-full space-y-5">
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Full name</span>
                 <input
