@@ -1,3 +1,4 @@
+import { ClassWorkspace } from '../../components/ClassWorkspace'
 import { LiveDot } from '../../components/LiveDot'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -91,6 +92,13 @@ export default function ClassDetailPage() {
     }
   }
 
+  async function deleteClass() {
+    if (!window.confirm('Delete this class, its attendance, notes, and reminders? This cannot be undone.')) return
+    setBusy(true)
+    try { await api.deleteClass(id); router.push('/tutor') }
+    catch (e) { setError(e instanceof Error ? e.message : 'Could not delete class'); setBusy(false) }
+  }
+
   async function markCompleted() {
     setBusy(true)
     setError('')
@@ -145,12 +153,12 @@ export default function ClassDetailPage() {
 
             <div className="px-6 py-6 sm:px-8">
               <div className="flex flex-wrap gap-3">
-                {!item.registered && !item.canManage && (
+                {!item.registered && !item.canManage && !['Completed', 'Cancelled'].includes(item.status) && new Date(item.endsAt) > new Date() && (
                   <button type="button" disabled={busy} onClick={register} className="ef-btn">
                     {busy ? 'Registering…' : 'Register for session'}
                   </button>
                 )}
-                {(item.canEnterRoom || item.registered || item.canManage) && (
+                {item.canEnterRoom && (
                   <Link href={`/classes/${item.id}/room`} className="ef-btn">
                     Enter live classroom
                   </Link>
@@ -192,6 +200,9 @@ export default function ClassDetailPage() {
                   </button>
                 )}
               </div>
+              {item.registered && !item.canEnterRoom && item.status === 'Scheduled' && <p className="ef-panel mt-4">You’re registered. The tutor will open the room when the session starts. <button className="ef-link" onClick={() => load().catch(e => setError(e.message))}>Refresh status</button></p>}
+              {item.canManage && <div className="mt-5 flex flex-wrap gap-3">{!['Completed', 'Cancelled'].includes(item.status) && <button disabled={busy} className="ef-btn-ghost" onClick={async () => { if (!window.confirm('Cancel this class?')) return; setBusy(true); try { await api.updateClass(id, { status: 'Cancelled' }); await load() } catch (e) { setError(e instanceof Error ? e.message : 'Could not cancel class') } finally { setBusy(false) } }}>Cancel class</button>}<button disabled={busy || item.status === 'Live'} onClick={deleteClass} className="ef-btn-ghost">Delete class</button>{item.status === 'Live' && <p className="ef-meta self-center">Mark completed or cancel before deleting.</p>}</div>}
+              {(item.enrolled || item.canManage) && <ClassWorkspace classId={item.id} canManage={Boolean(item.canManage)} canRemind={!['Completed', 'Cancelled'].includes(item.status) && new Date(item.endsAt) > new Date()} />}
               {message && <p className="mt-4 text-moss">{message}</p>}
               {error && item && <p className="mt-4 text-red-400">{error}</p>}
 

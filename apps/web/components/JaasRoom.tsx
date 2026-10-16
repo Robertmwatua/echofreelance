@@ -70,6 +70,7 @@ export function JaasRoom({ roomUrl, onClose }: { roomUrl: string; onClose: () =>
       })
       readyTimer = setTimeout(() => { if (active) setWarning('The classroom is taking longer than usual. Try the new-tab option or retry the video service.') }, 30000)
       meeting.addListener('videoConferenceJoined', () => { if (active) { clearTimeout(readyTimer); setState('Connected to the live classroom'); setWarning('') } })
+      meeting.addListener('videoConferenceLeft', () => { if (active) close.current() })
       meeting.addListener('readyToClose', () => { if (active) close.current() })
       meeting.addListener('cameraError', () => { if (active) setWarning('Camera unavailable. Allow camera access in your browser and close other apps using it. You can still join without video.') })
       meeting.addListener('micError', () => { if (active) setWarning('Microphone unavailable. Check browser permissions and close other apps using your microphone.') })

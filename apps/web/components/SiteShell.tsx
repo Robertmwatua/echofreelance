@@ -61,6 +61,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [menuOpen])
 
+  useEffect(() => {
+    const timer = setInterval(refreshUnread, 60000)
+    return () => clearInterval(timer)
+  }, [refreshUnread])
+
   async function openBell() {
     const next = !openNotifs
     setOpenNotifs(next)

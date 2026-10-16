@@ -34,3 +34,26 @@ For production acceptance use separate real tutor and enrolled-student accounts,
 Sources: https://developer.8x8.com/jaas/docs/iframe-api-integration/ ; https://developer.8x8.com/jaas/docs/api-keys-jwt/ ; https://developer.8x8.com/jaas/docs/jaas-browser-support/ ; https://jitsi.github.io/handbook/docs/dev-guide/dev-guide-iframe-events/
 
 Local environment during this audit did not contain JaaS credentials. Production API URL and actual two-party meeting verification are still required before calling the deployment operational.
+
+## Post-call management, shared notes, and reminders
+
+Built-in rooms now replace the video component with an explicit post-call panel on `videoConferenceLeft` or `readyToClose`. Participants can rejoin, open class notes/recordings, or return to the course; hosts can mark the class completed. This is separate from leaving a meeting and is not a provider-side forced hangup for all participants. External 8x8 fallback tabs remain on the provider's site after hangup and cannot be controlled by the app.
+
+Class details expose cancel, complete, and delete actions to the host/admin. Live classes must be completed or cancelled before deletion; deletion cascades to attendance, class notes, and reminders. The UI requires confirmation. Other tutors cannot manage someone else's class. Tutors share the school's backend JaaS credentials, but each participant receives a room-scoped token with host permissions based on ownership.
+
+Host/admin shared notes default to 24-hour availability in the UI, with 48 hours, seven days, custom local datetime, or no expiry. API reads omit expired notes immediately; the background delivery cycle also deletes expired rows. These are shared class notes; existing private lesson notes remain separate.
+
+Personal reminders are persisted per class/user. Save/update/remove controls and the saved reminder time are shown on class details. While the API is running, a minute-based process creates in-app notifications with deterministic IDs, recovers pending reminders after restart, and skips closed/expired classes. The navbar polls unread Alerts each minute. These are not email/browser push reminders, and the server must stay running for timely delivery.
+
+### Deployment requirement
+
+This release adds `ClassNote` and `ClassReminder` tables. Before serving the updated API run:
+
+```
+npm run prisma:generate --workspace=echofreelance-api
+npm run prisma:migrate --workspace=echofreelance-api
+```
+
+Build the API with the generated client and deploy frontend/API together. Do not run the development seed. Back up the production database first according to the existing deployment procedure. The migration is additive and does not delete existing data. It has not been applied to the client's production database by this agent.
+
+Verification: frontend production build, backend compilation, and eleven live-class regression tests passed. Tests cover note expiry, unauthorized management, live-delete rejection, and idempotent reminder delivery. Actual production JaaS media, external fallback behavior, and reminder delivery with the migrated production database still need a real tutor/student acceptance session.

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -15,6 +16,8 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard'
 import { ClassesService } from './classes.service'
 import {
+  ClassNoteDto,
+  ClassReminderDto,
   CreateVirtualClassDto,
   InstantMeetingDto,
   UpdateVirtualClassDto,
@@ -92,4 +95,49 @@ export class ClassesController {
   register(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.classesService.register(id, user!.id)
   }
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Tutor, Role.Admin)
+  @Delete(':id')
+  remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.classesService.remove(id, user)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/notes')
+  notes(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.classesService.notes(id, user)
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Tutor, Role.Admin)
+  @Post(':id/notes')
+  addNote(@Param('id') id: string, @CurrentUser() user: AuthUser, @Body() dto: ClassNoteDto) {
+    return this.classesService.addNote(id, user, dto)
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Tutor, Role.Admin)
+  @Delete(':id/notes/:noteId')
+  removeNote(@Param('id') id: string, @Param('noteId') noteId: string, @CurrentUser() user: AuthUser) {
+    return this.classesService.removeNote(id, noteId, user)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/reminder')
+  getReminder(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.classesService.getReminder(id, user)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/reminder')
+  reminder(@Param('id') id: string, @CurrentUser() user: AuthUser, @Body() dto: ClassReminderDto) {
+    return this.classesService.setReminder(id, user, dto)
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/reminder')
+  removeReminder(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.classesService.removeReminder(id, user)
+  }
+
 }

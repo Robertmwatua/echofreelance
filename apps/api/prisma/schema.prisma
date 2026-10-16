@@ -62,6 +62,8 @@ model User {
   announcements         CourseAnnouncement[]   @relation("AnnouncementAuthor")
   discussionPosts       DiscussionPost[]
   lessonNotes           LessonNote[]
+  classNotes            ClassNote[]
+  classReminders        ClassReminder[]
 }
 
 model Course {
@@ -147,6 +149,8 @@ model VirtualClass {
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
   attendances  ClassAttendance[]
+  notes        ClassNote[]
+  reminders    ClassReminder[]
 
   @@index([startsAt])
   @@index([courseId])
@@ -324,4 +328,28 @@ model LessonNote {
 
   @@unique([userId, lessonId])
   @@index([userId])
+}
+
+model ClassNote {
+  id String @id @default(cuid())
+  classId String
+  class VirtualClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  authorId String
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body String
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([classId, expiresAt])
+}
+
+model ClassReminder {
+  id String @id @default(cuid())
+  classId String
+  class VirtualClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  remindAt DateTime
+  deliveredAt DateTime?
+  @@unique([classId, userId])
+  @@index([deliveredAt, remindAt])
 }

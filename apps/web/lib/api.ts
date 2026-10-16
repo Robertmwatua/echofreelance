@@ -414,6 +414,13 @@ export const api = {
     }>,
   ) => request<VirtualClass>(`/classes/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   registerClass: (id: string) => request(`/classes/${id}/register`, { method: 'POST' }),
+  deleteClass: (id: string) => request(`/classes/${id}`, { method: 'DELETE' }),
+  classNotes: (id: string) => request<ClassNote[]>(`/classes/${id}/notes`),
+  addClassNote: (id: string, body: { body: string; expiresAt?: string }) => request(`/classes/${id}/notes`, { method: 'POST', body: JSON.stringify(body) }),
+  deleteClassNote: (id: string, noteId: string) => request(`/classes/${id}/notes/${noteId}`, { method: 'DELETE' }),
+  getClassReminder: (id: string) => request<{ remindAt: string; deliveredAt: string | null } | null>(`/classes/${id}/reminder`),
+  setClassReminder: (id: string, remindAt: string) => request(`/classes/${id}/reminder`, { method: 'POST', body: JSON.stringify({ remindAt }) }),
+  removeClassReminder: (id: string) => request(`/classes/${id}/reminder`, { method: 'DELETE' }),
   enterClass: (id: string, signal?: AbortSignal) => request<VirtualClass>(`/classes/${id}/enter`, { method: 'POST', signal }),
   liveClassroomStatus: () =>
     request<{
@@ -579,3 +586,5 @@ export const CATEGORIES = [
 ] as const
 
 export const CTF_CATEGORIES = ['Pwn', 'Web', 'Crypto', 'Forensics', 'Reverse', 'Misc'] as const
+
+export type ClassNote = { id: string; body: string; expiresAt: string | null; createdAt: string; author: { name: string | null } }

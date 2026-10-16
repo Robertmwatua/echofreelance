@@ -10,6 +10,8 @@ import { AuthUser } from '../../common/current-user.decorator'
 import { PrismaService } from '../../prisma/prisma.service'
 import { NotificationsService } from '../notifications/notifications.service'
 import {
+  ClassNoteDto,
+  ClassReminderDto,
   CreateVirtualClassDto,
   InstantMeetingDto,
   UpdateVirtualClassDto,
@@ -425,4 +427,62 @@ export class ClassesService {
       },
     })
   }
+  private async classAccess(id: string, user: AuthUser, manage = false) {
+    const detail = await this.findOne(id, user)
+    if (manage ? !detail.canManage : !(detail.canManage || detail.enrolled)) {
+      throw new ForbiddenException(manage ? 'Only the host or admin can manage this class' : 'Enroll in the course to view class materials')
+    }
+    return detail
+  }
+
+  async remove(id: string, user: AuthUser) {
+    const detail = await this.classAccess(id, user, true)
+    if (detail.status === 'Live') throw new BadRequestException('Complete or cancel the live class before deleting it')
+    await this.prisma.virtualClass.delete({ where: { id } })
+    return { ok: true }
+  }
+
+  async notes(id: string, user: AuthUser) {
+    await this.classAccess(id, user)
+    return this.prisma.classNote.findMany({
+      where: { classId: id, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+      include: { author: { select: { name: true } } }, orderBy: { createdAt: 'desc' },
+    })
+  }
+
+  async addNote(id: string, user: AuthUser, dto: ClassNoteDto) {
+    await this.classAccess(id, user, true)
+    const expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null
+    if (!dto.body.trim() || (expiresAt && expiresAt <= new Date())) throw new BadRequestException('Write a note and choose an expiry in the future')
+    return this.prisma.classNote.create({ data: { classId: id, authorId: user.id, body: dto.body.trim(), expiresAt } })
+  }
+
+  async removeNote(id: string, noteId: string, user: AuthUser) {
+    await this.classAccess(id, user, true)
+    await this.prisma.classNote.deleteMany({ where: { id: noteId, classId: id } })
+    return { ok: true }
+  }
+
+  async getReminder(id: string, user: AuthUser) {
+    await this.classAccess(id, user)
+    return this.prisma.classReminder.findUnique({ where: { classId_userId: { classId: id, userId: user.id } } })
+  }
+
+  async setReminder(id: string, user: AuthUser, dto: ClassReminderDto) {
+    const detail = await this.classAccess(id, user)
+    const remindAt = new Date(dto.remindAt)
+    if (['Completed', 'Cancelled'].includes(detail.status) || remindAt <= new Date() || remindAt >= new Date(detail.endsAt)) {
+      throw new BadRequestException('Choose a reminder in the future before this class ends')
+    }
+    return this.prisma.classReminder.upsert({
+      where: { classId_userId: { classId: id, userId: user.id } },
+      create: { classId: id, userId: user.id, remindAt }, update: { remindAt, deliveredAt: null },
+    })
+  }
+
+  async removeReminder(id: string, user: AuthUser) {
+    await this.prisma.classReminder.deleteMany({ where: { classId: id, userId: user.id } })
+    return { ok: true }
+  }
+
 }

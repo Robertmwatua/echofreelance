@@ -6,6 +6,7 @@ import {
   IsString,
   IsUrl,
   Max,
+  MaxLength,
   Min,
   MinLength,
 } from 'class-validator'
@@ -84,4 +85,20 @@ export class UpdateVirtualClassDto {
   @IsOptional()
   @IsIn(CLASS_STATUSES)
   status?: (typeof CLASS_STATUSES)[number]
+}
+
+export class ClassNoteDto {
+  @IsString()
+  @MinLength(1)
+  @MaxLength(10000)
+  body!: string
+
+  @IsOptional()
+  @IsDateString()
+  expiresAt?: string
+}
+
+export class ClassReminderDto {
+  @IsDateString()
+  remindAt!: string
 }

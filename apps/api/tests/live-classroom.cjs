@@ -89,3 +89,47 @@ test('registration alone does not let students start a scheduled class', async (
   detail.status = 'Live'
   assert.equal((await service.findOne('class-1', user)).canEnterRoom, true)
 })
+
+test('another tutor cannot delete classes or publish notes for a host', async () => {
+  const service = new ClassesService({}, {}, {})
+  service.findOne = async () => ({ canManage: false, enrolled: false })
+  const other = { ...user, role: 'Tutor', id: 'another-tutor' }
+  await assert.rejects(service.remove('class-1', other), /Only the host/)
+  await assert.rejects(service.addNote('class-1', other, { body: 'note' }), /Only the host/)
+  await assert.rejects(service.notes('class-1', user), /Enroll/)
+})
+
+test('expired notes and past reminders are rejected; live deletion requires completion', async () => {
+  const service = new ClassesService({}, {}, {})
+  service.findOne = async () => ({ canManage: true, status: 'Live', endsAt: new Date(Date.now() + 3600000) })
+  await assert.rejects(service.addNote('class-1', user, { body: 'note', expiresAt: new Date(0).toISOString() }), /future/)
+  await assert.rejects(service.setReminder('class-1', user, { remindAt: new Date(0).toISOString() }), /future/)
+  await assert.rejects(service.remove('class-1', user), /Complete or cancel/)
+})
+
+test('notes default to no expiry at API level and exclude expired records on read', async () => {
+  let query
+  const service = new ClassesService({ classNote: { findMany: async args => { query = args; return [] }, create: async args => args.data } }, {}, {})
+  service.findOne = async () => ({ canManage: true, enrolled: true })
+  const note = await service.addNote('class-1', user, { body: '  Shared recap  ' })
+  assert.equal(note.body, 'Shared recap')
+  assert.equal(note.expiresAt, null)
+  await service.notes('class-1', user)
+  assert.equal(query.where.classId, 'class-1')
+  assert.equal(query.where.OR[0].expiresAt, null)
+  assert.ok(query.where.OR[1].expiresAt.gt instanceof Date)
+})
+
+test('reminder delivery uses deterministic notification IDs and skips already delivered reminders', async () => {
+  const { NotificationsService } = require('../dist/modules/notifications/notifications.service')
+  const reminder = { id: 'r1', classId: 'class-1', userId: 'student', remindAt: new Date(0), deliveredAt: null, class: { title: 'Lab', status: 'Scheduled', endsAt: new Date(Date.now() + 3600000) } }
+  const ids = []
+  const tx = {
+    classReminder: { findUnique: async () => reminder, updateMany: async args => { reminder.deliveredAt = args.data.deliveredAt } },
+    notification: { upsert: async args => { ids.push(args.where.id) } },
+  }
+  const service = new NotificationsService({ classReminder: { findMany: async () => [reminder] }, $transaction: async fn => fn(tx), classNote: { deleteMany: async () => ({ count: 0 }) } })
+  await service.deliverDue()
+  await service.deliverDue()
+  assert.deepEqual(ids, ['class-reminder-r1-0'])
+})
