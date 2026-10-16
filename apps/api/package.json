@@ -10,7 +10,8 @@
     "prisma:migrate": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:seed": "ts-node --transpile-only prisma/seed.ts",
-    "db:setup": "prisma migrate deploy && prisma db seed"
+    "db:setup": "prisma migrate deploy && prisma db seed",
+    "test:live": "npm run build && node --test tests/live-classroom.cjs"
   },
   "prisma": {
     "seed": "ts-node --transpile-only prisma/seed.ts"

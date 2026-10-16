@@ -68,7 +68,7 @@ export default function ClassDetailPage() {
     try {
       await api.registerClass(id)
       await load()
-      setMessage('Registered — you can enter the live classroom.')
+      setMessage('Registered. Join when the tutor starts the class.')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not register')
     } finally {

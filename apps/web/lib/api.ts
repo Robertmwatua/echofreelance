@@ -301,6 +301,15 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const data = text ? JSON.parse(text) : null
 
   if (!res.ok) {
+    if (res.status === 401 && token && !path.startsWith('/auth/') && typeof window !== 'undefined') {
+      // Ignore late responses from a previous login.
+      if (getToken() === token) {
+        clearAuth()
+        const next = `${window.location.pathname}${window.location.search}`
+        window.location.replace(`/login?reason=session-expired&next=${encodeURIComponent(next)}`)
+      }
+      throw new Error('Your session is no longer valid. Please sign in again.')
+    }
     const message = Array.isArray(data?.message)
       ? data.message.join(', ')
       : data?.message || res.statusText
@@ -405,7 +414,7 @@ export const api = {
     }>,
   ) => request<VirtualClass>(`/classes/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   registerClass: (id: string) => request(`/classes/${id}/register`, { method: 'POST' }),
-  enterClass: (id: string) => request<VirtualClass>(`/classes/${id}/enter`, { method: 'POST' }),
+  enterClass: (id: string, signal?: AbortSignal) => request<VirtualClass>(`/classes/${id}/enter`, { method: 'POST', signal }),
   liveClassroomStatus: () =>
     request<{
       configured: boolean

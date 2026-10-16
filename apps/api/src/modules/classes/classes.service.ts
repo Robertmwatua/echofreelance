@@ -137,7 +137,8 @@ export class ClassesService {
         )
       : false
 
-    const canJoin = isHost || isAdmin || registered
+    const active = !['Completed', 'Cancelled'].includes(virtualClass.status) && virtualClass.endsAt > new Date()
+    const canJoin = active && (isHost || isAdmin || (registered && enrolled && virtualClass.status === 'Live'))
     const canSeeRecording = canJoin || enrolled || isHost || isAdmin
 
     return {
@@ -167,6 +168,9 @@ export class ClassesService {
     }
     if (user.role !== Role.Admin && course.tutorId !== user.id) {
       throw new ForbiddenException('You can only schedule classes for your own courses')
+    }
+    if (!dto.meetingUrl && !this.jaas.isConfigured()) {
+      throw new ServiceUnavailableException('Live classroom is not configured. Ask the administrator to check JaaS settings.')
     }
     if (new Date(dto.endsAt) <= new Date(dto.startsAt)) {
       throw new BadRequestException('endsAt must be after startsAt')
@@ -294,14 +298,19 @@ export class ClassesService {
 
   async enterRoom(id: string, user: AuthUser) {
     const detail = await this.findOne(id, user)
-    if (!detail.canEnterRoom) {
-      throw new ForbiddenException('Register for this class to enter the live room')
+    if (['Completed', 'Cancelled'].includes(detail.status) || new Date(detail.endsAt) <= new Date()) {
+      throw new ForbiddenException('This class has ended or was cancelled')
     }
+    if (!detail.canEnterRoom) {
+      throw new ForbiddenException(detail.registered && detail.status === 'Scheduled'
+        ? 'The tutor has not started this class yet. Please try again when it is live.'
+        : 'Enroll in the course and register for this class to enter the live room')
+    }
+    const isModerator = this.jaas.isHostRole(user, detail.host?.id || '')
+    // Validate configuration and sign BEFORE modifying status or attendance.
+    const { roomUrl } = this.jaas.buildParticipantToken(user, id, isModerator)
     if (detail.status === 'Scheduled') {
-      await this.prisma.virtualClass.update({
-        where: { id },
-        data: { status: 'Live' },
-      })
+      await this.prisma.virtualClass.update({ where: { id }, data: { status: 'Live' } })
     }
 
     await this.prisma.classAttendance.upsert({
@@ -315,9 +324,6 @@ export class ClassesService {
         enteredAt: new Date(),
       },
     })
-
-    const isModerator = this.jaas.isHostRole(user, detail.host?.id || '')
-    const { roomUrl } = this.jaas.buildParticipantToken(user, id, isModerator)
 
     // Migrate legacy public Jitsi URLs to JaaS when entering
     if (!detail.meetingUrl?.includes('8x8.vc')) {
@@ -397,7 +403,7 @@ export class ClassesService {
       where: { id },
       include: { course: true },
     })
-    if (!virtualClass || virtualClass.status === 'Cancelled') {
+    if (!virtualClass || ['Cancelled', 'Completed'].includes(virtualClass.status) || virtualClass.endsAt <= new Date()) {
       throw new NotFoundException('Virtual class not found')
     }
 

@@ -42,6 +42,7 @@ export default function LoginPage() {
             <p className="ef-muted mt-2 text-sm">
               Access your courses, live classrooms, and learning hub.
             </p>
+            {router.query.reason === 'session-expired' && <p role="status" className="ef-panel mt-6 text-sm">Your session expired or is no longer valid. Sign in again to continue.</p>}
             <form onSubmit={onSubmit} className="ef-panel ef-glass-form mt-6 w-full space-y-4">
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Email</span>

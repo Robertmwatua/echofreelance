@@ -84,7 +84,11 @@ export class JaasService {
   private privateKeyObject(): crypto.KeyObject {
     const pem = this.privateKeyPem()
     try {
-      return crypto.createPrivateKey({ key: pem, format: 'pem' })
+      const key = crypto.createPrivateKey({ key: pem, format: 'pem' })
+      if (key.asymmetricKeyType !== 'rsa' || (key.asymmetricKeyDetails?.modulusLength || 0) < 2048) {
+        throw new Error('An RSA private key of at least 2048 bits is required')
+      }
+      return key
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'invalid key'
       // Try PKCS#1 ↔ PKCS#8 label swap once (common paste mismatch)
@@ -96,7 +100,9 @@ export class JaasService {
           : pem
               .replace('BEGIN PRIVATE KEY', 'BEGIN RSA PRIVATE KEY')
               .replace('END PRIVATE KEY', 'END RSA PRIVATE KEY')
-        return crypto.createPrivateKey({ key: swapped, format: 'pem' })
+        const key = crypto.createPrivateKey({ key: swapped, format: 'pem' })
+        if (key.asymmetricKeyType !== 'rsa' || (key.asymmetricKeyDetails?.modulusLength || 0) < 2048) throw new Error('Invalid RSA signing key')
+        return key
       } catch {
         throw new ServiceUnavailableException(
           `JAAS_PRIVATE_KEY could not be parsed as an RSA private key (${msg}). On Render, paste the full PEM private key (BEGIN/END), then Manual Deploy.`,
@@ -106,7 +112,7 @@ export class JaasService {
   }
 
   isConfigured() {
-    if (!this.appId() || !this.keyId() || !(process.env.JAAS_PRIVATE_KEY || '').trim()) {
+    if (!this.appId() || !this.keyId().startsWith(`${this.appId()}/`) || !(process.env.JAAS_PRIVATE_KEY || '').trim()) {
       return false
     }
     try {
@@ -132,7 +138,7 @@ export class JaasService {
   }
 
   buildParticipantToken(user: AuthUser, classId: string, isModerator: boolean) {
-    if (!this.appId() || !this.keyId()) {
+    if (!this.appId() || !this.keyId().startsWith(`${this.appId()}/`)) {
       throw new ServiceUnavailableException(
         'Live classroom is not configured. Set JAAS_APP_ID, JAAS_API_KEY_ID, and JAAS_PRIVATE_KEY on the API (Render).',
       )
@@ -150,8 +156,9 @@ export class JaasService {
       nbf: now - 10,
       exp: now + 60 * 60 * 3,
       sub: appId,
-      room: '*',
+      room,
       context: {
+        room: { regex: false },
         user: {
           id: user.id,
           name: user.name || user.email.split('@')[0] || 'Host',
