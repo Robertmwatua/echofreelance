@@ -1,14 +1,28 @@
 import { CardSkeletons, FeedbackCard, PageHero } from '../../components/PageFeedback'
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/router'
+import { Sparkle } from '../../components/Sparkle'
 import { CourseCard } from '../../components/CourseCard'
 import DocumentHead from '../../components/DocumentHead'
 import { api, CATEGORIES, Course } from '../../lib/api'
 
 export default function CoursesPage() {
+  const router = useRouter()
   const [courses, setCourses] = useState<Course[]>([])
   const [category, setCategory] = useState('')
   const [q, setQ] = useState('')
   const [search, setSearch] = useState('')
+
+  /* the hero search and the suggestion chips route here with query params */
+  useEffect(() => {
+    if (!router.isReady) return
+    const qp = typeof router.query.q === 'string' ? router.query.q : ''
+    const cp = typeof router.query.category === 'string' ? router.query.category : ''
+    setQ(qp)
+    setSearch(qp)
+    setCategory(cp)
+  }, [router.isReady, router.query.q, router.query.category])
+
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [attempt, setAttempt] = useState(0)
@@ -71,7 +85,22 @@ export default function CoursesPage() {
           )}
         </form>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="ef-path-banner mt-6">
+          <span className="ef-ask-icon shrink-0"><Sparkle /></span>
+          <p className="min-w-0 flex-1 text-sm">
+            <b className="font-semibold text-ink">Not sure where to start?</b>{' '}
+            <span className="ef-muted">Tell the study assistant what you want to do and it will point you at a track.</span>
+          </p>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('ef:ask-tutor', { detail: { q: 'Where should I start?' } }))}
+            className="ef-btn-ai !min-h-0 shrink-0 !px-4 !py-2 text-xs"
+          >
+            Ask the assistant
+          </button>
+        </div>
+
+        <div className="ef-filter-bar mt-6">
           <button
             type="button"
             onClick={() => setCategory('')}

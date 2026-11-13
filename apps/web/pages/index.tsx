@@ -1,4 +1,6 @@
 import { TechPhoto } from '../components/TechPhoto'
+import { AskAnything } from '../components/AskAnything'
+import { Sparkle } from '../components/Sparkle'
 import { LiveDot } from '../components/LiveDot'
 import { CardSkeletons, FeedbackCard } from '../components/PageFeedback'
 import Link from 'next/link';
@@ -32,17 +34,84 @@ export default function Home() {
     return <>
     <DocumentHead title={SITE_NAME}/>
     <main>
-      <section className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-8 sm:gap-10 sm:px-6 sm:py-16 lg:grid-cols-2 lg:gap-16">
-        <div><p className="ef-eyebrow">EchoFreelance Tech School</p><h1 className="mt-5 font-display text-4xl leading-[1.08] tracking-tight min-[400px]:text-5xl sm:text-6xl">Build skills.<br /><span className="text-moss">Open new doors.</span></h1><p className="ef-muted mt-6 max-w-md text-lg leading-relaxed">Learn cybersecurity, software, and cloud through practical courses and live classes with tutors.</p><div className="mt-8 flex flex-wrap gap-3"><Link href="/courses" className="ef-btn">Explore courses <span className="ml-3" aria-hidden>→</span></Link><Link href="/classes" className="ef-btn-ghost">View live classes</Link></div><dl className="ef-micro-stats mt-8 grid grid-cols-3 border-t border-line pt-6">
-          <div><dt className="ef-meta text-xs">Course rating</dt><dd className="mt-1 text-sm font-semibold sm:text-base">{rating ? `${rating} ★` : 'Student reviews'}</dd></div>
-          <div><dt className="ef-meta text-xs">Learn by doing</dt><dd className="mt-1 text-sm font-semibold sm:text-base">{!loading && !error ? `${courses.length} courses` : 'Interactive labs'}</dd></div>
-          <div><dt className="ef-meta text-xs">Live classroom</dt><dd className="mt-1 flex items-center gap-2 text-sm font-semibold sm:text-base">{live.length > 0 && <LiveDot />}{sessions === null ? 'Tutor-led sessions' : tutors ? `${tutors} tutors live` : 'View schedule'}</dd></div>
-        </dl></div>
-        <TechPhoto />
+      {/* ── hero ─────────────────────────────────────────── */}
+      <section className="relative isolate overflow-hidden">
+        <div className="ef-orb" aria-hidden />
+        <div className="ef-grid" aria-hidden />
+        <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 sm:py-28 lg:grid-cols-2 lg:gap-16 lg:py-32">
+          <div>
+            <p className="ef-ai-pill"><Sparkle /> AI-powered learning</p>
+            <h1 className="mt-7 font-display text-[2.75rem] font-semibold leading-[1.02] tracking-[-0.03em] min-[400px]:text-5xl sm:text-6xl lg:text-[4.25rem]">
+              Find your<br /><span className="ef-gradient-text">direction</span> in tech.
+            </h1>
+            <p className="ef-muted mt-7 max-w-md text-lg leading-relaxed">
+              Cybersecurity, software and cloud — practical courses and live classes with tutors who answer.
+            </p>
+            <div className="mt-9 max-w-xl"><AskAnything /></div>
+
+            <dl className="ef-stat-strip mt-10">
+              <div>
+                <dt>Course rating</dt>
+                <dd>{rating ? <>{rating} <span className="text-moss" aria-hidden>★</span></> : 'Student reviews'}</dd>
+              </div>
+              <div>
+                <dt>Learn by doing</dt>
+                <dd>{!loading && !error ? `${courses.length} course${courses.length === 1 ? '' : 's'}` : 'Interactive labs'}</dd>
+              </div>
+              <div>
+                <dt>Live classroom</dt>
+                <dd className="flex items-center gap-2">
+                  {live.length > 0 && <LiveDot />}
+                  {sessions === null ? 'Tutor-led sessions' : tutors ? `${tutors} tutor${tutors === 1 ? '' : 's'} live` : 'View schedule'}
+                </dd>
+              </div>
+            </dl>
+          </div>
+          <TechPhoto />
+        </div>
       </section>
-      <section className="border-y border-line bg-panel"><div className="mx-auto grid max-w-6xl gap-6 px-6 py-8 sm:grid-cols-3">{[['01', 'Learn by doing', 'Put new skills to work with assignments and challenges.'], ['02', 'Meet your tutors', 'Ask questions and learn together in live classes.'], ['03', 'See your progress', 'Track lessons and collect course certificates.']].map(([n, title, body]) => <div key={n}><span className="ef-eyebrow">{n}</span><h2 className="mt-2 font-display text-xl">{title}</h2><p className="ef-muted mt-2 text-sm leading-relaxed">{body}</p></div>)}</div></section>
-      <section className="mx-auto max-w-6xl px-6 py-14 sm:py-20"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="ef-eyebrow">Find your starting point</p><h2 className="mt-3 font-display text-3xl tracking-tight">Explore courses</h2></div><Link href="/courses" className="ef-link text-sm">View all courses →</Link></div>
-      {loading ? <CardSkeletons label="Loading courses" /> : error ? <FeedbackCard error title="Unable to load courses" description="We couldn’t connect to the catalog. Please try again in a moment." retry={() => setAttempt(a => a + 1)} /> : courses.length ? <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{courses.slice(0, 3).map(course => <li key={course.id}><CourseCard course={course} /></li>)}</ul> : <div className="ef-panel mt-8"><h3 className="font-display text-xl">New courses are on the way</h3><p className="ef-muted mt-2">Create an account to get ready for your first course.</p><Link href="/register" className="ef-btn mt-5">Create account</Link></div>}
+
+      {/* ── what you get ─────────────────────────────────── */}
+      <section className="mx-auto max-w-6xl px-6 pb-4">
+        <ul className="grid gap-5 sm:grid-cols-3">
+          {[
+            ['01', 'Learn by doing', 'Put new skills to work with assignments and challenges.'],
+            ['02', 'Meet your tutors', 'Ask questions and learn together in live classes.'],
+            ['03', 'See your progress', 'Track lessons and collect course certificates.'],
+          ].map(([n, title, body]) => (
+            <li key={n} className="ef-feature-card">
+              <span className="ef-feature-num" aria-hidden>{n}</span>
+              <h2 className="mt-5 font-display text-xl tracking-tight">{title}</h2>
+              <p className="ef-muted mt-2.5 text-sm leading-relaxed">{body}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* ── catalogue ────────────────────────────────────── */}
+      <section className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="ef-eyebrow">Find your starting point</p>
+            <h2 className="mt-3 font-display text-3xl tracking-tight sm:text-4xl">Explore courses</h2>
+          </div>
+          <Link href="/courses" className="ef-link text-sm">View all courses →</Link>
+        </div>
+        {loading ? (
+          <CardSkeletons label="Loading courses" />
+        ) : error ? (
+          <FeedbackCard error title="Unable to load courses" description="We couldn’t connect to the catalog. Please try again in a moment." retry={() => setAttempt(a => a + 1)} />
+        ) : courses.length ? (
+          <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {courses.slice(0, 3).map(course => <li key={course.id}><CourseCard course={course} /></li>)}
+          </ul>
+        ) : (
+          <div className="ef-panel mt-10 text-center">
+            <h3 className="font-display text-2xl tracking-tight">New courses are on the way</h3>
+            <p className="ef-muted mx-auto mt-3 max-w-sm">Create an account and you’ll be ready the moment the first one opens.</p>
+            <Link href="/register" className="ef-btn mt-7">Create account</Link>
+          </div>
+        )}
       </section>
     </main>
   </>;

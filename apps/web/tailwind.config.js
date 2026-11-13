@@ -14,8 +14,9 @@ module.exports = {
         line: 'rgb(var(--c-line) / <alpha-value>)',
       },
       fontFamily: {
-        display: ['"Fraunces"', 'Georgia', 'serif'],
-        sans: ['"Manrope"', 'system-ui', 'sans-serif'],
+        display: ['"Inter"', 'system-ui', 'sans-serif'],
+        sans: ['"Inter"', 'system-ui', 'sans-serif'],
+        accent: ['"Space Grotesk"', 'ui-monospace', 'monospace'],
       },
       boxShadow: {
         glow: '0 1px 2px rgb(0 0 0 / 0.05)',

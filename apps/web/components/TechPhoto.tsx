@@ -8,7 +8,7 @@ export function TechPhoto({ variant = 'hero' }: TechPhotoProps) {
         src={variant === 'login' ? '/wallpapers/coding-workspace.jpg' : '/wallpapers/developer-workspace.jpg'}
         alt={variant === 'login' ? 'Code editor displayed on a monitor in a dark developer workspace' : 'Dual-monitor developer workspace with code on screen and cool blue lighting'}
         className="absolute inset-0 h-full w-full object-cover object-[center_40%]"
-        fetchPriority={hero ? 'high' : undefined}
+        fetchpriority={hero ? "high" : undefined}
         width={variant === 'login' ? 1400 : 1600}
         height={variant === 'login' ? 933 : 2187}
       />
