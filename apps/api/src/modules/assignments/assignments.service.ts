@@ -1,4 +1,6 @@
+import { requireCourseAccess } from '../../common/course-access'
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -21,10 +23,11 @@ export class AssignmentsService {
   ) {}
 
   async listForCourse(courseId: string, user?: AuthUser | null) {
+    const { canManage } = await requireCourseAccess(this.prisma, courseId, user)
     const assignments = await this.prisma.assignment.findMany({
       where: {
         courseId,
-        ...(user?.role === Role.Tutor || user?.role === Role.Admin
+        ...(canManage
           ? {}
           : { published: true }),
       },
@@ -137,6 +140,7 @@ export class AssignmentsService {
     ) {
       throw new ForbiddenException('Only the tutor can grade')
     }
+    if (dto.grade > submission.assignment.maxPoints) throw new BadRequestException('Grade cannot exceed the assignment maximum')
     const graded = await this.prisma.assignmentSubmission.update({
       where: { id: submissionId },
       data: {

@@ -4,6 +4,10 @@ import * as bcrypt from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
+  const host = new URL(process.env.DATABASE_URL || '').hostname
+  if (process.env.NODE_ENV === 'production' || !['localhost', '127.0.0.1', 'db', '::1', '[::1]'].includes(host)) {
+    throw new Error('Development seed is destructive and is blocked for production or remote databases')
+  }
   await prisma.discussionPost.deleteMany()
   await prisma.lessonNote.deleteMany()
   await prisma.challengeSolve.deleteMany()

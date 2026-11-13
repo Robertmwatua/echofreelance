@@ -18,6 +18,7 @@ function AdminConsole() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [resetId, setResetId] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
   const [newPassword, setNewPassword] = useState('')
 
   async function load() {
@@ -31,6 +32,9 @@ function AdminConsole() {
   }, [])
 
   async function changeRole(id: string, role: Role) {
+    const target = users.find(u => u.id === id)
+    if (busy || !window.confirm(`Change ${target?.email || 'this user'} to ${role}? ${role === 'Admin' ? 'This grants school-wide administrative access.' : 'Their access permissions will change immediately.'}`)) return
+    setBusy(true)
     setMessage('')
     setError('')
     try {
@@ -39,7 +43,7 @@ function AdminConsole() {
       setMessage(`Role set to ${role}`)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Role update failed')
-    }
+    } finally { setBusy(false) }
   }
 
   async function resetPassword(id: string) {
@@ -47,6 +51,9 @@ function AdminConsole() {
       setError('Password must be at least 8 characters')
       return
     }
+    const target = users.find(u => u.id === id)
+    if (busy || !window.confirm(`Reset the password for ${target?.email || 'this user'}? Existing login sessions will be revoked.`)) return
+    setBusy(true)
     setError('')
     setMessage('')
     try {
@@ -56,7 +63,7 @@ function AdminConsole() {
       setMessage('Password reset for user.')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Reset failed')
-    }
+    } finally { setBusy(false) }
   }
 
   return (
@@ -113,7 +120,7 @@ function AdminConsole() {
                       <button
                         key={role}
                         type="button"
-                        disabled={user.role === role}
+                        disabled={busy || user.role === role}
                         onClick={() => changeRole(user.id, role)}
                         className="ef-btn-ghost !px-3 !py-1.5 text-xs disabled:opacity-40"
                       >
@@ -144,7 +151,7 @@ function AdminConsole() {
                         onChange={(e) => setNewPassword(e.target.value)}
                       />
                     </label>
-                    <button type="button" className="ef-btn" onClick={() => resetPassword(user.id)}>
+                    <button type="button" className="ef-btn" disabled={busy} onClick={() => resetPassword(user.id)}>
                       Save
                     </button>
                   </div>

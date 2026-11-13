@@ -100,6 +100,7 @@ export default function ClassDetailPage() {
   }
 
   async function markCompleted() {
+    if (!window.confirm('Mark this class completed? New joins and reminders will stop. This does not disconnect participants already in the call.')) return
     setBusy(true)
     setError('')
     setMessage('')

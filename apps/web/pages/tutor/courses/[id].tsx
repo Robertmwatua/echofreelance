@@ -70,6 +70,7 @@ function ManageCourse() {
 
   async function saveCourse(e: FormEvent) {
     e.preventDefault()
+    if (course && published !== course.published && !window.confirm(published ? 'Publish this course? It will appear in the public catalog.' : 'Unpublish this course? It will disappear from the catalog and students will no longer be able to open it.')) return
     setBusy(true)
     setError('')
     setMessage('')
@@ -179,6 +180,7 @@ function ManageCourse() {
 
   async function sendNotify(e: FormEvent) {
     e.preventDefault()
+    if (!window.confirm('Send this notification to all enrolled students?')) return
     setBusy(true)
     setError('')
     setMessage('')

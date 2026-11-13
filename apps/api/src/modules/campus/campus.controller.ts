@@ -31,9 +31,10 @@ export class CampusController {
     return this.campusService.upsertReview(courseId, user!, dto)
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get('courses/:courseId/announcements')
-  announcements(@Param('courseId') courseId: string) {
-    return this.campusService.listAnnouncements(courseId)
+  announcements(@Param('courseId') courseId: string, @CurrentUser() user: AuthUser | null) {
+    return this.campusService.listAnnouncements(courseId, user)
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -46,9 +47,10 @@ export class CampusController {
     return this.campusService.createAnnouncement(user!, dto)
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get('lessons/:lessonId/resources')
-  resources(@Param('lessonId') lessonId: string) {
-    return this.campusService.listResources(lessonId)
+  resources(@Param('lessonId') lessonId: string, @CurrentUser() user: AuthUser | null) {
+    return this.campusService.listResources(lessonId, user)
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

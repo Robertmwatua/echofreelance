@@ -3,6 +3,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUrl,
   Min,
   MinLength,
 } from 'class-validator'
@@ -83,6 +84,6 @@ export class CreateLessonDto {
   durationMinutes?: number
 
   @IsOptional()
-  @IsString()
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   videoUrl?: string
 }

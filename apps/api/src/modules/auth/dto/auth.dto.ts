@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator'
+import { IsByteLength, IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator'
 
 const ROLES = ['Student', 'Tutor', 'Admin'] as const
 
@@ -8,6 +8,7 @@ export class RegisterDto {
 
   @IsString()
   @MinLength(8)
+  @IsByteLength(8, 72)
   password!: string
 
   @IsOptional()

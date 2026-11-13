@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -266,6 +267,10 @@ export class CoursesService {
     })
     if (!course) {
       throw new NotFoundException('Course not found')
+    }
+
+    if (course.priceCents > 0) {
+      throw new BadRequestException('Paid enrollment requires verified payment. Online checkout is not configured yet; contact the school.')
     }
 
     const existing = await this.prisma.enrollment.findUnique({

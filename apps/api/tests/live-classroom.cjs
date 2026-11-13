@@ -83,7 +83,7 @@ test('authorized host starts a scheduled room with moderator token', async () =>
 })
 
 test('registration alone does not let students start a scheduled class', async () => {
-  const detail = { id: 'class-1', courseId: 'course-1', hostId: 'host', status: 'Scheduled', endsAt: new Date(Date.now() + 3600000), course: {}, host: { id: 'host' }, _count: { attendances: 1 } }
+  const detail = { id: 'class-1', courseId: 'course-1', hostId: 'host', status: 'Scheduled', endsAt: new Date(Date.now() + 3600000), course: { published: true, tutorId: 'host' }, host: { id: 'host' }, _count: { attendances: 1 } }
   const service = new ClassesService({ virtualClass: { findUnique: async () => detail }, enrollment: { findUnique: async () => ({}) }, classAttendance: { findUnique: async () => ({}) } }, {}, {})
   assert.equal((await service.findOne('class-1', user)).canEnterRoom, false)
   detail.status = 'Live'

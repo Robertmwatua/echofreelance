@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsByteLength,
   IsOptional,
   IsString,
   MinLength,
@@ -28,12 +29,14 @@ export class ChangePasswordDto {
 
   @IsString()
   @MinLength(8)
+  @IsByteLength(8, 72)
   newPassword!: string
 }
 
 export class AdminResetPasswordDto {
   @IsString()
   @MinLength(8)
+  @IsByteLength(8, 72)
   newPassword!: string
 }
 
@@ -51,5 +54,6 @@ export class AdminUpdateUserDto {
   @ValidateIf((_, v) => v !== undefined && v !== '')
   @IsString()
   @MinLength(8)
+  @IsByteLength(8, 72)
   newPassword?: string
 }

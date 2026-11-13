@@ -11,7 +11,12 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:seed": "ts-node --transpile-only prisma/seed.ts",
     "db:setup": "prisma migrate deploy && prisma db seed",
-    "test:live": "npm run build && node --test tests/live-classroom.cjs"
+    "test:live": "npm run build && node --test tests/live-classroom.cjs",
+    "test:security": "npm run build && node --test tests/*.cjs",
+    "cf:build": "npm run prisma:generate && npm run cf:bundle && wrangler deploy --dry-run",
+    "cf:dev": "npm run prisma:generate && npm run cf:bundle && wrangler dev",
+    "cf:deploy": "npm run prisma:generate && npm run cf:bundle && wrangler deploy",
+    "cf:bundle": "npm run build && node scripts/build-worker.mjs"
   },
   "prisma": {
     "seed": "ts-node --transpile-only prisma/seed.ts"
@@ -23,24 +28,28 @@
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.0.0",
-    "@prisma/client": "^5.0.0",
+    "@prisma/adapter-pg": "^6.19.3",
+    "@prisma/client": "^6.19.3",
     "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.11.0",
     "@types/passport-jwt": "^4.0.1",
-    "@types/jsonwebtoken": "^9.0.5",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "jsonwebtoken": "^9.0.2",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "prisma": "^5.0.0",
+    "pg": "^8.23.1",
+    "prisma": "^6.19.3",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "typescript": "^5.2.0"
   },
   "devDependencies": {
     "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0"
+    "ts-node-dev": "^2.0.0",
+    "wrangler": "^4.151.3",
+    "esbuild": "^0.28.2"
   }
 }

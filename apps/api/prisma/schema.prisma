@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  engineType = "client"
 }
 
 datasource db {
@@ -40,6 +41,7 @@ model User {
   id                    String                 @id @default(cuid())
   email                 String                 @unique
   name                  String?
+  sessionVersion        Int                    @default(0)
   passwordHash          String
   role                  Role                   @default(Student)
   bio                   String?

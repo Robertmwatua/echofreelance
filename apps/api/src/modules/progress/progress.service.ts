@@ -29,7 +29,7 @@ export class ProgressService {
         userId_courseId: { userId: user.id, courseId: lesson.courseId },
       },
     })
-    if (!enrolled && user.role === Role.Student) {
+    if (!enrolled && lesson.course.tutorId !== user.id && user.role !== Role.Admin) {
       throw new ForbiddenException('Enroll in the course first')
     }
 

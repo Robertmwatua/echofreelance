@@ -1,3 +1,4 @@
+import { requireCourseAccess } from '../../common/course-access'
 import {
   ForbiddenException,
   Injectable,
@@ -12,10 +13,11 @@ import { CreateDiscussionDto, UpsertNoteDto } from './dto/community.dto'
 export class CommunityService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async listDiscussions(courseId: string) {
+  async listDiscussions(courseId: string, user?: AuthUser | null) {
     const course = await this.prisma.course.findUnique({ where: { id: courseId } })
     if (!course) throw new NotFoundException('Course not found')
 
+    await requireCourseAccess(this.prisma, courseId, user)
     return this.prisma.discussionPost.findMany({
       where: { courseId },
       include: {

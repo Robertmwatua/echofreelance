@@ -8,7 +8,8 @@ import { api, homeForRole, setAuth } from '../lib/api'
 
 export default function LoginPage() {
   const router = useRouter()
-  const next = typeof router.query.next === 'string' ? router.query.next : ''
+  const requestedNext = typeof router.query.next === 'string' ? router.query.next : ''
+  const next = requestedNext.startsWith('/') && !requestedNext.startsWith('//') && !requestedNext.includes('\\') ? requestedNext : ''
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -43,6 +44,7 @@ export default function LoginPage() {
               Access your courses, live classrooms, and learning hub.
             </p>
             {router.query.reason === 'session-expired' && <p role="status" className="ef-panel mt-6 text-sm">Your session expired or is no longer valid. Sign in again to continue.</p>}
+            {router.query.reason === 'password-updated' && <p role="status" className="ef-panel mt-6 text-sm">Password updated. Sign in with your new password.</p>}
             <form onSubmit={onSubmit} className="ef-panel ef-glass-form mt-6 w-full space-y-4">
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Email</span>

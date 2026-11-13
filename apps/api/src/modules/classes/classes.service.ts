@@ -119,6 +119,10 @@ export class ClassesService {
       throw new NotFoundException('Virtual class not found')
     }
 
+    if (!virtualClass.course.published && user?.id !== virtualClass.hostId && user?.id !== virtualClass.course.tutorId && user?.role !== Role.Admin) {
+      throw new NotFoundException('Virtual class not found')
+    }
+
     const enrolled = user
       ? Boolean(
           await this.prisma.enrollment.findUnique({
@@ -385,6 +389,10 @@ export class ClassesService {
     if (user.role !== Role.Admin && virtualClass.hostId !== user.id) {
       throw new ForbiddenException('Only the host or admin can update this class')
     }
+
+    const startsAt = dto.startsAt ? new Date(dto.startsAt) : virtualClass.startsAt
+    const endsAt = dto.endsAt ? new Date(dto.endsAt) : virtualClass.endsAt
+    if (endsAt <= startsAt) throw new BadRequestException('Class end must be after its start')
 
     return this.prisma.virtualClass.update({
       where: { id },

@@ -56,8 +56,9 @@ export class AuthService {
     email: string
     name: string | null
     role: string
+    sessionVersion: number
   }) {
-    const payload = { sub: user.id, email: user.email, role: user.role }
+    const payload = { sub: user.id, email: user.email, role: user.role, version: user.sessionVersion }
     return {
       accessToken: this.jwt.sign(payload),
       user: {

@@ -11,8 +11,8 @@ export class CommunityController {
 
   @UseGuards(OptionalJwtAuthGuard)
   @Get('courses/:courseId/discussions')
-  list(@Param('courseId') courseId: string) {
-    return this.community.listDiscussions(courseId)
+  list(@Param('courseId') courseId: string, @CurrentUser() user: AuthUser | null) {
+    return this.community.listDiscussions(courseId, user)
   }
 
   @UseGuards(JwtAuthGuard)

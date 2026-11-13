@@ -75,7 +75,7 @@ export class UsersService {
     }
     const ok = await bcrypt.compare(dto.currentPassword, user.passwordHash)
     if (!ok) {
-      throw new UnauthorizedException('Current password is incorrect')
+      throw new BadRequestException('Current password is incorrect')
     }
     if (dto.currentPassword === dto.newPassword) {
       throw new BadRequestException('New password must be different')
@@ -83,7 +83,7 @@ export class UsersService {
     const passwordHash = await bcrypt.hash(dto.newPassword, 10)
     await this.prisma.user.update({
       where: { id },
-      data: { passwordHash },
+      data: { passwordHash, sessionVersion: { increment: 1 } },
     })
     return { ok: true, message: 'Password updated' }
   }
@@ -96,7 +96,7 @@ export class UsersService {
     const passwordHash = await bcrypt.hash(dto.newPassword, 10)
     await this.prisma.user.update({
       where: { id },
-      data: { passwordHash },
+      data: { passwordHash, sessionVersion: { increment: 1 } },
     })
     return { ok: true, message: 'Password reset' }
   }
@@ -118,11 +118,13 @@ export class UsersService {
       name?: string
       email?: string
       passwordHash?: string
+      sessionVersion?: { increment: number }
     } = {}
     if (dto.name !== undefined) data.name = dto.name.trim()
     if (dto.email !== undefined) data.email = dto.email.toLowerCase()
     if (dto.newPassword) {
       data.passwordHash = await bcrypt.hash(dto.newPassword, 10)
+      data.sessionVersion = { increment: 1 }
     }
     return this.prisma.user.update({
       where: { id },

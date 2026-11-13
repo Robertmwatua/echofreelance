@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { FormEvent, useEffect, useState } from 'react'
 import DocumentHead from '../components/DocumentHead'
 import { RequireRole } from '../components/RequireRole'
-import { api, getStoredUser, setAuth, UserProfile } from '../lib/api'
+import { api, clearAuth, getStoredUser, setAuth, UserProfile } from '../lib/api'
 
 export default function SettingsPage() {
   return (
@@ -56,6 +56,7 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
       setError('New passwords do not match')
       return
     }
+    if (!window.confirm('Change your password? You and anyone using an existing session will need to sign in again.')) return
     setBusy(true)
     setError('')
     setMessage('')
@@ -64,7 +65,8 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
       setCurrentPassword('')
       setNewPassword('')
       setConfirm('')
-      setMessage(res.message || 'Password updated.')
+      clearAuth()
+      window.location.assign('/login?reason=password-updated')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not update password')
     } finally {

@@ -1,3 +1,4 @@
+import { requireCourseAccess } from '../../common/course-access'
 import {
   BadRequestException,
   ForbiddenException,
@@ -90,7 +91,10 @@ export class CampusService {
     })
   }
 
-  async listResources(lessonId: string) {
+  async listResources(lessonId: string, user?: AuthUser | null) {
+    const lesson = await this.prisma.lesson.findUnique({ where: { id: lessonId } })
+    if (!lesson) throw new NotFoundException('Lesson not found')
+    await requireCourseAccess(this.prisma, lesson.courseId, user)
     return this.prisma.lessonResource.findMany({
       where: { lessonId },
       orderBy: { createdAt: 'desc' },
@@ -127,7 +131,8 @@ export class CampusService {
     return announcement
   }
 
-  async listAnnouncements(courseId: string) {
+  async listAnnouncements(courseId: string, user?: AuthUser | null) {
+    await requireCourseAccess(this.prisma, courseId, user)
     return this.prisma.courseAnnouncement.findMany({
       where: { courseId },
       include: { author: { select: { id: true, name: true } } },
@@ -190,7 +195,7 @@ export class CampusService {
       where: { code },
       include: {
         course: { select: { id: true, title: true, category: true, level: true } },
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true } },
       },
     })
     if (!cert) throw new NotFoundException('Certificate not found')

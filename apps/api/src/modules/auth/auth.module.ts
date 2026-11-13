@@ -1,3 +1,5 @@
+import { AuthRateGuard } from './auth-rate.guard'
+import { jwtSecret } from './jwt-secret'
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { JwtModule } from '@nestjs/jwt'
@@ -13,13 +15,13 @@ import { JwtStrategy } from './jwt.strategy'
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('JWT_SECRET') || 'dev-secret',
+        secret: jwtSecret(config),
         signOptions: { expiresIn: '7d' },
       }),
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, AuthRateGuard],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

@@ -26,6 +26,7 @@ function GradePanel() {
   const router = useRouter()
   const id = typeof router.query.id === 'string' ? router.query.id : ''
   const [rows, setRows] = useState<SubRow[]>([])
+  const [busyId, setBusyId] = useState('')
   const [error, setError] = useState('')
   const [grades, setGrades] = useState<Record<string, string>>({})
   const [feedback, setFeedback] = useState<Record<string, string>>({})
@@ -43,6 +44,10 @@ function GradePanel() {
   async function gradeOne(e: FormEvent, submissionId: string) {
     e.preventDefault()
     const grade = Number(grades[submissionId])
+    if (busyId || !Number.isInteger(grade) || grades[submissionId] === undefined || grades[submissionId] === '') { setError('Enter a whole-number grade.'); return }
+    if (!window.confirm('Save this grade and notify the student? This replaces any existing grade.')) return
+    setBusyId(submissionId)
+    setError('')
     try {
       await api.gradeSubmission(submissionId, {
         grade,
@@ -51,7 +56,7 @@ function GradePanel() {
       await load()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Grade failed')
-    }
+    } finally { setBusyId('') }
   }
 
   return (
@@ -88,7 +93,7 @@ function GradePanel() {
                   value={feedback[row.id] ?? ''}
                   onChange={(e) => setFeedback((f) => ({ ...f, [row.id]: e.target.value }))}
                 />
-                <button type="submit" className="ef-btn">
+                <button type="submit" disabled={Boolean(busyId)} className="ef-btn">
                   Grade
                 </button>
               </form>

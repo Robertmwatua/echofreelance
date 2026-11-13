@@ -8,6 +8,7 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(NotificationsService.name)
 
   onModuleInit() {
+    if (process.env.CLOUDFLARE_WORKER === 'true') return
     this.timer = setInterval(() => { void this.deliverDue() }, 60000)
     this.timer.unref()
     void this.deliverDue()

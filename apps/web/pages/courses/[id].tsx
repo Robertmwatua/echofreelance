@@ -171,7 +171,8 @@ export default function CourseDetailPage() {
       const note = await api.getLessonNote(lessonId)
       setNoteBody(note?.body || '')
     } catch {
-      setNoteBody('')
+      setNoteLessonId(null)
+      setError('Could not load this note. Please retry before editing it.')
     } finally {
       setBusy(false)
     }
@@ -230,8 +231,8 @@ export default function CourseDetailPage() {
                     My learning
                   </Link>
                 ) : (
-                  <button type="button" disabled={busy} onClick={enroll} className="ef-btn">
-                    {busy ? 'Enrolling…' : 'Enroll'}
+                  <button type="button" disabled={busy || course.priceCents > 0} onClick={enroll} className="ef-btn">
+                    {busy ? 'Enrolling…' : course.priceCents > 0 ? 'Paid enrollment unavailable' : 'Enroll'}
                   </button>
                 )}
                 {course.enrolled && course.progress && course.progress.percent === 100 && (
@@ -322,12 +323,13 @@ export default function CourseDetailPage() {
                     <summary><span className="font-semibold">{lesson.order + 1}. {lesson.title}</span><span className="ef-meta ml-3">{lesson.durationMinutes} min · {lesson.locked ? 'Locked' : lesson.completed ? 'Completed' : 'Not completed'}</span></summary>
                     <div className="ef-lesson-body flex flex-col gap-6">
                       <div>
+                        {!lesson.locked && lesson.videoUrl && /^https?:\/\//i.test(lesson.videoUrl) && <a className="ef-btn-ghost mb-4" href={lesson.videoUrl} target="_blank" rel="noopener noreferrer">Watch lesson video</a>}
                         {!lesson.locked && lesson.content && (
                           <p className="ef-muted whitespace-pre-wrap text-base leading-8">{lesson.content}</p>
                         )}
                         {!lesson.locked && lesson.resources && lesson.resources.length > 0 && (
                           <ul className="mt-3 space-y-1 text-sm">
-                            {lesson.resources.map((r) => (
+                            {lesson.resources.filter(r => /^https?:\/\//i.test(r.url)).map((r) => (
                               <li key={r.id}>
                                 <a
                                   href={r.url}
