@@ -1,6 +1,5 @@
 import { TechPhoto } from '../components/TechPhoto'
 import { AskAnything } from '../components/AskAnything'
-import { Sparkle } from '../components/Sparkle'
 import { LiveDot } from '../components/LiveDot'
 import { CardSkeletons, FeedbackCard } from '../components/PageFeedback'
 import Link from 'next/link';
@@ -35,28 +34,30 @@ export default function Home() {
     <DocumentHead title={SITE_NAME}/>
     <main>
       {/* ── hero ─────────────────────────────────────────── */}
-      <section className="relative isolate overflow-hidden">
-        <div className="ef-orb" aria-hidden />
-        <div className="ef-grid" aria-hidden />
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 sm:py-28 lg:grid-cols-2 lg:gap-16 lg:py-32">
+      <section className="ef-home-hero">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:py-20">
           <div>
-            <p className="ef-ai-pill"><Sparkle /> AI-powered learning</p>
-            <h1 className="mt-7 font-display text-[2.75rem] font-semibold leading-[1.02] tracking-[-0.03em] min-[400px]:text-5xl sm:text-6xl lg:text-[4.25rem]">
-              Find your<br /><span className="ef-gradient-text">direction</span> in tech.
+            <p className="ef-eyebrow flex items-center gap-3"><span className="h-px w-8 bg-fern" aria-hidden /> A practical education in technology</p>
+            <h1 className="ef-hero-heading mt-7">
+              Find your<br /><span className="ef-editorial-word">direction</span> in tech.
             </h1>
-            <p className="ef-muted mt-7 max-w-md text-lg leading-relaxed">
+            <p className="ef-muted mt-7 max-w-md text-base leading-7 sm:text-lg">
               Cybersecurity, software and cloud — practical courses and live classes with tutors who answer.
             </p>
-            <div className="mt-9 max-w-xl"><AskAnything /></div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/courses" className="ef-btn">Explore courses <span aria-hidden>↗</span></Link>
+              <Link href="/classes" className="ef-btn-ghost">Find a live class</Link>
+            </div>
+            <div className="mt-8 max-w-xl"><AskAnything /></div>
 
             <dl className="ef-stat-strip mt-10">
               <div>
                 <dt>Course rating</dt>
-                <dd>{rating ? <>{rating} <span className="text-moss" aria-hidden>★</span></> : 'Student reviews'}</dd>
+                <dd>{rating ? <>{rating} <span className="text-moss" aria-hidden>★</span></> : 'Not rated yet'}</dd>
               </div>
               <div>
                 <dt>Learn by doing</dt>
-                <dd>{!loading && !error ? `${courses.length} course${courses.length === 1 ? '' : 's'}` : 'Interactive labs'}</dd>
+                <dd>{!loading && !error ? `${courses.length} course${courses.length === 1 ? '' : 's'}` : 'Browse courses'}</dd>
               </div>
               <div>
                 <dt>Live classroom</dt>
@@ -72,8 +73,8 @@ export default function Home() {
       </section>
 
       {/* ── what you get ─────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-6 pb-4">
-        <ul className="grid gap-5 sm:grid-cols-3">
+      <section className="mx-auto max-w-6xl px-5 pt-10 sm:px-6 sm:pt-12">
+        <ul className="grid gap-x-8 sm:grid-cols-3">
           {[
             ['01', 'Learn by doing', 'Put new skills to work with assignments and challenges.'],
             ['02', 'Meet your tutors', 'Ask questions and learn together in live classes.'],
@@ -81,7 +82,7 @@ export default function Home() {
           ].map(([n, title, body]) => (
             <li key={n} className="ef-feature-card">
               <span className="ef-feature-num" aria-hidden>{n}</span>
-              <h2 className="mt-5 font-display text-xl tracking-tight">{title}</h2>
+              <h2 className="mt-4 font-display text-lg tracking-tight">{title}</h2>
               <p className="ef-muted mt-2.5 text-sm leading-relaxed">{body}</p>
             </li>
           ))}

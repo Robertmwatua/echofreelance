@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Sparkle } from './Sparkle'
+function HelpIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden><path d="M5 4h14v12H9l-4 4V4Z" strokeLinejoin="round"/><path d="M9 8h6M9 12h4" strokeLinecap="round"/></svg>
+}
 
 type Msg = { id: number; from: 'bot' | 'me'; text: string; links?: { label: string; href: string }[] }
 
@@ -20,7 +22,7 @@ const ANSWERS: { id: string; k: string[]; w?: string[]; a: string; links?: { lab
   {
     id: 'security',
     k: ['cybersecurity', 'ethical hacking', 'hacking', 'pentest', 'security'],
-    a: 'The cybersecurity track covers practical work — finding and fixing real vulnerabilities rather than memorising theory. It helps to be comfortable with the command line first, but it is not required.',
+    a: 'Browse the cybersecurity category and check each course’s level, lessons and prerequisites. The course tutor can help you decide whether it matches your experience.',
     links: [{ label: 'Cybersecurity courses', href: '/courses?category=Cybersecurity' }],
   },
   {
@@ -33,7 +35,7 @@ const ANSWERS: { id: string; k: string[]; w?: string[]; a: string; links?: { lab
   {
     id: 'price',
     k: ['how much', 'cost', 'price', 'free', 'pay', 'fee'],
-    a: 'Pricing is per course and shown on each card — some are free. There is no subscription, so you only pay for what you enrol in.',
+    a: 'Each course shows its price on the course page. Check the available enrollment options there, and ask the tutor if you need help with access.',
     links: [{ label: 'See prices', href: '/courses' }],
   },
   {
@@ -72,7 +74,7 @@ export function AskTutor() {
   const [open, setOpen] = useState(false)
   const [msgs, setMsgs] = useState<Msg[]>([])
   const [value, setValue] = useState('')
-  const [thinking, setThinking] = useState(false)
+  const panelRef = useRef<HTMLElement>(null)
   const logRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const idRef = useRef(0)
@@ -90,14 +92,36 @@ export function AskTutor() {
         text: 'Hi — I am an automated study assistant, not a tutor. I can answer the common questions, and point you to a real person for anything else.',
       }])
     }
-    if (window.innerWidth > 640) setTimeout(() => inputRef.current?.focus(), 240)
   }, [open, msgs.length])
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    if (!open) return
+    const panel = panelRef.current
+    if (!panel) return
+    const previousFocus = document.activeElement as HTMLElement | null
+    const previousOverflow = document.body.style.overflow
+    const siblings = Array.from(panel.parentElement?.children || [])
+      .filter(el => el !== panel && !el.classList.contains('ef-tutor-scrim'))
+      .map(el => ({ el, inert: el.hasAttribute('inert') }))
+    siblings.forEach(({ el }) => el.setAttribute('inert', ''))
+    document.body.style.overflow = 'hidden'
+    inputRef.current?.focus()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+      if (e.key !== 'Tab') return
+      const items = Array.from(panel.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), [tabindex="0"]'))
+      const first = items[0], last = items[items.length - 1]
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus() }
+    }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
+    return () => {
+      siblings.forEach(({ el, inert }) => { if (!inert) el.removeAttribute('inert') })
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', onKey)
+      previousFocus?.focus()
+    }
+  }, [open])
 
   /* other components can open the panel with a question ready */
   useEffect(() => {
@@ -124,39 +148,30 @@ export function AskTutor() {
   }
 
   function send(text: string) {
-    if (!text.trim() || thinking) return
-    setMsgs((m) => [...m, { id: ++idRef.current, from: 'me', text }])
+    const question = text.trim()
+    if (!question) return
+    const hit = match(question)
+    setMsgs(m => [...m,
+      { id: ++idRef.current, from: 'me', text: question },
+      { id: ++idRef.current, from: 'bot', text: hit?.a || 'I can help with common questions about the school. For this question, ask a tutor in the community.', links: hit?.links || [{ label: 'Ask the community', href: '/discussions' }] },
+    ])
     setValue('')
-    setThinking(true)
     scroll()
-    const hit = match(text)
-    setTimeout(() => {
-      setThinking(false)
-      setMsgs((m) => [...m, hit
-        ? { id: ++idRef.current, from: 'bot', text: hit.a, links: hit.links }
-        : {
-            id: ++idRef.current,
-            from: 'bot',
-            text: 'That one is past me — I only cover the basics. A tutor will give you a proper answer.',
-            links: [{ label: 'Ask the community', href: '/discussions' }],
-          }])
-      scroll()
-    }, 650)
   }
 
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="ef-tutor-fab" aria-label="Ask the study assistant">
-        <Sparkle />
-        <span className="hidden sm:inline">Ask Tutor</span>
+        <HelpIcon />
+        <span>Study help</span>
       </button>
 
       {open && (
         <>
           <div className="ef-tutor-scrim" onClick={() => setOpen(false)} aria-hidden />
-          <aside className="ef-tutor-panel" role="dialog" aria-label="Study assistant" aria-modal="true">
+          <aside ref={panelRef} className="ef-tutor-panel" role="dialog" aria-label="Study assistant" aria-modal="true">
             <header className="ef-tutor-head">
-              <span className="ef-ask-icon"><Sparkle /></span>
+              <span className="ef-ask-icon"><HelpIcon /></span>
               <div className="min-w-0">
                 <b className="block text-sm font-semibold text-ink">Study assistant</b>
                 <span className="font-accent text-[10px] uppercase tracking-[0.16em] text-fern">Automated · not a tutor</span>
@@ -179,9 +194,7 @@ export function AskTutor() {
                   )}
                 </div>
               ))}
-              {thinking && (
-                <div className="ef-bub bot"><span className="ef-typing"><i /><i /><i /></span></div>
-              )}
+
             </div>
 
             {msgs.length <= 1 && (
@@ -201,7 +214,7 @@ export function AskTutor() {
                 placeholder="Ask about courses, classes, certificates…"
                 aria-label="Ask the study assistant"
               />
-              <button type="submit" className="ef-btn-ai !min-h-0 !px-3.5 !py-2" aria-label="Send">
+              <button type="submit" className="ef-btn !min-h-0 !px-3.5 !py-2" aria-label="Send">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M21.4 3.8 10.3 14.9" /><path d="M21.4 3.8 14.5 20.6l-4.2-5.7-5.7-4.2L21.4 3.8Z" />
                 </svg>

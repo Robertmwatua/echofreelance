@@ -17,7 +17,7 @@ export function FeedbackCard({ title, description, retry, action, error = false 
         {error ? <><path d="M12 3 2 20h20L12 3Z" strokeLinejoin="round" /><path d="M12 9v5m0 3v.1" strokeLinecap="round" /></> : <><rect x="4" y="5" width="16" height="16" rx="2" /><path d="M8 3v4m8-4v4M4 11h16m-10 5h4" strokeLinecap="round" /></>}
       </svg>
     </div>
-    <div className="min-w-0 flex-1"><p className="ef-eyebrow">{error ? 'Connection interrupted' : 'A little room for what’s next'}</p><h2 className="mt-2 font-display text-2xl">{title}</h2><p className="ef-muted mt-3 max-w-xl text-sm leading-6">{description}</p>
+    <div className="min-w-0 flex-1"><p className="ef-eyebrow">{error ? 'Connection interrupted' : 'Learning at EchoFreelance'}</p><h2 className="mt-2 font-display text-2xl">{title}</h2><p className="ef-muted mt-3 max-w-xl text-sm leading-6">{description}</p>
       <div className="mt-5 flex flex-wrap gap-3">{retry && <button onClick={retry} className="ef-btn"><span aria-hidden="true">↻</span> Try again</button>}{action && <Link href={action.href} className="ef-btn-ghost">{action.label} <span aria-hidden="true">→</span></Link>}</div>
     </div>
   </section>

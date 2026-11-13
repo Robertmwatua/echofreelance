@@ -37,8 +37,8 @@ export default function LoginPage() {
           <TechPhoto variant="login" />
 
           <div className="min-w-0 flex flex-col justify-center py-2 sm:px-4 lg:px-4">
-            <p className="font-display text-3xl text-moss sm:text-4xl">EchoFreelance Tech School</p>
-            <h1 className="mt-3 text-xl font-medium text-ink/85">Sign in</h1>
+            <p className="ef-eyebrow">EchoFreelance Tech School</p>
+            <h1 className="ef-title mt-4">Sign in</h1>
             <p className="ef-muted mt-2 text-sm">
               Access your courses, live classrooms, and learning hub.
             </p>

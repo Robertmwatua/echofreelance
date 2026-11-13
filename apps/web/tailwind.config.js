@@ -16,7 +16,7 @@ module.exports = {
       fontFamily: {
         display: ['"Inter"', 'system-ui', 'sans-serif'],
         sans: ['"Inter"', 'system-ui', 'sans-serif'],
-        accent: ['"Space Grotesk"', 'ui-monospace', 'monospace'],
+        accent: ['Inter', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         glow: '0 1px 2px rgb(0 0 0 / 0.05)',

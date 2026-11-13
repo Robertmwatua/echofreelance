@@ -1,7 +1,6 @@
 import { CardSkeletons, FeedbackCard, PageHero } from '../../components/PageFeedback'
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/router'
-import { Sparkle } from '../../components/Sparkle'
 import { CourseCard } from '../../components/CourseCard'
 import DocumentHead from '../../components/DocumentHead'
 import { api, CATEGORIES, Course } from '../../lib/api'
@@ -12,6 +11,7 @@ export default function CoursesPage() {
   const [category, setCategory] = useState('')
   const [q, setQ] = useState('')
   const [search, setSearch] = useState('')
+  const [sort, setSort] = useState('default')
 
   /* the hero search and the suggestion chips route here with query params */
   useEffect(() => {
@@ -46,6 +46,21 @@ export default function CoursesPage() {
     const fromData = Array.from(new Set(courses.map((c) => c.category).filter(Boolean)))
     return Array.from(new Set([...CATEGORIES, ...fromData]))
   }, [courses])
+
+  const displayed = useMemo(() => {
+    const result = [...courses]
+    if (sort === 'price') result.sort((a, b) => a.priceCents - b.priceCents)
+    if (sort === 'rating') result.sort((a, b) => (b.avgRating ?? -1) - (a.avgRating ?? -1))
+    return result
+  }, [courses, sort])
+
+  function resetFilters() {
+    setQ('')
+    setSearch('')
+    setCategory('')
+    setSort('default')
+    void router.replace('/courses', undefined, { shallow: true })
+  }
 
   return (
     <>
@@ -86,7 +101,7 @@ export default function CoursesPage() {
         </form>
 
         <div className="ef-path-banner mt-6">
-          <span className="ef-ask-icon shrink-0"><Sparkle /></span>
+          <span className="ef-eyebrow shrink-0">Study help</span>
           <p className="min-w-0 flex-1 text-sm">
             <b className="font-semibold text-ink">Not sure where to start?</b>{' '}
             <span className="ef-muted">Tell the study assistant what you want to do and it will point you at a track.</span>
@@ -94,7 +109,7 @@ export default function CoursesPage() {
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent('ef:ask-tutor', { detail: { q: 'Where should I start?' } }))}
-            className="ef-btn-ai !min-h-0 shrink-0 !px-4 !py-2 text-xs"
+            className="ef-btn-ghost !min-h-0 shrink-0 !px-4 !py-2 text-xs"
           >
             Ask the assistant
           </button>
@@ -122,6 +137,13 @@ export default function CoursesPage() {
           ))}
         </div>
 
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+          <p className="ef-meta" role="status">{loading ? 'Finding courses…' : error ? 'Catalogue unavailable' : `${courses.length} course${courses.length === 1 ? '' : 's'}${search ? ` matching “${search}”` : ''}`}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            {(search || category) && <button type="button" onClick={resetFilters} className="ef-link min-h-[44px] text-sm">Clear filters</button>}
+            <label className="flex items-center gap-2 text-sm"><span className="ef-muted">Sort</span><select value={sort} onChange={e => setSort(e.target.value)} className="ef-input !w-auto !py-2 text-sm"><option value="default">Default order</option><option value="price">Price: low to high</option><option value="rating">Highest rated</option></select></label>
+          </div>
+        </div>
         {loading && <CardSkeletons label="Loading courses" />}
         {error && <FeedbackCard error title="Unable to load courses" description="Your next course is still here. We just couldn’t reach the catalog. Check your connection and try again." retry={() => setAttempt(a => a + 1)} />}
         {!loading && !error && courses.length === 0 && (
@@ -129,7 +151,7 @@ export default function CoursesPage() {
         )}
 
         {!loading && !error && <ul className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {courses.map(course => <li key={course.id}><CourseCard course={course} /></li>)}
+          {displayed.map(course => <li key={course.id}><CourseCard course={course} /></li>)}
         </ul>}
         </div>
       </main>

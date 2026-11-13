@@ -129,26 +129,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen font-sans text-ink">
-      <header
-        className={`sticky top-0 z-40 transition-all duration-300 ${
-          scrolled
-            ? 'border-b border-[rgb(var(--glass-border))] shadow-[0_8px_32px_-16px_rgb(0_0_0/0.4)] backdrop-blur-xl'
-            : 'border-b border-transparent backdrop-blur-md'
-        }`}
-        style={{ background: scrolled ? 'rgb(var(--c-panel) / 0.72)' : 'rgb(var(--c-panel) / 0.35)' }}
-      >
-        <div className="mx-auto flex max-w-7xl items-center gap-4 px-5 py-3 sm:px-7">
+      <header className={`ef-site-header ${scrolled ? 'is-scrolled' : ''}`}>
+
+        <div className="mx-auto flex max-w-6xl items-center gap-4 px-5 py-3 sm:px-7">
           {/* brand */}
           <Link href="/" className="group flex items-center gap-2.5" aria-label={SITE_NAME}>
-            <span
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-xl font-display text-sm font-semibold text-white transition-transform duration-300 group-hover:scale-105"
-              style={{ background: 'linear-gradient(140deg, rgb(var(--c-moss)), rgb(var(--c-moss) / 0.65))', boxShadow: '0 6px 18px -8px rgb(var(--c-moss) / 0.9)' }}
-              aria-hidden
-            >
-              EF
-            </span>
-            <span className="hidden font-display text-base leading-tight tracking-tight text-ink sm:inline lg:text-lg">
-              {SITE_NAME}
+            <span className="ef-brand-mark" aria-hidden>EF</span>
+            <span className="font-display text-sm font-medium leading-tight tracking-tight text-ink sm:text-base lg:text-lg">
+              <span className="sm:hidden">EchoFreelance<span className="ef-muted block text-[10px] font-normal tracking-wide">TECH SCHOOL</span></span><span className="hidden sm:inline">{SITE_NAME}</span>
             </span>
           </Link>
 
@@ -365,17 +353,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <AskTutor />
 
       <footer className="ef-footer">
-        <div className="mx-auto max-w-7xl px-6 py-14 sm:px-7 sm:py-16">
+        <div className="mx-auto max-w-6xl px-6 py-14 sm:px-7 sm:py-16">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-2">
               <Link href="/" className="flex items-center gap-2.5">
-                <span
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-xl font-display text-sm font-semibold text-white"
-                  style={{ background: 'linear-gradient(140deg, rgb(var(--c-moss)), rgb(var(--c-moss) / 0.65))' }}
-                  aria-hidden
-                >
-                  EF
-                </span>
+                <span className="ef-brand-mark" aria-hidden>EF</span>
                 <span className="font-display text-lg tracking-tight text-ink">{SITE_NAME}</span>
               </Link>
               <p className="ef-muted mt-4 max-w-sm text-sm leading-relaxed">
