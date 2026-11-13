@@ -13,9 +13,12 @@ packages/*/node_modules
 *.log
 .pgdata/
 
+# build output
 .open-next/
 .wrangler/
+dist-worker/
+output/
+
+# local worker secrets - never commit
 .dev.vars
 .dev.vars.*
-
-dist-worker/
