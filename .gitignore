@@ -10,3 +10,7 @@ apps/api/dist
 packages/*/node_modules
 *.log
 .pgdata/
+output/
+.wrangler/
+dist-worker/
+.open-next/
