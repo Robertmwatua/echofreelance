@@ -197,7 +197,7 @@ export default function CourseDetailPage() {
 
   return (
     <>
-      <DocumentHead title={course ? `${course.title} — EchoFreelance Tech School` : 'Course'} description={course?.description}/>{course&&<Head><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify({'@context':'https://schema.org','@type':'Course',name:course.title,description:course.description,provider:{'@type':'EducationalOrganization',name:'EchoFreelance Tech School',url:'https://www.echofreelancetechschool.com'},url:`https://www.echofreelancetechschool.com/courses/${course.id}`}).replace(/</g,'\u003c')}}/></Head>}
+      <DocumentHead title={course ? `${course.title} — EchoFreelance Tech School` : 'Course'} description={course?.description}/>{course&&<Head><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify({'@context':'https://schema.org','@type':'Course',name:course.title,description:course.description,provider:{'@type':'EducationalOrganization',name:'EchoFreelance Tech School',url:'https://www.echofreelancetechschool.com'},url:`https://www.echofreelancetechschool.com/courses/${course.id}`}).replace(/</g,'\\u003c')}}/></Head>}
       <main className="mx-auto max-w-3xl px-6 py-12">
         <Link href="/courses" className="text-sm text-fern hover:underline">
           ← Courses
