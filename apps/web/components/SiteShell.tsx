@@ -362,7 +362,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
           <hr className="ef-divider my-10" />
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="ef-muted text-xs">© {new Date().getFullYear()} {SITE_NAME}</p>
+            <p className="ef-muted text-xs">© {new Date().getFullYear()} {SITE_NAME}</p><Link href="/privacy" className="ef-footer-link text-xs">Privacy policy</Link>
             <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="ef-footer-link self-start text-xs sm:self-auto">
               Back to top ↑
             </button>
