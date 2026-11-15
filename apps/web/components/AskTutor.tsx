@@ -1,3 +1,4 @@
+import {Button} from './Button'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 function HelpIcon() {
@@ -161,10 +162,10 @@ export function AskTutor() {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="ef-tutor-fab" aria-label="Ask the study assistant">
+      <Button type="button" onClick={() => setOpen(true)} className="ef-tutor-fab" aria-label="Ask the study assistant">
         <HelpIcon />
         <span className="sr-only">Help</span>
-      </button>
+      </Button>
 
       {open && (
         <>
@@ -176,9 +177,9 @@ export function AskTutor() {
                 <b className="block text-sm font-semibold text-ink">Study assistant</b>
                 <span className="font-accent text-[10px]   text-fern">Automated · not a tutor</span>
               </div>
-              <button type="button" onClick={() => setOpen(false)} className="ef-icon-btn ml-auto !h-9 !w-9" aria-label="Close">
+              <Button type="button" onClick={() => setOpen(false)} className="ef-icon-btn ml-auto !h-9 !w-9" aria-label="Close">
                 <svg viewBox="0 0 24 24" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg>
-              </button>
+              </Button>
             </header>
 
             <div className="ef-tutor-log" ref={logRef} role="log" aria-live="polite">
@@ -200,7 +201,7 @@ export function AskTutor() {
             {msgs.length <= 1 && (
               <div className="ef-tutor-suggest">
                 {SUGGESTIONS.map((s) => (
-                  <button key={s} type="button" className="ef-chip" onClick={() => send(s)}>{s}</button>
+                  <Button key={s} type="button" className="ef-chip" onClick={() => send(s)}>{s}</Button>
                 ))}
               </div>
             )}
@@ -214,11 +215,11 @@ export function AskTutor() {
                 placeholder="Ask about courses, classes, certificates…"
                 aria-label="Ask the study assistant"
               />
-              <button type="submit" className="ef-btn !min-h-0 !px-3.5 !py-2" aria-label="Send">
+              <Button type="submit" className="ef-btn !min-h-0 !px-3.5 !py-2" aria-label="Send">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M21.4 3.8 10.3 14.9" /><path d="M21.4 3.8 14.5 20.6l-4.2-5.7-5.7-4.2L21.4 3.8Z" />
                 </svg>
-              </button>
+              </Button>
             </form>
           </aside>
         </>

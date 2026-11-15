@@ -1,5 +1,6 @@
 import { BadRequestException, ConflictException, HttpException, Injectable, NotFoundException } from '@nestjs/common'
 import { createHash } from 'crypto'
+import { AuthUser } from '../../common/current-user.decorator'
 import { PrismaService } from '../../prisma/prisma.service'
 import { publicProgrammeIds } from '../courses/programme-roadmaps'
 import { ApplyJobDto, EnquiryDto, JobDto, ReviewApplicationDto, ReviewEnquiryDto, TaskDto } from './school.dto'
@@ -79,4 +80,49 @@ export class SchoolService {
     this.prisma.virtualClass.findMany({where:{endsAt:{gte:now},startsAt:{lte:end},status:{in:['Live','Scheduled']}},orderBy:{startsAt:'asc'},take:50,include:{host:{select:{name:true}},course:{select:{title:true}}}}),
     this.prisma.assignment.findMany({where:{published:true,dueAt:{gte:now,lte:end}},orderBy:{dueAt:'asc'},take:50,select:{id:true,title:true,courseId:true,dueAt:true}}),
     this.prisma.admissionEnquiry.count({where:{status:'New'}}),this.prisma.jobApplication.count({where:{status:'Received'}}),this.tasks()]);return {classes:classes.map(c=>({id:c.id,title:c.title,startsAt:c.startsAt,endsAt:c.endsAt,status:c.status,host:c.host,course:c.course})),assignments,newEnquiries,newApplications,tasks}}
+  async activity(offset=0){
+    // TODO: a durable event log is needed for deleted records and staff action history.
+    const take=Math.min(offset+40,1000)
+    const [enrollments,payments,posts]=await Promise.all([
+      this.prisma.enrollment.findMany({take,orderBy:{createdAt:'desc'},select:{id:true,createdAt:true,user:{select:{name:true}},course:{select:{id:true,title:true}}}}),
+      this.prisma.coursePayment.findMany({where:{status:'Succeeded'},take,orderBy:{settledAt:'desc'},select:{id:true,settledAt:true,amountCents:true,account:{select:{user:{select:{name:true}},course:{select:{id:true,title:true}}}}}}),
+      this.prisma.discussionPost.findMany({take,orderBy:{createdAt:'desc'},select:{id:true,createdAt:true,author:{select:{name:true}},course:{select:{id:true,title:true}}}})
+    ])
+    const items=[...enrollments.map(e=>({id:'enrol-'+e.id,at:e.createdAt,who:e.user.name||'Student',action:'enrolled',detail:e.course.title,href:'/tutor/courses/'+e.course.id})),...payments.map(p=>({id:'pay-'+p.id,at:p.settledAt!,who:p.account.user.name||'Student',action:'paid',detail:'KES '+(p.amountCents/100).toLocaleString('en-KE')+' · '+p.account.course.title,href:'/admin/payments'})),...posts.map(p=>({id:'post-'+p.id,at:p.createdAt,who:p.author.name||'Member',action:'posted',detail:p.course.title,href:'/discussions?course='+p.course.id}))].filter(e=>e.at).sort((a,b)=>b.at.getTime()-a.at.getTime())
+    return {items:items.slice(offset,offset+40),hasMore:items.length>offset+40}
+  }
+  async overview(){
+    const now=new Date(),week=new Date(Date.now()+7*86400000),day=new Date(Date.now()+24*3600000)
+    const [newEnquiries,oldest,inbox,applications,classes,classCount,courses,drafts,students,tutors,admins,accounts,activity,posts]=await Promise.all([
+      this.prisma.admissionEnquiry.count({where:{status:'New'}}),
+      this.prisma.admissionEnquiry.findFirst({where:{status:'New'},orderBy:{createdAt:'asc'},select:{createdAt:true}}),
+      this.prisma.admissionEnquiry.findMany({where:{status:{not:'Closed'}},orderBy:{createdAt:'desc'},take:5,include:{course:{select:{id:true,title:true}}}}),
+      this.prisma.jobApplication.count({where:{status:'Received'}}),
+      this.prisma.virtualClass.findMany({where:{endsAt:{gte:now},startsAt:{lte:week},status:{in:['Live','Scheduled']}},orderBy:{startsAt:'asc'},take:50,select:{id:true,title:true,courseId:true,startsAt:true,endsAt:true,status:true,host:{select:{name:true}},_count:{select:{attendances:true}}}}),
+      this.prisma.virtualClass.count({where:{endsAt:{gte:now},startsAt:{lte:day},status:{in:['Live','Scheduled']}}}),
+      this.prisma.course.count(),this.prisma.course.count({where:{published:false,archived:false}}),this.prisma.user.count({where:{role:'Student'}}),this.prisma.user.count({where:{role:'Tutor'}}),this.prisma.user.count({where:{role:'Admin'}}),
+      this.prisma.courseFeeAccount.findMany({select:{totalCents:true,payments:{where:{status:'Succeeded'},select:{amountCents:true}}}}),
+      this.activity(),this.prisma.discussionPost.count()
+    ])
+    const unpaid=accounts.filter(a=>a.totalCents>a.payments.reduce((n,p)=>n+p.amountCents,0))
+    return {newEnquiries,oldestEnquiryAt:oldest?.createdAt||null,inbox,newApplications:applications,classes,classes24h:classCount,courses,drafts,students,tutors,admins,unpaidAccounts:unpaid.length,outstandingCents:unpaid.reduce((n,a)=>n+a.totalCents-a.payments.reduce((v,p)=>v+p.amountCents,0),0),posts,activity:activity.items.slice(0,8)}
+  }
+  async search(q:string){if(q.length<2)return [];const contains={contains:q,mode:'insensitive' as const};const [people,courses,classes]=await Promise.all([
+    this.prisma.user.findMany({where:{OR:[{name:contains},{email:contains}]},take:6,select:{id:true,name:true,email:true,role:true}}),
+    this.prisma.course.findMany({where:{title:contains},take:6,select:{id:true,title:true}}),
+    this.prisma.virtualClass.findMany({where:{title:contains},take:6,orderBy:{startsAt:'desc'},select:{id:true,title:true,status:true}})
+  ]);return [...people.map(p=>({id:p.id,label:p.name||p.email,detail:p.role+' · '+p.email,href:'/admin/people?person='+p.id})),...courses.map(c=>({id:c.id,label:c.title,detail:'Course',href:'/tutor/courses/'+c.id})),...classes.map(c=>({id:c.id,label:c.title,detail:'Class · '+c.status,href:'/classes/'+c.id})),...await this.learningSearch(q,{id:'',email:'',name:null,role:'Admin'})]}
+  async learningSearch(q:string,user:AuthUser|null){
+    if(q.length<2)return []
+    const contains={contains:q,mode:'insensitive' as const}
+    const publicCourse={archived:false,OR:[{published:true},{publicPreview:true},{id:{in:publicProgrammeIds},publicPreview:null}]}
+    const [courses,tutors]=await Promise.all([this.prisma.course.findMany({where:{...publicCourse,title:contains},take:6,select:{id:true,title:true}}),this.prisma.user.findMany({where:{role:{in:['Tutor','Admin']},name:contains,coursesTaught:{some:publicCourse}},take:4,select:{id:true,name:true,coursesTaught:{where:publicCourse,take:1,select:{id:true}}}})])
+    const results=[...courses.map(c=>({id:c.id,label:c.title,detail:'Course',href:'/courses/'+c.id})),...tutors.filter(t=>t.coursesTaught.length).map(t=>({id:t.id,label:t.name||'Tutor',detail:'Tutor / view teaching',href:'/courses/'+t.coursesTaught[0].id}))]
+    if(!user)return results
+    const courseAccess=user.role==='Admin'?{}:user.role==='Tutor'?{OR:[{tutorId:user.id},{published:true,enrollments:{some:{userId:user.id}}}]}:{published:true,enrollments:{some:{userId:user.id}}}
+    const [lessons,posts]=await Promise.all([this.prisma.lesson.findMany({where:{title:contains,published:true,course:courseAccess},take:5,select:{id:true,title:true,courseId:true}}),this.prisma.discussionPost.findMany({where:{body:contains,course:courseAccess},take:5,select:{id:true,body:true,courseId:true}})])
+    return [...results,...lessons.map(l=>({id:l.id,label:l.title,detail:'Lesson',href:'/courses/'+l.courseId+'#lesson-'+l.id})),...posts.map(p=>({id:p.id,label:p.body.slice(0,100),detail:'Community post',href:'/discussions?course='+p.courseId}))]
+  }
+  async community(){return this.prisma.discussionPost.findMany({orderBy:{createdAt:'desc'},take:500,select:{id:true,body:true,createdAt:true,course:{select:{id:true,title:true}},author:{select:{name:true,email:true}}}})}
+
 }

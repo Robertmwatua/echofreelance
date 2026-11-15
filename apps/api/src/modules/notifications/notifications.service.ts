@@ -15,6 +15,9 @@ export class NotificationsService implements OnModuleInit, OnModuleDestroy {
 
   onModuleDestroy() { if (this.timer) clearInterval(this.timer) }
 
+  // TODO(email-reminders): SMTP is not configured for this deployment. Add a durable,
+  // consented per-user email delivery/outbox record before sending one-hour reminders.
+  // Current reminders remain in-app; never mark an email as sent from this job.
   async deliverDue() {
     if (this.running) return
     this.running = true

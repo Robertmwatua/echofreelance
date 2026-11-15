@@ -133,6 +133,11 @@ export class CoursesController {
   @Patch(':id/lessons/:lessonId')
   editLesson(@Param('id') id:string,@Param('lessonId') lessonId:string,@CurrentUser() user:AuthUser,@Body() dto:UpdateLessonDto){return this.coursesService.editLesson(id,lessonId,user,dto)}
   @UseGuards(JwtAuthGuard,RolesGuard) @Roles(Role.Tutor,Role.Admin)
+  @Delete(':id/lessons/:lessonId')
+  removeLesson(@Param('id') id:string,@Param('lessonId') lessonId:string,@CurrentUser() user:AuthUser){return this.coursesService.removeLesson(id,lessonId,user)}
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Tutor, Role.Admin)
   @Post(':id/lessons/reorder')
   reorder(@Param('id') id:string,@CurrentUser() user:AuthUser,@Body() dto:ReorderLessonsDto){return this.coursesService.reorder(id,user,dto.lessonIds)}
 

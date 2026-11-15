@@ -1,10 +1,13 @@
+import {Button,NavigationLink} from '../../../components/Button'
 import { LessonEditor } from '../../../components/tutor/LessonEditor'
 import { CourseFeeEditor } from '../../../components/CourseFeeEditor'
 import { RoadmapEditor, roadmapLines } from '../../../components/tutor/RoadmapEditor'
 import { useConfirmation } from '../../../components/Confirmation'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useState, useRef } from 'react'
+import {Field,Panel,Notice} from '../../../components/forms/Fields'
+import {formatKes} from '../../../lib/api'
 import DocumentHead from '../../../components/DocumentHead'
 import { CategoryField } from '../../../components/CategoryField'
 import { RequireRole } from '../../../components/RequireRole'
@@ -48,6 +51,8 @@ function ManageCourse() {
   const [resourceUrl, setResourceUrl] = useState('')
   const [notifyTitle, setNotifyTitle] = useState('')
   const [notifyBody, setNotifyBody] = useState('')
+  const [savedSignature,setSavedSignature]=useState(''),[savedAt,setSavedAt]=useState(''),[touched,setTouched]=useState<Record<string,boolean>>({})
+  const loadedId=useRef(''),saving=useRef(false)
   const [knownCategories, setKnownCategories] = useState<string[]>([])
 
   async function load() {
@@ -60,6 +65,10 @@ function ManageCourse() {
     ])
     setCourse(data)
     setReport(students)
+    if(loadedId.current!==id){
+    loadedId.current=id
+    setSavedAt(data.updatedAt||'')
+    setSavedSignature(JSON.stringify({title:data.title,description:data.description,category:data.category||'Cybersecurity',level:data.level,roadmap:(data.roadmap||[]).join('\n'),publicPreview:Boolean(data.publicPreview),published:data.published}))
     setTitle(data.title)
     setDescription(data.description)
     setCategory(data.category || 'Cybersecurity')
@@ -67,6 +76,7 @@ function ManageCourse() {
     setPublished(data.published)
     setRoadmap((data.roadmap || []).join('\n'))
     setPublicPreview(Boolean(data.publicPreview))
+    }
     const cats = [...taught, ...catalog].map((c) => c.category).filter(Boolean)
     setKnownCategories(Array.from(new Set(cats)))
   }
@@ -75,29 +85,25 @@ function ManageCourse() {
     load().catch((e: Error) => setError(e.message))
   }, [id])
 
-  async function saveCourse(e: FormEvent) {
-    e.preventDefault()
-    setBusy(true)
-    setError('')
-    setMessage('')
-    try {
-      await api.updateCourse(id, {
-        title,
-        description,
-        category: category.trim() || 'General',
-        level,
-        roadmapSteps: roadmapLines(roadmap),
-        publicPreview,
-        published: published !== course?.published ? published : undefined,
-      })
-      await load()
-      setMessage('Course saved.')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed')
-    } finally {
-      setBusy(false)
-    }
+  const signature=JSON.stringify({title,description,category,level,roadmap,publicPreview,published})
+  const dirty=!!course&&signature!==savedSignature
+  const draftValid=title.trim().length>=3&&description.trim().length>=10&&category.trim().length>=2&&roadmapLines(roadmap).length<=24&&roadmapLines(roadmap).every(s=>s.length>=3&&s.length<=180)
+  const canPublish=draftValid&&!!course?.lessons?.some(l=>l.published)&&!course?.archived
+  const saveRef=useRef<(e?:FormEvent,publish?:boolean)=>Promise<void>>()
+  async function saveCourse(e?:FormEvent,publish?:boolean){
+    e?.preventDefault();if(saving.current)return
+    setTouched({title:true,description:true,category:true})
+    if(!draftValid){setError('Check the title, description, category and roadmap before saving.');return}
+    saving.current=true;setBusy(true);setError('');setMessage('')
+    const nextPublished=publish??published
+    const snapshot=JSON.stringify({title,description,category,level,roadmap,publicPreview,published:nextPublished})
+    try{const result=await api.updateCourse(id,{title,description,category:category.trim(),level,roadmapSteps:roadmapLines(roadmap),publicPreview,published:nextPublished!==course?.published?nextPublished:undefined});setCourse(old=>old?{...old,...result,priceCents:old.priceCents,lessons:old.lessons}:result);setPublished(nextPublished);setSavedSignature(snapshot);setSavedAt(new Date().toISOString());setMessage('Changes saved.')}
+    catch(e){setError(e instanceof Error?e.message:'Could not save. Retry.')}finally{saving.current=false;setBusy(false)}
   }
+  saveRef.current=saveCourse
+  useEffect(()=>{if(!dirty||!draftValid||busy||error||course?.published||published!==course?.published)return;const timer=setTimeout(()=>void saveRef.current?.(),1800);return()=>clearTimeout(timer)},[signature,dirty,draftValid,busy,error,course?.published])
+  useEffect(()=>{function key(e:KeyboardEvent){if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();void saveRef.current?.()}}window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key)},[])
+  useEffect(()=>{if(!dirty)return;function leave(e:BeforeUnloadEvent){e.preventDefault();e.returnValue=''};function change(url:string){if(url===router.asPath)return;if(!window.confirm('Leave with unsaved course changes?')){router.events.emit('routeChangeError');throw new Error('Navigation cancelled: unsaved course changes.')}}window.addEventListener('beforeunload',leave);router.events.on('routeChangeStart',change);return()=>{window.removeEventListener('beforeunload',leave);router.events.off('routeChangeStart',change)}},[dirty,router])
 
   async function addLesson(e: FormEvent) {
     e.preventDefault()
@@ -220,266 +226,21 @@ function ManageCourse() {
     }
   }
 
-  return (
-    <>
-      {confirmation}<DocumentHead title={course ? `Manage ${course.title}` : 'Manage course'} />
-      <main className="relative mx-auto max-w-3xl px-6 py-12">
-        <div className="relative">
-        <Link href="/tutor" className="ef-link text-sm">
-          ← Tutor desk
-        </Link>
-        <p className="ef-page-label">Workshop / course editor</p><h1 className="mt-4   text-ink  ef-title">Shape the next lesson.</h1>
-        {!course && !error && <p className="mt-6 ef-muted">Loading…</p>}
-        {error && <p className="mt-6 ef-text-danger ef-toast">{error}</p>}
-        {message && <p className="mt-4 text-moss ef-toast">{message}</p>}
-
-        {course && (
-          <>
-            <form id="details" onSubmit={saveCourse} className="ef-panel mt-8 space-y-4">
-              <label className="block text-sm">
-                <span className="mb-1.5 block font-medium text-ink/85">Title</span>
-                <input
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="ef-input"
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="mb-1 block font-medium">Description</span>
-                <textarea
-                  required
-                  rows={4}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="ef-input"
-                />
-              </label>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block text-sm">
-                  <span className="mb-1.5 block font-medium text-ink/85">Category</span>
-                  <CategoryField
-                    value={category}
-                    onChange={setCategory}
-                    suggestions={[...CATEGORIES, ...knownCategories]}
-                  />
-                </label>
-                <label className="block text-sm">
-                  <span className="mb-1 block font-medium">Level</span>
-                  <select
-                    value={level}
-                    onChange={(e) => setLevel(e.target.value)}
-                    className="ef-input"
-                  >
-                    <option>Beginner</option>
-                    <option>Intermediate</option>
-                    <option>Advanced</option>
-                  </select>
-                </label>
-              </div>
-              <p className="ef-muted text-sm">School fees are set and confirmed by an administrator, in KES.</p>
-              <RoadmapEditor value={roadmap} change={setRoadmap} listed={publicPreview} setListed={setPublicPreview}/><label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={published}
-                  onChange={(e) => setPublished(e.target.checked)}
-                />
-                Published in catalog
-              </label>
-              <button type="submit" disabled={busy} className="ef-btn">
-                Save course
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={deleteCourse}
-                className="ef-btn-ghost ml-3"
-              >
-                Delete course
-              </button>
-            </form>
-            {course && <CourseFeeEditor course={course} updated={load}/>}
-
-            <section className="ef-panel mt-10">
-              <h2 className="font-display text-2xl text-ink" id="students">Student performance</h2>
-              <p className="ef-muted mt-1 text-sm">
-                {report
-                  ? `${report.studentCount} enrolled${
-                      report.sessionsTotal != null ? ` · ${report.sessionsTotal} live sessions` : ''
-                    }`
-                  : 'Loading roster…'}
-              </p>
-              {report && report.students.length === 0 && (
-                <p className="mt-4 text-sm ef-muted">No students enrolled yet.</p>
-              )}
-              {report && report.students.length > 0 && (
-                <div className="mt-4 overflow-x-auto">
-                  <table className="w-full min-w-[640px] text-left text-sm">
-                    <thead className="border-b border-line text-xs   ef-muted">
-                      <tr>
-                        <th className="py-2 pr-3 font-medium">Student</th>
-                        <th className="py-2 pr-3 font-medium">Progress</th>
-                        <th className="py-2 pr-3 font-medium">Attendance</th>
-                        <th className="py-2 pr-3 font-medium">Assignments</th>
-                        <th className="py-2 font-medium">Avg grade</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {report.students.map((s) => (
-                        <tr key={s.id} className="border-b border-line">
-                          <td className="py-3 pr-3">
-                            <p className="font-medium">{s.name || 'Student'}</p>
-                            <p className="text-xs ef-muted">{s.email}</p>
-                          </td>
-                          <td className="py-3 pr-3">
-                            {s.progressPercent}% ({s.lessonsCompleted}/{s.lessonsTotal})
-                          </td>
-                          <td className="py-3 pr-3">
-                            {s.attendancePercent != null
-                              ? `${s.attendancePercent}% (${s.sessionsAttended}/${s.sessionsTotal})`
-                              : '—'}
-                          </td>
-                          <td className="py-3 pr-3">
-                            {s.assignmentsSubmitted}/{s.assignmentsTotal}
-                          </td>
-                          <td className="py-3">
-                            {s.avgGrade != null ? s.avgGrade : '—'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-
-            <section className="ef-panel mt-8">
-              <h2 className="font-display text-2xl text-ink">Notify students</h2>
-              <p className="ef-muted mt-1 text-sm">
-                Sends an in-app alert to everyone enrolled (shows under Alerts).
-              </p>
-              <form onSubmit={sendNotify} className="mt-4 space-y-3">
-                <input
-                  required
-                  placeholder="Notification title"
-                  value={notifyTitle}
-                  onChange={(e) => setNotifyTitle(e.target.value)}
-                  className="ef-input text-sm"
-                />
-                <textarea
-                  required
-                  placeholder="Short message"
-                  rows={3}
-                  value={notifyBody}
-                  onChange={(e) => setNotifyBody(e.target.value)}
-                  className="ef-input text-sm"
-                />
-                <button type="submit" disabled={busy} className="ef-btn-ghost">
-                  Send notification
-                </button>
-              </form>
-            </section>
-
-            <section className="ef-panel mt-8">
-              <h2 className="font-display text-2xl text-ink" id="lessons">Lessons</h2>
-              <LessonEditor courseId={id} lessons={course.lessons||[]} refresh={load}/>
-              <form onSubmit={addLesson} className="mt-6 space-y-3 border-t border-line pt-6">
-                <h3 className="font-semibold">Add a draft lesson</h3>
-                <label className="block">Lesson title<input required minLength={3} maxLength={200} value={lessonTitle} onChange={e=>setLessonTitle(e.target.value)} className="ef-input mt-2"/></label>
-                <label className="block">Teaching notes / lab brief<textarea required minLength={10} maxLength={50000} rows={6} value={lessonContent} onChange={e=>setLessonContent(e.target.value)} className="ef-input mt-2"/></label>
-                <label className="block">Duration in minutes<input type="number" required min={1} max={1440} value={lessonMinutes} onChange={e=>setLessonMinutes(Number(e.target.value))} className="ef-input mt-2"/></label>
-                <button type="submit" disabled={busy} className="ef-btn-ghost">Add draft lesson</button>
-              </form>
-
-              {(course.lessons || []).length > 0 && (
-                <form onSubmit={addResource} className="mt-6 space-y-3 border-t border-line pt-6">
-                  <h3 className="font-semibold">Add lesson resource</h3>
-                  <select
-                    required
-                    value={resourceLessonId}
-                    onChange={(e) => setResourceLessonId(e.target.value)}
-                    className="ef-input text-sm"
-                  >
-                    <option value="">Select lesson</option>
-                    {(course.lessons || []).map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.order + 1}. {l.title} ({l.published?'published':'draft'})
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    required
-                    placeholder="Resource title"
-                    value={resourceTitle}
-                    onChange={(e) => setResourceTitle(e.target.value)}
-                    className="ef-input text-sm"
-                  />
-                  <input
-                    required
-                    type="url"
-                    placeholder="https://…"
-                    value={resourceUrl}
-                    onChange={(e) => setResourceUrl(e.target.value)}
-                    className="ef-input text-sm"
-                  />
-                  <button type="submit" disabled={busy} className="ef-btn-ghost">
-                    Add resource
-                  </button>
-                </form>
-              )}
-            </section>
-
-            <section className="ef-panel mt-8">
-              <h2 className="font-display text-2xl text-ink">Announcements</h2>
-              <form onSubmit={postAnnouncement} className="mt-4 space-y-3">
-                <input
-                  required
-                  placeholder="Title"
-                  value={announceTitle}
-                  onChange={(e) => setAnnounceTitle(e.target.value)}
-                  className="ef-input text-sm"
-                />
-                <textarea
-                  required
-                  placeholder="Message to enrolled students"
-                  rows={3}
-                  value={announceBody}
-                  onChange={(e) => setAnnounceBody(e.target.value)}
-                  className="ef-input text-sm"
-                />
-                <button type="submit" disabled={busy} className="ef-btn-ghost">
-                  Post announcement
-                </button>
-              </form>
-            </section>
-
-            <section className="ef-panel mt-8">
-              <h2 className="font-display text-2xl text-ink">Assignments</h2>
-              <form onSubmit={addAssignment} className="mt-4 space-y-3">
-                <input
-                  required
-                  placeholder="Assignment title"
-                  value={assignTitle}
-                  onChange={(e) => setAssignTitle(e.target.value)}
-                  className="ef-input text-sm"
-                />
-                <textarea
-                  required
-                  placeholder="Instructions"
-                  rows={3}
-                  value={assignInstructions}
-                  onChange={(e) => setAssignInstructions(e.target.value)}
-                  className="ef-input text-sm"
-                />
-                <button type="submit" disabled={busy} className="ef-btn">
-                  Publish assignment
-                </button>
-              </form>
-            </section>
-          </>
-        )}
-        </div>
-      </main>
-    </>
-  )
+  return <>{confirmation}<DocumentHead title={course?`Edit ${course.title}`:'Course editor'}/><main className="ef-course-editor ef-staff-form">
+    <nav className="ef-editor-breadcrumb" aria-label="Breadcrumb"><Link href="/tutor">Tutor desk</Link><span>/</span><span>{course?.title||'Course'}</span><span>/ Edit</span></nav>
+    <header className="ef-editor-heading"><h1>Edit the course.</h1><span className="ef-pill">{course?.published?'Published':'Draft'}</span></header>
+    {!course&&!error&&<p role="status">Loading course and lessons…</p>}{error&&<div role="alert" className="ef-toast mb-6"><strong>Couldn’t save or load changes.</strong><p className="mt-2">{error}</p><Button className="admin-secondary mt-4" disabled={busy} onClick={()=>course?void saveCourse():void load().catch(e=>setError(e.message))}>Retry</Button></div>}
+    {course&&<div className="ef-editor-grid"><div className="ef-editor-main">
+      <form id="course-details" onSubmit={saveCourse}><Panel number="01" title="Basics"><fieldset disabled={busy} className="ef-field-stack"><Field label="Course title" error={touched.title&&title.trim().length<3?'Use at least 3 characters.':undefined}><input className="ef-input" required minLength={3} maxLength={200} value={title} onBlur={()=>setTouched(t=>({...t,title:true}))} onChange={e=>setTitle(e.target.value)}/></Field><Field label="Description" hint={`${description.length}/${Math.max(500,course.description.length)} characters · Tell students what they will practise.`} error={touched.description&&description.trim().length<10?'Describe the course in at least 10 characters.':undefined}><textarea className="ef-input" required minLength={10} maxLength={Math.max(500,course.description.length)} rows={4} value={description} onBlur={()=>setTouched(t=>({...t,description:true}))} onChange={e=>setDescription(e.target.value)}/></Field><div className="grid sm:grid-cols-2 gap-6"><Field label="Category" hint="Pick a suggestion or type a custom category."><CategoryField value={category} onChange={setCategory} suggestions={[...CATEGORIES,...knownCategories]}/></Field><Field label="Level"><select className="ef-input" value={level} onChange={e=>setLevel(e.target.value)}><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></Field></div></fieldset></Panel></form>
+      <Panel number="02" title="Pricing and visibility" aside={<span className="ef-pill">{course.published?'Published':'Draft'}</span>}><Notice label="Fees">Set and confirmed by an administrator, in KES.{course.feeConfirmed?` Current tuition: ${formatKes(course.priceCents)}.`:' Awaiting confirmation.'}</Notice><p className="ef-field-hint mt-5">{course.published?'Changes to this published course are saved only when you choose Save changes.':'Valid draft changes autosave after you pause typing.'}</p><p className="ef-field-hint mt-3">Cover uploads are not connected to this course model. No image upload is available yet.</p><details className="mt-5"><summary>Edit tuition, discount and access deposit</summary><CourseFeeEditor course={course} updated={load}/></details></Panel>
+      <Panel number="03" title="Learning roadmap" aside={<span className="ef-meta">{course.lessons?.length||0} lessons</span>} id="lessons"><RoadmapEditor value={roadmap} change={setRoadmap} listed={publicPreview} setListed={setPublicPreview}/><h3 className="text-2xl font-bold mt-8">Ordered lessons</h3><LessonEditor courseId={id} lessons={course.lessons||[]} refresh={load}/><details className="ef-editor-add mt-6"><summary className="admin-secondary">+ Add lesson</summary><form onSubmit={addLesson} className="ef-field-stack mt-6"><Field label="Lesson title"><input className="ef-input" required minLength={3} maxLength={200} value={lessonTitle} onChange={e=>setLessonTitle(e.target.value)}/></Field><Field label="Teaching notes / lab brief"><textarea className="ef-input" required minLength={10} maxLength={50000} rows={6} value={lessonContent} onChange={e=>setLessonContent(e.target.value)}/></Field><Field label="Duration / minutes"><input className="ef-input" required type="number" min={1} max={1440} value={lessonMinutes} onChange={e=>setLessonMinutes(Number(e.target.value))}/></Field><Button className="admin-secondary" disabled={busy}>Add draft lesson</Button></form></details></Panel>
+      <Panel number="04" title="Students and teaching tools"><details><summary>Student performance / {report?.studentCount??'…'} enrolled</summary>{report?.students.length?<div className="ef-table-scroll mt-5"><table className="ef-data-table"><thead><tr><th>Student</th><th>Progress</th><th>Attendance</th><th>Assignments</th><th>Average grade</th></tr></thead><tbody>{report.students.map(s=><tr key={s.id}><td>{s.name||'Student'}<p className="ef-meta">{s.email}</p></td><td>{s.progressPercent}% ({s.lessonsCompleted}/{s.lessonsTotal})</td><td>{s.attendancePercent==null?'—':`${s.attendancePercent}%`}</td><td>{s.assignmentsSubmitted}/{s.assignmentsTotal}</td><td>{s.avgGrade??'—'}</td></tr>)}</tbody></table></div>:<p className="ef-field-hint mt-4">No students yet. Publish reviewed lessons and confirm fees before inviting enrolments.</p>}</details>
+      <details className="mt-6"><summary>Add lesson resource</summary><form onSubmit={addResource} className="ef-field-stack mt-5"><Field label="Lesson"><select className="ef-input" required value={resourceLessonId} onChange={e=>setResourceLessonId(e.target.value)}><option value="">Select a lesson</option>{course.lessons?.map(l=><option key={l.id} value={l.id}>{l.title}</option>)}</select></Field><Field label="Resource title"><input className="ef-input" required value={resourceTitle} onChange={e=>setResourceTitle(e.target.value)}/></Field><Field label="HTTPS resource URL"><input className="ef-input" required type="url" value={resourceUrl} onChange={e=>setResourceUrl(e.target.value)}/></Field><Button className="admin-secondary" disabled={busy}>Add resource</Button></form></details>
+      <details className="mt-6"><summary>Notify students / in-app alerts</summary><form onSubmit={sendNotify} className="ef-field-stack mt-5"><Field label="Notification title"><input className="ef-input" required value={notifyTitle} onChange={e=>setNotifyTitle(e.target.value)}/></Field><Field label="Message"><textarea className="ef-input" required rows={3} value={notifyBody} onChange={e=>setNotifyBody(e.target.value)}/></Field><Button className="admin-secondary" disabled={busy}>Send notification</Button></form></details>
+      <details className="mt-6"><summary>Course announcements</summary><form onSubmit={postAnnouncement} className="ef-field-stack mt-5"><Field label="Announcement title"><input className="ef-input" required value={announceTitle} onChange={e=>setAnnounceTitle(e.target.value)}/></Field><Field label="Announcement"><textarea className="ef-input" required rows={3} value={announceBody} onChange={e=>setAnnounceBody(e.target.value)}/></Field><Button className="admin-secondary" disabled={busy}>Post announcement</Button></form></details>
+      <details className="mt-6"><summary>Assignments</summary><form onSubmit={addAssignment} className="ef-field-stack mt-5"><Field label="Assignment title"><input className="ef-input" required value={assignTitle} onChange={e=>setAssignTitle(e.target.value)}/></Field><Field label="Instructions"><textarea className="ef-input" required rows={3} value={assignInstructions} onChange={e=>setAssignInstructions(e.target.value)}/></Field><Button className="admin-secondary" disabled={busy}>Publish assignment</Button></form></details></Panel>
+      <Panel title="Course controls"><p className="ef-field-hint">Deleting a course removes its teaching records. Courses with financial records must be archived instead.</p><Button className="ef-btn-ghost ef-text-danger mt-4" disabled={busy} onClick={deleteCourse}>Delete course</Button></Panel>
+    </div><aside className="ef-course-summary"><Panel title="Course summary" aside={<span className="ef-pill">{course.published?'Published':'Draft'}</span>}><p className="ef-meta break-all">{id}</p><p role="status" className="ef-save-state mt-4">{busy?'Saving…':error?'Couldn’t save. Retry.':dirty?'Unsaved changes':savedAt?`Saved ${new Date(savedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`:'Ready to edit'}</p><ul className="ef-completeness mt-5">{[[title.trim().length>=3,'Title'],[description.trim().length>=10,'Description'],[!!course.lessons?.some(l=>l.published),'At least 1 published lesson'],[!!level,'Level']].map(([ok,label])=><li key={String(label)}><span>{label}</span><strong>{ok?'✓':'✗'}</strong></li>)}</ul><Button className="ef-btn w-full mt-6" loading={busy} loadingLabel="Saving…" disabled={busy||!dirty} onClick={()=>void saveCourse()}>Save changes</Button><p className="ef-field-hint mt-2">{!dirty?'All course details are saved.':'Ctrl / ⌘ S to save.'}</p><NavigationLink href={`/courses/${id}`} className="admin-secondary w-full mt-4">Preview as student →</NavigationLink><Button className="ef-btn-ghost mt-4" disabled={busy||(!course.published&&!canPublish)} onClick={()=>void saveCourse(undefined,!course.published)}>{course.published?'Move course to draft':'Publish course'}</Button>{!course.published&&!canPublish&&<p className="ef-field-hint mt-2">Complete the fields and publish at least one lesson first. Archived courses must be restored.</p>}<p className="ef-field-hint mt-4">Staff preview uses your current account. Students see only published content.</p></Panel></aside>
+    <div className="ef-editor-mobile-save"><span className="ef-meta" role="status">{busy?'Saving…':dirty?'Unsaved changes':'Saved'}</span><Button className="ef-btn" loading={busy} loadingLabel="Saving…" disabled={busy||!dirty} onClick={()=>void saveCourse()}>Save changes</Button></div></div>}{message&&<p role="status" className="ef-meta mt-5">{message}</p>}
+  </main></>
 }

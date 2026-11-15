@@ -1,3 +1,4 @@
+import {NavigationLink} from '../components/Button'
 import Link from 'next/link'
 import DocumentHead from '../components/DocumentHead'
 
@@ -15,7 +16,7 @@ export default function PrivacyPage() {
       <section><h2 className="text-3xl">Browser storage and security</h2><p className="mt-4">The website uses browser storage for your sign-in token, basic account details, theme preferences and app features. Installing the school app can cache public app files for loading. Hosting providers and security controls may process technical request information, such as IP addresses and request times. Submission limits help prevent abuse. Passwords are stored as hashes; recovery tokens are stored hashed and expire. No internet service can guarantee absolute security.</p></section>
       <section><h2 className="text-3xl">Retention and your choices</h2><p className="mt-4">Account and learning records are retained to operate your school account and educational services. Payment and certificate records may need to remain for financial, verification or dispute purposes. Enquiries and applications are retained for follow-up and review. To request access, correction or deletion, or ask about a record's retention, email the school from your registered address. We may verify your identity and explain records that need to be retained. Signing out removes the website's stored authentication details from that browser; it does not delete your school account.</p></section>
       <section><h2 className="text-3xl">Young learners and policy changes</h2><p className="mt-4">For programmes involving children, a parent or guardian should contact admissions to arrange participation and discuss personal information and classroom permissions. Do not submit children's identity documents through public forms. We may update this policy as services change; the date above identifies the latest revision.</p></section>
-      <Link className="ef-btn-ghost inline-block" href="/admissions">Contact the school →</Link>
+      <NavigationLink className="ef-btn-ghost inline-block" href="/admissions">Contact the school →</NavigationLink>
     </div>
   </main></>
 }

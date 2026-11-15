@@ -1,3 +1,4 @@
+import {Button,NavigationLink} from '../components/Button'
 import { GoogleSignIn } from '../components/GoogleSignIn'
 import { TechPhoto } from '../components/TechPhoto'
 import Link from 'next/link'
@@ -70,11 +71,11 @@ export default function LoginPage() {
                 />
               </label>
               {error && <p className="text-sm ef-text-danger ef-toast">{error}</p>}
-              <button type="submit" disabled={busy} className="ef-btn w-full">
+              <Button type="submit" disabled={busy} className="ef-btn w-full">
                 {busy ? 'Signing in…' : 'Sign in'}
-              </button>
+              </Button>
             </form>
-            <Link href="/forgot-password" className="ef-btn-ghost mt-5 inline-block">Forgot your password?</Link>
+            <NavigationLink href="/forgot-password" className="ef-btn-ghost mt-5 inline-block">Forgot your password?</NavigationLink>
             <p className="mt-6 text-sm ef-muted">
               New student?{' '}
               <Link href="/register" className="text-fern hover:underline">

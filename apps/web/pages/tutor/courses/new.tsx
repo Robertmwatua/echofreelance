@@ -1,3 +1,5 @@
+import {Panel,Field} from '../../../components/forms/Fields'
+import {Button,NavigationLink} from '../../../components/Button'
 import { RoadmapEditor, roadmapLines } from '../../../components/tutor/RoadmapEditor'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -67,28 +69,25 @@ function NewCourseForm() {
   return (
     <>
       <DocumentHead title="New course — Tutor" />
-      <main className="relative mx-auto max-w-2xl px-6 py-12">
+      <main className="ef-staff-form relative mx-auto max-w-4xl px-6 py-8">
         <div className="relative">
-          <Link href="/tutor" className="ef-link text-sm">
+          <NavigationLink href="/tutor" className="ef-link text-sm">
             ← Tutor desk
-          </Link>
-          <p className="ef-page-label">Workshop / a new course</p><h1 className="mt-4   text-ink  ef-title">Teach what you know.</h1>
+          </NavigationLink>
+          <p className="ef-page-label">Workshop / a new course</p><h1 className="mt-4   text-ink  ef-staff-title">Teach what you know.</h1>
           <p className="ef-muted mt-2 text-sm">
             Set the basics now — add lessons, assignments, and live classes after.
           </p>
 
-          <form onSubmit={onSubmit} className="ef-panel mt-8 space-y-5">
-            <label className="block text-sm">
-              <span className="mb-1.5 block font-medium text-ink/85">Title</span>
-              <input
+          <Panel number="01" title="Course basics"><form onSubmit={onSubmit} className="ef-panel mt-8 space-y-5">
+            <Field label="Title"><input
                 required
                 minLength={3}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="ef-input"
                 placeholder="e.g. Intro to Web Security"
-              />
-            </label>
+              /></Field>
             <label className="block text-sm">
               <span className="mb-1.5 block font-medium text-ink/85">Description</span>
               <textarea
@@ -102,17 +101,12 @@ function NewCourseForm() {
               />
             </label>
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm">
-                <span className="mb-1.5 block font-medium text-ink/85">Category</span>
-                <CategoryField
+              <Field label="Category"><CategoryField
                   value={category}
                   onChange={setCategory}
                   suggestions={suggestions}
-                />
-              </label>
-              <label className="block text-sm">
-                <span className="mb-1.5 block font-medium text-ink/85">Level</span>
-                <select
+                /></Field>
+              <Field label="Level"><select
                   value={level}
                   onChange={(e) => setLevel(e.target.value)}
                   className="ef-input"
@@ -120,16 +114,15 @@ function NewCourseForm() {
                   <option>Beginner</option>
                   <option>Intermediate</option>
                   <option>Advanced</option>
-                </select>
-              </label>
+                </select></Field>
             </div>
             <p className="ef-muted text-sm">School fees are set and confirmed by an administrator, in KES.</p>
             <p className="ef-muted text-sm">New courses start as drafts. Add lessons, then publish from your studio.</p>
             {error && <p className="text-sm ef-text-danger ef-toast">{error}</p>}
-            <RoadmapEditor value={roadmap} change={setRoadmap} listed={publicPreview} setListed={setPublicPreview}/><button type="submit" disabled={busy} className="ef-btn w-full sm:w-auto">
+            <RoadmapEditor value={roadmap} change={setRoadmap} listed={publicPreview} setListed={setPublicPreview}/><Button type="submit" disabled={busy} className="ef-btn w-full sm:w-auto">
               {busy ? 'Saving…' : 'Create course'}
-            </button>
-          </form>
+            </Button>
+          </form></Panel>
         </div>
       </main>
     </>

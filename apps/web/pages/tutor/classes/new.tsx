@@ -1,3 +1,5 @@
+import {Panel,Field} from '../../../components/forms/Fields'
+import {Button} from '../../../components/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FormEvent, useEffect, useState } from 'react'
@@ -63,15 +65,13 @@ function NewClassForm() {
         <Link href="/tutor" className="text-sm text-fern hover:underline">
           ← Tutor desk
         </Link>
-        <p className="ef-page-label">Schedule / a new session</p><h1 className="mt-4   text-ink ef-title">Make room for questions.</h1>
+        <p className="ef-page-label">Schedule / a new session</p><h1 className="mt-4   text-ink ef-staff-title">Make room for questions.</h1>
         <p className="ef-muted mt-2">
           A private classroom room is created automatically (in-browser video). Optional: paste your
           own Meet/Zoom link instead.
         </p>
-        <form onSubmit={onSubmit} className="ef-panel mt-8 space-y-4">
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium">Course</span>
-            <select
+        <Panel number="01" title="Class details"><form onSubmit={onSubmit} className="ef-panel mt-8 space-y-4">
+          <Field label="Course"><select
               required
               value={courseId}
               onChange={(e) => setCourseId(e.target.value)}
@@ -83,18 +83,14 @@ function NewClassForm() {
                   {c.title}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium">Session title</span>
-            <input
+            </select></Field>
+          <Field label="Session title"><input
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="ef-input"
               placeholder="e.g. Live lab: phishing triage"
-            />
-          </label>
+            /></Field>
           <label className="block text-sm">
             <span className="mb-1 block font-medium">Description</span>
             <textarea
@@ -105,42 +101,33 @@ function NewClassForm() {
             />
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm">
-              <span className="mb-1 block font-medium">Starts</span>
-              <input
+            <Field label="Starts"><input
                 required
                 type="datetime-local"
                 value={startsAt}
                 onChange={(e) => setStartsAt(e.target.value)}
                 className="ef-input"
-              />
-            </label>
-            <label className="block text-sm">
-              <span className="mb-1 block font-medium">Ends</span>
-              <input
+              /></Field>
+            <Field label="Ends"><input
                 required
                 type="datetime-local"
                 value={endsAt}
                 onChange={(e) => setEndsAt(e.target.value)}
                 className="ef-input"
-              />
-            </label>
+              /></Field>
           </div>
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium">Custom meeting URL (optional)</span>
-            <input
+          <Field label="Custom meeting URL (optional)"><input
               type="url"
               value={customUrl}
               onChange={(e) => setCustomUrl(e.target.value)}
               className="ef-input"
               placeholder="Leave blank for built-in live classroom"
-            />
-          </label>
+            /></Field>
           {error && <p className="text-sm ef-text-danger ef-toast">{error}</p>}
-          <button type="submit" disabled={busy || !courseId} className="ef-btn">
+          <Button type="submit" disabled={busy || !courseId} className="ef-btn">
             {busy ? 'Scheduling…' : 'Publish session'}
-          </button>
-        </form>
+          </Button>
+        </form></Panel>
       </main>
     </>
   )

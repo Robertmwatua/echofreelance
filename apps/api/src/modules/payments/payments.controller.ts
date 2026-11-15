@@ -18,6 +18,8 @@ export class PaymentsController {
   reconciliation(@Query('offset') offset?:string){return this.payments.reconciliation(Math.max(0,Math.min(100000,Math.floor(Number(offset)||0))))}
   @UseGuards(JwtAuthGuard, RolesGuard) @Roles(Role.Admin) @Patch('courses/:id/fee')
   fee(@Param('id') id: string, @Body() body: SetCourseFeeDto) { return this.payments.setFee(id,body.amountKes,body) }
+  @UseGuards(JwtAuthGuard) @Get('courses/:id/community')
+  community(@Param('id') id:string,@CurrentUser() user:AuthUser){return this.payments.studentGroup(id,user.id)}
   @UseGuards(JwtAuthGuard) @Get('courses/:id')
   summary(@Param('id') id: string, @CurrentUser() user: AuthUser) { return this.payments.summary(id,user.id) }
   @UseGuards(JwtAuthGuard) @Post('courses/:id')

@@ -1,3 +1,4 @@
+import {Button} from './Button'
 import { InstallApp } from './InstallApp'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -12,8 +13,9 @@ import {
 } from '../lib/api'
 import { SITE_NAME } from '../lib/brand'
 import { applyTheme, getStoredTheme, Theme, toggleTheme } from '../lib/theme'
-import { CommandPalette } from './CommandPalette'
-import { AskTutor } from './AskTutor'
+import dynamic from 'next/dynamic'
+const CommandPalette=dynamic(()=>import('./CommandPalette').then(m=>m.CommandPalette),{ssr:false})
+const AskTutor=dynamic(()=>import('./AskTutor').then(m=>m.AskTutor),{ssr:false})
 
 export function SiteShell({ children }: { children: ReactNode }) {
   const router = useRouter()
@@ -143,35 +145,33 @@ export function SiteShell({ children }: { children: ReactNode }) {
           <nav className="mx-auto hidden items-center gap-1 xl:flex" aria-label="Main"><Link href="/" aria-current={router.pathname === '/' ? 'page' : undefined} className="ef-nav-link">Home</Link>
             <Link href="/courses" aria-current={isActive('/courses') ? 'page' : undefined} className="ef-nav-link">Courses</Link>
             <Link href="/classes" aria-current={isActive('/classes') ? 'page' : undefined} className="ef-nav-link">Live classes</Link>
-            <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-nav-link">Community</Link><Link href="/careers" aria-current={isActive('/careers') ? 'page' : undefined} className="ef-nav-link">Careers</Link>
-            {role === 'Student' && (
+            <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-nav-link">Community</Link>
+            {role && (
               <Link href="/student" aria-current={isActive('/student') ? 'page' : undefined} className="ef-nav-link">My learning</Link>
             )}
             {(role === 'Tutor' || role === 'Admin') && (
               <Link href="/tutor" aria-current={isActive('/tutor') ? 'page' : undefined} className="ef-nav-link">Tutor</Link>
             )}
-            {role === 'Admin' && (
-              <Link href="/admin" aria-current={isActive('/admin') ? 'page' : undefined} className="ef-nav-link">Admin</Link>
-            )}
+            {role === 'Admin' && <details className="ef-manage-menu"><summary className="ef-nav-link">Manage ▾</summary><nav aria-label="School management"><Link href="/admin">Admin overview</Link><Link href="/admin/people">People & tutors</Link><Link href="/admin/courses">Courses</Link><Link href="/admin/payments">Fees & payments</Link></nav></details>}
           </nav>
 
           {/* right: actions */}
           <div className="ml-auto flex items-center gap-2">
-            <button className="ef-nav-search hidden sm:inline-flex" onClick={() => window.dispatchEvent(new CustomEvent('ef:open-search'))}>Search <kbd>Ctrl K</kbd></button>
-            <button type="button" onClick={() => setTheme(toggleTheme())} className="ef-theme-toggle" aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>{theme === 'dark' ? 'Light' : 'Dark'}</button>
+            <Button className="ef-nav-search hidden sm:inline-flex" onClick={() => window.dispatchEvent(new CustomEvent('ef:open-search'))}>Search <kbd>Ctrl K</kbd></Button>
+            <Button type="button" onClick={() => setTheme(toggleTheme())} className="ef-theme-toggle" aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>{theme === 'dark' ? 'Light' : 'Dark'}</Button>
 
             {user && (
               <div className="relative">
-                <button type="button" onClick={openBell} className="ef-icon-btn" aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ''}`}>
+                <Button type="button" onClick={openBell} className="ef-icon-btn" aria-label={`Notifications${unread > 0 ? ` (${unread} unread)` : ''}`}>
                   <svg viewBox="0 0 24 24" aria-hidden><path d="M18 8.6a6 6 0 1 0-12 0c0 6-2.2 7.4-2.2 7.4h16.4S18 14.6 18 8.6" /><path d="M13.7 19.8a2 2 0 0 1-3.4 0" /></svg>
                   {unread > 0 && <span className="ef-badge">{unread > 9 ? '9+' : unread}</span>}
-                </button>
+                </Button>
                 {openNotifs && (
                   <div className="ef-popover ef-header-notifications absolute right-0 mt-3 w-80 max-w-[90vw] p-3">
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <p className="ef-eyebrow">Notifications</p>
                       {unread > 0 && (
-                        <button type="button" onClick={readAll} className="text-xs text-fern hover:underline">Mark all read</button>
+                        <Button type="button" onClick={readAll} className="text-xs text-fern hover:underline">Mark all read</Button>
                       )}
                     </div>
                     {notifs.length === 0 ? (
@@ -180,10 +180,10 @@ export function SiteShell({ children }: { children: ReactNode }) {
                       <ul className="max-h-72 space-y-1 overflow-y-auto">
                         {notifs.map((n) => (
                           <li key={n.id}>
-                            <button type="button" onClick={() => readOne(n)} className={`w-full  px-2.5 py-2 text-left text-sm transition-colors hover:bg-mist ${n.read ? 'opacity-60' : ''}`}>
+                            <Button type="button" onClick={() => readOne(n)} className={`w-full  px-2.5 py-2 text-left text-sm transition-colors hover:bg-mist ${n.read ? 'opacity-60' : ''}`}>
                               <span className="block font-medium text-ink">{n.title}</span>
                               <span className="ef-muted mt-0.5 block text-xs">{n.body}</span>
-                            </button>
+                            </Button>
                           </li>
                         ))}
                       </ul>
@@ -210,9 +210,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   {role==='Admin'&&<Link href="/admin/planner" className="ef-account-action">School planner</Link>}<Link href="/careers" className="ef-account-action">Careers & applications</Link><Link href="/notes" className="ef-account-action">Notes</Link>
                   <Link href="/certificates/mine" className="ef-account-action">Certificates</Link>
                   <Link href="/settings" className="ef-account-action">Settings</Link>
-                  <button type="button" onClick={() => setTheme(toggleTheme())} className="ef-account-action">{theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}</button>
+                  <Button type="button" onClick={() => setTheme(toggleTheme())} className="ef-account-action">{theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}</Button>
                   <hr className="ef-divider my-1" />
-                  <button type="button" onClick={logout} className="ef-account-action ef-text-danger">Log out</button>
+                  <Button type="button" onClick={logout} className="ef-account-action ef-text-danger">Log out</Button>
                 </div>
               </details>
             ) : (
@@ -223,7 +223,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
             )}
 
             {/* mobile toggle */}
-            <button
+            <Button
               ref={menuButton}
               type="button"
               aria-controls="mobile-navigation"
@@ -237,14 +237,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 <span className={`block h-[1.5px] w-full bg-ink transition-opacity duration-200 ${menuOpen ? 'opacity-0' : ''}`} />
                 <span className={`block h-[1.5px] w-full bg-ink transition-transform duration-300 ${menuOpen ? '-translate-y-[6.5px] -rotate-45' : ''}`} />
               </span>
-            </button>
+            </Button>
           </div>
         </div>
 
         {menuOpen && (
           <div id="mobile-navigation" className="ef-drawer xl:hidden">
             <nav className="flex flex-col gap-1" aria-label="Mobile">
-              <button className="ef-drawer-link" onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('ef:open-search')) }}>Search courses · Ctrl K</button>
+              <Button className="ef-drawer-link" onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('ef:open-search')) }}>Search courses · Ctrl K</Button>
                   <p className="ef-drawer-label">Browse</p><Link href="/" aria-current={router.pathname === '/' ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Home</Link>
               <Link href="/courses" aria-current={isActive('/courses') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Courses</Link>
               <Link href="/classes" aria-current={isActive('/classes') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Live classes</Link>
@@ -253,7 +253,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
               {user ? (
                 <>
                   <p className="ef-drawer-label mt-4">Your space</p>
-                  {role === 'Student' && (
+                  {role && (
                     <Link href="/student" aria-current={isActive('/student') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>My learning</Link>
                   )}
                   {(role === 'Tutor' || role === 'Admin') && (
@@ -274,7 +274,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                       <span className="text-[11px]   text-fern">{role}</span>
                     </span>
                   </div>
-                  <button type="button" onClick={logout} className="ef-drawer-link mt-1 text-left ef-text-danger">Log out</button>
+                  <Button type="button" onClick={logout} className="ef-drawer-link mt-1 text-left ef-text-danger">Log out</Button>
                 </>
               ) : (
                 <>
@@ -290,7 +290,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
       </header>
       <a href="#main-content" className="ef-skip-link">Skip to content</a>
-      {router.pathname !== '/' && <nav className="ef-breadcrumb" aria-label="Breadcrumb"><Link href="/">← Home</Link><span aria-hidden="true">/</span><span>{router.pathname.startsWith('/tutor') ? 'Teaching studio' : router.pathname.split('/')[1].replace('discussions','Community')}</span></nav>}<div id="main-content" tabIndex={-1}>{children}</div>
+      {router.pathname !== '/' && !router.pathname.startsWith('/admin') && router.pathname !== '/tutor/courses/[id]' && <nav className="ef-breadcrumb" aria-label="Breadcrumb"><Link href="/">← Home</Link><span aria-hidden="true">/</span><span>{router.pathname.startsWith('/tutor') ? 'Teaching studio' : router.pathname.split('/')[1].replace('discussions','Community')}</span></nav>}<div id="main-content" tabIndex={-1}>{children}</div>
 
       {/* mobile bottom tab bar */}
       <nav className="ef-tabbar xl:hidden" aria-label="Primary">
@@ -363,9 +363,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="ef-muted text-xs">© {new Date().getFullYear()} {SITE_NAME}</p><Link href="/privacy" className="ef-footer-link text-xs">Privacy policy</Link>
-            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="ef-footer-link self-start text-xs sm:self-auto">
+            <Button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="ef-footer-link self-start text-xs sm:self-auto">
               Back to top ↑
-            </button>
+            </Button>
           </div>
         </div>
       </footer>

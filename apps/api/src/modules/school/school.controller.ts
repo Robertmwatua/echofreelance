@@ -3,6 +3,7 @@ import { Role } from '@prisma/client'
 import { AuthUser, CurrentUser } from '../../common/current-user.decorator'
 import { Roles } from '../../common/roles.decorator'
 import { RolesGuard } from '../../common/roles.guard'
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { ApplyJobDto, EnquiryDto, JobDto, ReviewApplicationDto, ReviewEnquiryDto, TaskDto, TaskStatusDto } from './school.dto'
 import { SchoolService } from './school.service'
@@ -10,6 +11,7 @@ const page=(value?:string)=>Math.max(0,Math.min(100000,Math.floor(Number(value)|
 @Controller('school')
 export class SchoolPublicController {
  constructor(private readonly service:SchoolService){}
+ @UseGuards(OptionalJwtAuthGuard) @Get('search') learningSearch(@Query('q') q:string|undefined,@CurrentUser() user:AuthUser|null){return this.service.learningSearch((q||'').trim().slice(0,100),user)}
  @Post('enquiries') enquire(@Body() dto:EnquiryDto,@Req() req:{ip?:string}){return this.service.enquire(dto,req.ip||'unknown')}
  @Get('jobs') jobs(){return this.service.jobs()}
  @Get('jobs/:id') job(@Param('id') id:string){return this.service.job(id)}
@@ -22,6 +24,11 @@ export class SchoolPublicController {
 @Controller('school/admin')
 export class SchoolAdminController {
  constructor(private readonly service:SchoolService){}
+ // TODO: replace derived activity with a durable audit stream when event retention is introduced.
+ @Get('overview') overview(){return this.service.overview()}
+ @Get('activity') activity(@Query('offset') offset?:string){return this.service.activity(page(offset))}
+ @Get('search') search(@Query('q') q?:string){return this.service.search((q||'').trim().slice(0,100))}
+ @Get('community') community(){return this.service.community()}
  @Get('enquiries') enquiries(@Query('offset') offset?:string,@Query('status') status?:string){return this.service.enquiries(page(offset),status)}
  @Patch('enquiries/:id') reviewEnquiry(@Param('id') id:string,@Body() dto:ReviewEnquiryDto){return this.service.reviewEnquiry(id,dto)}
  @Get('jobs') jobs(){return this.service.jobs(true)}

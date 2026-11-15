@@ -1,3 +1,5 @@
+import {Panel,Field} from '../components/forms/Fields'
+import {Button} from '../components/Button'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
 import { FormEvent, useEffect, useState } from 'react'
@@ -81,7 +83,7 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
       <DocumentHead title="Settings — EchoFreelance Tech School" />
       <main className="mx-auto max-w-6xl px-6 py-12">
         <p className="text-xs font-semibold   text-fern">06 / Your account</p>
-        <h1 className="mt-1   text-ink ef-title">Make yourself<br/>at home.</h1>
+        <h1 className="mt-1   text-ink ef-staff-title">Make yourself<br/>at home.</h1>
         <p className="ef-muted mt-2">
           Update your profile and login credentials
           {stored?.role ? ` · signed in as ${stored.role}` : ''}.
@@ -90,21 +92,15 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
         {message && <p className="mt-6 text-moss ef-toast">{message}</p>}
         {error && <p className="mt-6 ef-text-danger ef-toast">{error}</p>}
 
-        <div className="ef-settings-forms"><form onSubmit={saveProfile} className="ef-panel mt-8 space-y-4">
+        <div className="ef-settings-forms"><Panel number="01" title="Account details"><form onSubmit={saveProfile} className="ef-panel mt-8 space-y-4">
           <h2 className="font-display text-xl text-ink">Profile</h2>
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium text-ink/90">Display name</span>
-            <input className="ef-input" value={name} onChange={(e) => setName(e.target.value)} />
-          </label>
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium text-ink/90">Headline</span>
-            <input
+          <Field label="Display name"><input className="ef-input" value={name} onChange={(e) => setName(e.target.value)} /></Field>
+          <Field label="Headline"><input
               className="ef-input"
               value={headline}
               onChange={(e) => setHeadline(e.target.value)}
               placeholder="e.g. Cybersecurity tutor"
-            />
-          </label>
+            /></Field>
           <label className="block text-sm">
             <span className="mb-1 block font-medium text-ink/90">Bio</span>
             <textarea
@@ -115,49 +111,40 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
             />
           </label>
           <p className="text-sm ef-muted">Email: {initial.email}</p>
-          <button type="submit" disabled={busy} className="ef-btn">
+          <Button type="submit" disabled={busy} className="ef-btn">
             Save profile
-          </button>
-        </form>
+          </Button>
+        </form></Panel>
 
         <form onSubmit={savePassword} className="ef-panel mt-6 space-y-4">
           <h2 className="font-display text-xl text-ink">Password</h2>
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium text-ink/90">Current password</span>
-            <input
+          <Field label="Current password"><input
               type="password"
               required
               minLength={8}
               className="ef-input"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-            />
-          </label>
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium text-ink/90">New password</span>
-            <input
+            /></Field>
+          <Field label="New password"><input
               type="password"
               required
               minLength={8}
               className="ef-input"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-            />
-          </label>
-          <label className="block text-sm">
-            <span className="mb-1 block font-medium text-ink/90">Confirm new password</span>
-            <input
+            /></Field>
+          <Field label="Confirm new password"><input
               type="password"
               required
               minLength={8}
               className="ef-input"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-            />
-          </label>
-          <button type="submit" disabled={busy} className="ef-btn">
+            /></Field>
+          <Button type="submit" disabled={busy} className="ef-btn">
             Update password
-          </button>
+          </Button>
         </form>
 
         </div><p className="mt-8 text-sm ef-muted">

@@ -1,3 +1,4 @@
+import {Button} from './Button'
 import { CardSkeletons } from './PageFeedback'
 import { useRouter } from 'next/router'
 import { ReactNode, useEffect, useState } from 'react'
@@ -37,7 +38,7 @@ export function RequireRole({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.asPath, roles.join('|'), attempt])
 
-  if (error) return <main className="ef-page"><div role="alert" className="ef-panel"><h1 className="  ef-title">Unable to verify your session</h1><p className="ef-muted mt-3 ef-toast">{error}</p><button className="ef-btn mt-4" onClick={() => { setError(''); setAttempt(a => a + 1) }}>Try again</button></div></main>
+  if (error) return <main className="ef-page"><div role="alert" className="ef-panel"><h1 className="  ef-title">Unable to verify your session</h1><p className="ef-muted mt-3 ef-toast">{error}</p><Button className="ef-btn mt-4" onClick={() => { setError(''); setAttempt(a => a + 1) }}>Try again</Button></div></main>
 
   if (!ready || !user) {
     return (

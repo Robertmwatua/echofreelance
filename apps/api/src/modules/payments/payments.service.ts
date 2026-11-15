@@ -163,6 +163,13 @@ export class PaymentsService {
     const paidCents=previous._sum.amountCents||0
     return receiptPdf({reference:payment.id,receipt:payment.receipt,student:payment.account.user.name||payment.account.user.email,email:payment.account.user.email,course:payment.account.course.title,amountCents:payment.amountCents,totalCents:payment.account.totalCents,paidCents,balanceCents:Math.max(0,payment.account.totalCents-paidCents),settledAt:payment.settledAt})
   }
+  async studentGroup(courseId:string,userId:string){
+    const account=await this.prisma.courseFeeAccount.findUnique({where:{userId_courseId:{userId,courseId}},include:{payments:{where:{status:'Succeeded'},select:{amountCents:true}}}})
+    const enrolled=await this.prisma.enrollment.findUnique({where:{userId_courseId:{userId,courseId}}})
+    const paid=account?.payments.reduce((n,p)=>n+p.amountCents,0)||0
+    if(!account||!enrolled||paid<=0||paid<account.unlockCents)throw new ForbiddenException('The student group opens after your access deposit is verified. Contact admissions about offline payments.')
+    const url=process.env.STUDENT_WHATSAPP_GROUP_URL?.trim();if(!url)throw new ServiceUnavailableException('The student group invitation is being connected. Please contact the school.');let parsed:URL;try{parsed=new URL(url)}catch{throw new ServiceUnavailableException('The student group invitation needs updating.')}if(parsed.protocol!=='https:'||parsed.hostname!=='chat.whatsapp.com'||parsed.username||parsed.password)throw new ServiceUnavailableException('The student group invitation needs updating.');return {url}
+  }
   async reconciliation(offset=0) {
     const accounts=await this.prisma.courseFeeAccount.findMany({skip:offset,take:30,orderBy:{createdAt:'desc'},include:{user:{select:{name:true,email:true}},course:{select:{id:true,title:true}},payments:{select:{id:true,status:true,amountCents:true,createdAt:true}}}})
     const total=await this.prisma.courseFeeAccount.count()

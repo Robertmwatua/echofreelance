@@ -1,3 +1,4 @@
+import {Button} from '../../components/Button'
 import {AssignedTasks} from '../../components/tutor/AssignedTasks'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
@@ -19,7 +20,7 @@ function TutorDesk() {
   async function reload() { try { const c=await api.taughtCourses();setCourses(c);setError('') } catch(e) {setError(e instanceof Error?e.message:'Could not load courses');throw e} finally {setLoading(false)} }
   useEffect(()=>{void reload().catch(()=>{})},[])
   return <><DocumentHead title="Creator studio — EchoFreelance Tech School"/><main className="ef-workspace studio mx-auto max-w-[1440px] px-5 pb-24 pt-6 sm:px-8"><AssignedTasks/>
-    <p className="ef-page-label">Workshop / tutor desk</p><nav className="studio-subnav" aria-label="Tutor studio">{['Courses','Live classes','Students','Earnings'].map(t=><button key={t} aria-current={tab===t?'page':undefined} onClick={()=>setTab(t)}>{t}</button>)}<Link href="/settings">Settings</Link></nav>
+    <p className="ef-page-label">Workshop / tutor desk</p><nav className="studio-subnav" aria-label="Tutor studio">{['Courses','Live classes','Students','Earnings'].map(t=><Button key={t} aria-current={tab===t?'page':undefined} onClick={()=>setTab(t)}>{t}</Button>)}<Link href="/settings">Settings</Link></nav>
     {tab==='Courses' && <CourseStudio courses={courses} setCourses={setCourses} loading={loading} error={error} reload={reload}/>}
     {tab==='Live classes' && <TutorLiveClasses courses={courses}/>}
     {tab==='Students' && <><div className="studio-heading"><h1>Students</h1></div><p className="ef-muted mb-6">Open a course to view its student roster, submissions and progress.</p><div className="studio-table-wrap"><ul className="studio-rosters">{courses.filter(c=>(c.enrollmentCount||0)>0).map(c=><li key={c.id}><Link href={`/tutor/courses/${c.id}#students`}>{c.title}<span>{c.enrollmentCount} student{c.enrollmentCount===1?'':'s'} →</span></Link></li>)}</ul>{!courses.some(c=>(c.enrollmentCount||0)>0)&&<p className="p-6 ef-muted">{loading?'Loading enrollments…':error?'Could not load enrollments. Return to Courses and retry.':'No enrolled students yet.'}</p>}</div></>}

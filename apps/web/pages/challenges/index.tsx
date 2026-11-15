@@ -1,3 +1,4 @@
+import {NavigationLink} from '../../components/Button'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
@@ -15,9 +16,9 @@ export default function ChallengesRedirect() {
       <DocumentHead title="Discussions — EchoFreelance Tech School" />
       <main className="mx-auto max-w-3xl px-5 py-16">
         <p className="ef-section-label">Community / moving rooms</p><h1 className="ef-title mt-4">One conversation at a time.</h1>
-        <Link href="/discussions" className="ef-link mt-4 inline-block">
+        <NavigationLink href="/discussions" className="ef-link mt-4 inline-block">
           Go to discussions
-        </Link>
+        </NavigationLink>
       </main>
     </>
   )

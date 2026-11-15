@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /tutor
+Disallow: /student
+Disallow: /settings
+Disallow: /fees
+Disallow: /api/
+Sitemap: https://www.echofreelancetechschool.com/sitemap.xml

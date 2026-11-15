@@ -1,3 +1,4 @@
+import {Button} from '../../components/Button'
 import { FeedbackCard, CardSkeletons } from '../../components/PageFeedback'
 import { useConfirmation } from '../../components/Confirmation'
 import { ClassWorkspace } from '../../components/ClassWorkspace'
@@ -158,9 +159,9 @@ export default function ClassDetailPage() {
             <div className="px-6 py-6 sm:px-8">
               <div className="flex flex-wrap gap-3">
                 {!item.registered && !item.canManage && !['Completed', 'Cancelled'].includes(item.status) && new Date(item.endsAt) > new Date() && (
-                  <button type="button" disabled={busy} onClick={register} className="ef-btn">
+                  <Button type="button" disabled={busy} onClick={register} className="ef-btn">
                     {busy ? 'Registering…' : 'Register for session'}
-                  </button>
+                  </Button>
                 )}
                 {item.canEnterRoom && (
                   <Link href={`/classes/${item.id}/room`} className="ef-btn">
@@ -194,18 +195,18 @@ export default function ClassDetailPage() {
                   </a>
                 )}
                 {item.canManage && item.status !== 'Completed' && item.status !== 'Cancelled' && (
-                  <button
+                  <Button
                     type="button"
                     disabled={busy}
                     onClick={markCompleted}
                     className="ef-btn-ghost"
                   >
                     Mark completed
-                  </button>
+                  </Button>
                 )}
               </div>
-              {item.registered && !item.canEnterRoom && item.status === 'Scheduled' && <p className="ef-panel mt-4">You’re registered. The tutor will open the room when the session starts. <button className="ef-link" onClick={() => load().catch(e => setError(e.message))}>Refresh status</button></p>}
-              {item.canManage && <div className="mt-5 flex flex-wrap gap-3">{!['Completed', 'Cancelled'].includes(item.status) && <button disabled={busy} className="ef-btn-ghost" onClick={async () => { if (!await confirm('Cancel this class?')) return; setBusy(true); try { await api.updateClass(id, { status: 'Cancelled' }); await load() } catch (e) { setError(e instanceof Error ? e.message : 'Could not cancel class') } finally { setBusy(false) } }}>Cancel class</button>}<button disabled={busy || item.status === 'Live'} onClick={deleteClass} className="ef-btn-ghost">Delete class</button>{item.status === 'Live' && <p className="ef-meta self-center">Mark completed or cancel before deleting.</p>}</div>}
+              {item.registered && !item.canEnterRoom && item.status === 'Scheduled' && <p className="ef-panel mt-4">You’re registered. The tutor will open the room when the session starts. <Button className="ef-link" onClick={() => load().catch(e => setError(e.message))}>Refresh status</Button></p>}
+              {item.canManage && <div className="mt-5 flex flex-wrap gap-3">{!['Completed', 'Cancelled'].includes(item.status) && <Button disabled={busy} className="ef-btn-ghost" onClick={async () => { if (!await confirm('Cancel this class?')) return; setBusy(true); try { await api.updateClass(id, { status: 'Cancelled' }); await load() } catch (e) { setError(e instanceof Error ? e.message : 'Could not cancel class') } finally { setBusy(false) } }}>Cancel class</Button>}<Button disabled={busy || item.status === 'Live'} onClick={deleteClass} className="ef-btn-ghost">Delete class</Button>{item.status === 'Live' && <p className="ef-meta self-center">Mark completed or cancel before deleting.</p>}</div>}
               {(item.enrolled || item.canManage) && <ClassWorkspace classId={item.id} canManage={Boolean(item.canManage)} canRemind={!['Completed', 'Cancelled'].includes(item.status) && new Date(item.endsAt) > new Date()} />}
               {message && <p className="mt-4 text-moss ef-toast">{message}</p>}
               {error && item && <p className="mt-4 ef-text-danger ef-toast">{error}</p>}
@@ -225,14 +226,14 @@ export default function ClassDetailPage() {
                       placeholder="https://…"
                       className="ef-input min-w-[16rem] flex-1 text-sm"
                     />
-                    <button
+                    <Button
                       type="button"
                       disabled={busy}
                       onClick={saveRecording}
                       className="ef-btn-ghost"
                     >
                       Save
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}

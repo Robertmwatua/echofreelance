@@ -1,3 +1,4 @@
+import {Button} from './Button'
 import { useEffect, useRef, useState } from 'react'
 
 type MeetingEvent = { isFatal?: boolean; type?: string }
@@ -82,7 +83,7 @@ export function JaasRoom({ roomUrl, onClose }: { roomUrl: string; onClose: () =>
 
   return <section aria-label="Live video classroom">
     <p role="status" className="ef-meta mb-3">{error ? 'Classroom disconnected' : state}</p>
-    {(warning || error) && <div className="ef-panel mb-4" role="alert"><p>{error || warning}</p><button type="button" className="ef-btn-ghost mt-4" onClick={() => setAttempt(a => a + 1)}>Retry video service</button></div>}
+    {(warning || error) && <div className="ef-panel mb-4" role="alert"><p>{error || warning}</p><Button type="button" className="ef-btn-ghost mt-4" onClick={() => setAttempt(a => a + 1)}>Retry video service</Button></div>}
     <div ref={parent} className="h-[70vh] min-h-[360px] overflow-hidden  border-2 border-ink bg-panel sm:h-[76vh]" />
   </section>
 }

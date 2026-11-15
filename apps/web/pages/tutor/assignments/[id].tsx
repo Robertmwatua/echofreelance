@@ -1,3 +1,4 @@
+import {Button} from '../../../components/Button'
 import { FeedbackCard } from '../../../components/PageFeedback'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -89,9 +90,9 @@ function GradePanel() {
                   value={feedback[row.id] ?? ''}
                   onChange={(e) => setFeedback((f) => ({ ...f, [row.id]: e.target.value }))}
                 />
-                <button type="submit" className="ef-btn">
+                <Button type="submit" className="ef-btn">
                   Grade
-                </button>
+                </Button>
               </form>
             </li>
           ))}

@@ -1,4 +1,6 @@
+import {Button,NavigationLink} from '../../components/Button'
 import Link from 'next/link'
+import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { FormEvent, useEffect, useState } from 'react'
 import DocumentHead from '../../components/DocumentHead'
@@ -195,13 +197,13 @@ export default function CourseDetailPage() {
 
   return (
     <>
-      <DocumentHead title={course ? `${course.title} — EchoFreelance Tech School` : 'Course'} />
+      <DocumentHead title={course ? `${course.title} — EchoFreelance Tech School` : 'Course'} description={course?.description}/>{course&&<Head><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify({'@context':'https://schema.org','@type':'Course',name:course.title,description:course.description,provider:{'@type':'EducationalOrganization',name:'EchoFreelance Tech School',url:'https://www.echofreelancetechschool.com'},url:`https://www.echofreelancetechschool.com/courses/${course.id}`}).replace(/</g,'\u003c')}}/></Head>}
       <main className="mx-auto max-w-3xl px-6 py-12">
         <Link href="/courses" className="text-sm text-fern hover:underline">
           ← Courses
         </Link>
         {loading && !course && <p role="status" className="ef-panel mt-8">Loading course…</p>}
-        {error && !course && <div className="ef-panel mt-8" role="alert"><p>{error}</p><button className="ef-btn-ghost mt-4" onClick={() => setAttempt(a => a + 1)}>Try again</button></div>}
+        {error && !course && <div className="ef-panel mt-8" role="alert"><p>{error}</p><Button className="ef-btn-ghost mt-4" onClick={() => setAttempt(a => a + 1)}>Try again</Button></div>}
         {course && (
           <>
             <div className="ef-course-heading mt-6">
@@ -238,20 +240,20 @@ export default function CourseDetailPage() {
                 ) : course.priceCents > 0 ? (
                   <Link href={`/fees?course=${encodeURIComponent(course.id)}`} className="ef-btn">Pay an instalment & enroll →</Link>
                 ) : (
-                  <button type="button" disabled={busy} onClick={enroll} className="ef-btn">
+                  <Button type="button" disabled={busy} onClick={enroll} className="ef-btn">
                     {busy ? 'Enrolling…' : 'Enroll'}
-                  </button>
+                  </Button>
                 )}
-                {course.enrolled && <Link href={`/fees?course=${encodeURIComponent(course.id)}`} className="ef-btn-ghost">Fees & receipts →</Link>}
+                {course.enrolled && <NavigationLink href={`/fees?course=${encodeURIComponent(course.id)}`} className="ef-btn-ghost">Fees & receipts →</NavigationLink>}
                 {course.enrolled && course.progress && course.progress.percent === 100 && (
-                  <button type="button" disabled={busy} onClick={claimCert} className="ef-btn-ghost">
+                  <Button type="button" disabled={busy} onClick={claimCert} className="ef-btn-ghost">
                     Get certificate
-                  </button>
+                  </Button>
                 )}
                 {course.canManage && (
-                  <Link href={`/tutor/courses/${course.id}`} className="ef-btn-ghost">
+                  <NavigationLink href={`/tutor/courses/${course.id}`} className="ef-btn-ghost">
                     Manage
-                  </Link>
+                  </NavigationLink>
                 )}
               </div>
               {message && <p role="status" className="mt-4 text-moss">{message}</p>}
@@ -303,9 +305,9 @@ export default function CourseDetailPage() {
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <Link href={`/classes/${s.id}`} className="ef-btn-ghost !py-2 text-xs">
+                          <NavigationLink href={`/classes/${s.id}`} className="ef-btn-ghost !py-2 text-xs">
                             Open
-                          </Link>
+                          </NavigationLink>
                           {s.recordingUrl && (
                             <a
                               href={s.recordingUrl}
@@ -329,7 +331,7 @@ export default function CourseDetailPage() {
               {course.lessons?.length === 0 && <p className="ef-panel mt-4 ef-muted">The tutor hasn’t added lessons yet.</p>}
               <ul className="mt-4 space-y-4">
                 {(course.lessons || []).map((lesson) => (
-                  <li key={lesson.id}><details className="ef-lesson  border border-line bg-panel">
+                  <li key={lesson.id} id={`lesson-${lesson.id}`}><details className="ef-lesson  border border-line bg-panel">
                     <summary><span className="font-semibold">{lesson.order + 1}. {lesson.title}</span><span className="ef-meta ml-3">{lesson.durationMinutes} min · {lesson.locked ? 'Locked' : lesson.completed ? 'Completed' : 'Not completed'}</span></summary>
                     <div className="ef-lesson-body flex flex-col gap-6">
                       <div>
@@ -357,22 +359,22 @@ export default function CourseDetailPage() {
                       {!lesson.locked && course.enrolled && (
                         <div className="flex flex-wrap gap-3">
                           {!lesson.completed && (
-                            <button
+                            <Button
                               type="button"
                               disabled={busy}
                               className="ef-btn-ghost !py-1.5 text-xs"
                               onClick={() => completeLesson(lesson.id)}
                             >
                               Mark complete
-                            </button>
+                            </Button>
                           )}
-                          <button
+                          <Button
                             type="button"
                             className="ef-btn-ghost !py-1.5 text-xs"
                             onClick={() => openNote(lesson.id)}
                           >
                             Notes
-                          </button>
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -392,16 +394,16 @@ export default function CourseDetailPage() {
                     placeholder="Private notes for this lesson…"
                   />
                   <div className="flex gap-2">
-                    <button type="submit" disabled={busy} className="ef-btn">
+                    <Button type="submit" disabled={busy} className="ef-btn">
                       Save note
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       className="ef-btn-ghost"
                       onClick={() => setNoteLessonId(null)}
                     >
                       Close
-                    </button>
+                    </Button>
                   </div>
                 </form>
               )}
@@ -441,9 +443,9 @@ export default function CourseDetailPage() {
                     onChange={(e) => setDiscussBody(e.target.value)}
                     placeholder="Write a comment…"
                   />
-                  <button type="submit" disabled={busy} className="ef-btn">
+                  <Button type="submit" disabled={busy} className="ef-btn">
                     Post
-                  </button>
+                  </Button>
                 </form>
               )}
             </section>
@@ -467,13 +469,13 @@ export default function CourseDetailPage() {
                         : ''}
                     </p>
                     {course.enrolled && (
-                      <button
+                      <Button
                         type="button"
                         className="mt-3 text-sm text-fern hover:underline"
                         onClick={() => setSubmitFor(a.id)}
                       >
                         {a.mySubmission ? 'Resubmit' : 'Submit work'}
-                      </button>
+                      </Button>
                     )}
                     {course.canManage && (
                       <Link
@@ -501,16 +503,16 @@ export default function CourseDetailPage() {
                     placeholder="Write your answer / lab notes…"
                   />
                   <div className="flex gap-2">
-                    <button type="submit" disabled={busy} className="ef-btn">
+                    <Button type="submit" disabled={busy} className="ef-btn">
                       Send
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       className="ef-btn-ghost"
                       onClick={() => setSubmitFor(null)}
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </form>
               )}
@@ -556,9 +558,9 @@ export default function CourseDetailPage() {
                     onChange={(e) => setReviewComment(e.target.value)}
                     placeholder="Optional comment"
                   />
-                  <button type="submit" disabled={busy} className="ef-btn">
+                  <Button type="submit" disabled={busy} className="ef-btn">
                     Submit review
-                  </button>
+                  </Button>
                 </form>
               )}
             </section>

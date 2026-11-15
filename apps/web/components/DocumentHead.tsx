@@ -1,17 +1,4 @@
 import Head from 'next/head'
-import { SITE_NAME } from '../lib/brand'
-
-export default function DocumentHead({ title }: { title?: string }) {
-  return (
-    <Head>
-      <title>{title || SITE_NAME}</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" key="viewport" />
-      <link rel="icon" href="/favicon.png" type="image/png" />
-      <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-      <link rel="manifest" href="/manifest.webmanifest" />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-title" content="EchoFreelance" />
-    </Head>
-  )
-}
+import {useRouter} from 'next/router'
+import {SITE_NAME} from '../lib/brand'
+export default function DocumentHead({title,description='Practical technology courses, live classes and learning roadmaps in cybersecurity, software development and cloud. Learn with real tutors.'}:{title?:string;description?:string}){const router=useRouter(),url='https://www.echofreelancetechschool.com'+router.asPath.split(/[?#]/)[0];const privatePage=/^\/(admin|tutor|student|settings|fees|notes|dashboard|reset-password)(\/|$)/.test(router.asPath);return <Head><title>{title||SITE_NAME}</title><meta name="description" content={description} key="description"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" key="viewport"/><link rel="canonical" href={url} key="canonical"/><meta property="og:title" content={title||SITE_NAME} key="og:title"/><meta property="og:description" content={description} key="og:description"/><meta property="og:url" content={url} key="og:url"/><meta property="og:type" content="website" key="og:type"/><meta property="og:image" content="https://www.echofreelancetechschool.com/wallpapers/student-collaboration.webp" key="og:image"/><meta name="twitter:card" content="summary_large_image"/>{privatePage&&<meta name="robots" content="noindex,nofollow"/>}<link rel="icon" href="/favicon.png" type="image/png"/><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"/><link rel="manifest" href="/manifest.webmanifest"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-title" content="EchoFreelance"/></Head>}

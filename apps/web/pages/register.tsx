@@ -1,3 +1,4 @@
+import {Button} from '../components/Button'
 import { GoogleSignIn } from '../components/GoogleSignIn'
 import { TechPhoto } from '../components/TechPhoto'
 import Link from 'next/link'
@@ -81,11 +82,11 @@ export default function RegisterPage() {
                   className="ef-input"
                 />
               </label>
-              <div className="flex flex-wrap items-center justify-between gap-3"><p id="password-help" className="ef-meta text-xs">Use at least 8 characters.</p><button type="button" className="ef-link min-h-[44px] text-sm" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Hide password' : 'Show password'}</button></div>
+              <div className="flex flex-wrap items-center justify-between gap-3"><p id="password-help" className="ef-meta text-xs">Use at least 8 characters.</p><Button type="button" className="ef-link min-h-[44px] text-sm" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Hide password' : 'Show password'}</Button></div>
               {error && <div role="alert" className="ef-toast"><p className="font-semibold">We couldn’t create your account</p><p className="mt-1">{error === 'Failed to fetch' ? 'Check your connection and try again. Your details are still here.' : error}</p></div>}
-              <button type="submit" disabled={busy} className="ef-btn w-full">
+              <Button type="submit" disabled={busy} className="ef-btn w-full">
                 {busy ? 'Creating your account…' : 'Create account →'}
-              </button>
+              </Button>
             </form>
             <p className="mt-6 text-sm ef-muted">
               Already enrolled?{' '}

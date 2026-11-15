@@ -2,6 +2,7 @@
    This is the only palette/type/spacing/shadow/motion definition file. */
 :root {
   color-scheme: light;
+  --danger: #b42318;
   --paper-rgb: 244 241 234;
   --ink-rgb: 20 19 15;
   --surface-rgb: 255 253 247;
@@ -94,3 +95,5 @@ html.dark {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+.dark { --danger: #ffb4ab; }

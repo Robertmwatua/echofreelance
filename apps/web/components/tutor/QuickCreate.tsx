@@ -1,3 +1,4 @@
+import {Button} from '../Button'
 import { RoadmapEditor, roadmapLines } from './RoadmapEditor'
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/router'
@@ -29,7 +30,7 @@ export function QuickCreate({ close, categories }: { close: () => void; categori
       <p className="ef-muted text-sm">An administrator confirms school fees after creation.</p>
       <RoadmapEditor value={roadmap} change={setRoadmap} listed={publicPreview} setListed={setPublicPreview}/>
       {error && <p role="alert" className="studio-error">{error}</p>}
-      <button className="studio-primary w-full" disabled={busy}>{busy ? 'Creating…' : 'Create and add lessons →'}</button>
+      <Button className="studio-primary w-full" disabled={busy}>{busy ? 'Creating…' : 'Create and add lessons →'}</Button>
     </form>
   </StudioDialog>
 }

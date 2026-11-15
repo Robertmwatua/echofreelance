@@ -441,6 +441,8 @@ export const api = {
       publicPreview: boolean
     }>,
   ) => request<Course>(`/courses/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  deleteLesson:(courseId:string,id:string)=>request(`/courses/${courseId}/lessons/${id}`,{method:'DELETE'}),
+  studentGroup:(courseId:string)=>request<{url:string}>(`/payments/courses/${courseId}/community`),
   duplicateCourse: (id: string) => request<Course>(`/courses/${id}/duplicate`, { method: 'POST' }),
   deleteCourse: (id: string) => request(`/courses/${id}`, { method: 'DELETE' }),
   addLesson: (

@@ -329,6 +329,10 @@ export class CoursesService {
     if(!lesson)throw new NotFoundException('Lesson not found')
     return this.prisma.lesson.update({where:{id:lessonId},data:{title:dto.title.trim(),content:dto.content,durationMinutes:dto.durationMinutes,videoUrl:dto.videoUrl||null,published:dto.published}})
   }
+  async removeLesson(courseId:string,lessonId:string,user:AuthUser){
+    const course=await this.requireCourse(courseId);this.assertCanManage(course.tutorId,user)
+    return this.prisma.$transaction(async tx=>{const lesson=await tx.lesson.findFirst({where:{id:lessonId,courseId},include:{_count:{select:{progress:true,notes:true,resources:true}}}});if(!lesson)throw new NotFoundException('Lesson not found');if(lesson.published||lesson._count.progress||lesson._count.notes||lesson._count.resources)throw new BadRequestException('Only private drafts without student progress, notes or resource links can be deleted. Unpublish or remove links first; keep teaching records with student activity.');await tx.lesson.delete({where:{id:lessonId}});const remaining=await tx.lesson.findMany({where:{courseId},orderBy:{order:'asc'},select:{id:true}});for(let order=0;order<remaining.length;order++)await tx.lesson.update({where:{id:remaining[order].id},data:{order}});return {ok:true}},{isolationLevel:'Serializable'})
+  }
   async reorder(courseId:string,user:AuthUser,ids:string[]) {
     const course=await this.requireCourse(courseId);this.assertCanManage(course.tutorId,user)
     return this.prisma.$transaction(async tx=>{

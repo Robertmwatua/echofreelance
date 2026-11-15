@@ -1,3 +1,4 @@
+import {Button,NavigationLink} from '../Button'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FormEvent, useEffect, useState } from 'react'
@@ -90,15 +91,15 @@ export function TutorLiveClasses({ courses }: { courses: Course[] }) {
                 </select>
               </label>
               <div className="flex items-end">
-                <button type="submit" disabled={starting || liveOk === false} className="ef-btn w-full">
+                <Button type="submit" disabled={starting || liveOk === false} className="ef-btn w-full">
                   {starting ? 'Starting…' : 'Start now'}
-                </button>
+                </Button>
               </div>
             </form>
           )}
         </section>
 
-{error && <p className="studio-error" role="alert">{error} <button className="studio-ghost" onClick={load}>Retry</button></p>}        <section className="mt-12">
+{error && <p className="studio-error" role="alert">{error} <Button className="studio-ghost" onClick={load}>Retry</Button></p>}        <section className="mt-12">
           <h2 className="font-display text-2xl text-ink">Your live classes</h2>
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">
             {classes.map((item) => (
@@ -121,9 +122,9 @@ export function TutorLiveClasses({ courses }: { courses: Course[] }) {
                         Rejoin
                       </Link>
                     )}
-                    <Link href={`/classes/${item.id}`} className="ef-btn-ghost !py-2 text-xs">
+                    <NavigationLink href={`/classes/${item.id}`} className="ef-btn-ghost !py-2 text-xs">
                       Roster
-                    </Link>
+                    </NavigationLink>
                   </div>
                 </div>
               </li>

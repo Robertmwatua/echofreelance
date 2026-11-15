@@ -1,3 +1,4 @@
+import {Button} from '../Button'
 import { ReactNode, useEffect, useRef } from 'react'
 
 export function StudioDialog({ title, children, close, drawer = false, busy = false }: { title: string; children: ReactNode; close: () => void; drawer?: boolean; busy?: boolean }) {
@@ -15,7 +16,7 @@ export function StudioDialog({ title, children, close, drawer = false, busy = fa
   }, [])
   return <dialog ref={ref} className={`studio-dialog ${drawer ? 'studio-drawer' : ''}`} aria-labelledby="studio-dialog-title" onCancel={e => { e.preventDefault(); if (!busy) closeRef.current() }} onClick={e => { if (e.target === e.currentTarget && !busy) close() }}>
     <div className="studio-dialog-body">
-      <header className="flex items-center justify-between gap-4"><h2 id="studio-dialog-title" className="text-xl font-semibold">{title}</h2><button type="button" className="studio-icon" aria-label="Close dialog" disabled={busy} onClick={close}>×</button></header>
+      <header className="flex items-center justify-between gap-4"><h2 id="studio-dialog-title" className="text-xl font-semibold">{title}</h2><Button type="button" className="studio-icon" aria-label="Close dialog" disabled={busy} onClick={close}>×</Button></header>
       {children}
     </div>
   </dialog>
