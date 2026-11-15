@@ -65,7 +65,7 @@ function AdminConsole() {
       <DocumentHead title="Admin — EchoFreelance Tech School" />
       <main className="mx-auto max-w-6xl px-6 py-12">
         <PageHeading label="07 / Administration" title="Keep the school moving." description="People, permissions and the details that keep learning on track." />
-        <div className="mt-4">
+        <section className="ef-panel mt-8" aria-labelledby="admin-teaching"><p className="ef-section-label">Admin / teaching & school management</p><h2 id="admin-teaching" className="mt-3 text-3xl">You can teach here, too.</h2><p className="ef-muted mt-3 max-w-2xl">Admins can manage every course, teach classes, review students and promote registered users to Tutor. You don’t need to switch roles to teach.</p><div className="mt-6 flex flex-wrap gap-5"><Link href="/tutor?tab=live#instant-class" className="ef-btn">Start instant class →</Link><Link href="/tutor/classes/new" className="ef-btn-ghost">Schedule live class</Link><Link href="/tutor" className="ef-btn-ghost">Manage all courses</Link><a href="#school-people" className="ef-btn-ghost">Add or manage tutors</a></div></section><div className="mt-4">
           <Link href="/settings" className="text-sm text-fern hover:underline">
             Your account settings →
           </Link>
@@ -92,8 +92,8 @@ function AdminConsole() {
           </dl>
         )}
 
-        <section className="mt-14">
-          <h2 className="font-display text-2xl text-ink">People & credentials</h2>
+        <section className="mt-14" id="school-people">
+          <h2 className="font-display text-2xl text-ink">People & credentials</h2><p className="ef-muted mt-3 max-w-2xl">To add a tutor, ask them to register an account, then choose Tutor beside their name below. Admins keep all teaching privileges.</p>
           <div className="ef-table-scroll mt-6"><table className="ef-data-table"><caption className="sr-only">School accounts and role management</caption><thead><tr><th scope="col">Person</th><th scope="col">Role</th><th scope="col">Manage access</th></tr></thead><tbody>
             {users.map(user=><tr key={user.id}><td><p className="font-semibold">{user.name || 'Unnamed account'}</p><p className="ef-meta mt-1">{user.email}</p></td><td><span className="ef-pill">{user.role}</span></td><td><div className="flex flex-wrap gap-3">{(['Student','Tutor','Admin'] as Role[]).map(role=><button key={role} type="button" disabled={user.role===role} onClick={()=>changeRole(user.id,role)} aria-label={`Set ${user.name || user.email} role to ${role}`} className="ef-btn-ghost text-xs">{role}</button>)}<button type="button" onClick={()=>{setResetId(user.id);setNewPassword('')}} className="ef-btn-ghost text-xs">Reset password</button></div>
             {resetId===user.id&&<div className="mt-4 flex flex-wrap items-end gap-4 border-t border-line pt-4"><label className="block flex-1 text-sm"><span className="mb-2 block">New password</span><input type="password" minLength={8} className="ef-input" value={newPassword} onChange={e=>setNewPassword(e.target.value)}/></label><button type="button" className="ef-btn" onClick={()=>resetPassword(user.id)}>Save password</button><button className="ef-btn-ghost" onClick={()=>setResetId(null)}>Cancel</button></div>}</td></tr>)}

@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import DocumentHead from '../../components/DocumentHead'
@@ -10,6 +11,8 @@ export default function TutorDeskPage() {
   return <RequireRole roles={['Tutor','Admin']}>{()=> <TutorDesk/>}</RequireRole>
 }
 function TutorDesk() {
+  const router = useRouter()
+  useEffect(() => { if (router.isReady && router.query.tab === 'live') setTab('Live classes') }, [router.isReady, router.query.tab])
   const [courses,setCourses] = useState<Course[]>([])
   const [loading,setLoading] = useState(true), [error,setError] = useState(''), [tab,setTab] = useState('Courses')
   async function reload() { try { const c=await api.taughtCourses();setCourses(c);setError('') } catch(e) {setError(e instanceof Error?e.message:'Could not load courses');throw e} finally {setLoading(false)} }

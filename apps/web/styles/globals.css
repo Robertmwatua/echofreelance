@@ -153,3 +153,7 @@ main :where(section, article, form)[id] { scroll-margin-top: 6rem; }
 .ef-ask {display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .ef-ask-input {flex:1;min-width:180px}
 .ef-kbd {font:11px var(--font-mono);color:var(--muted)}
+
+.ef-roadmap {border-top:var(--border-hard);max-width:var(--reading-width)}
+.ef-roadmap li {display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;padding:24px 0;border-bottom:var(--border-rule);align-items:baseline}
+.ef-roadmap h3 {font-size:clamp(21px,2.5vw,29px);line-height:1.25}

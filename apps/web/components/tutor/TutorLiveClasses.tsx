@@ -13,6 +13,7 @@ export function TutorLiveClasses({ courses }: { courses: Course[] }) {
  const [liveOk,setLiveOk] = useState<boolean|null>(null)
  async function load() { try {setClasses(await api.myClasses());setError('')} catch(e) {setError(e instanceof Error?e.message:'Could not load classes')} }
  useEffect(()=>{void load(); api.liveClassroomStatus().then(s=>setLiveOk(s.configured)).catch(()=>setLiveOk(null))},[])
+ useEffect(()=>{if(!instantCourseId&&courses.length)setInstantCourseId(courses.find(c=>!c.archived)?.id||'')},[courses,instantCourseId])
   async function startInstant(e: FormEvent) {
     e.preventDefault()
     if (!instantCourseId) {
@@ -35,7 +36,7 @@ export function TutorLiveClasses({ courses }: { courses: Course[] }) {
   }
 
 
- return <><div className="studio-heading"><h1>Live classes</h1><Link className="studio-primary" href="/tutor/classes/new">Schedule class</Link></div>        <section className="studio-live-section">
+ return <><div className="studio-heading"><h1>Live classes</h1><Link className="studio-primary" href="/tutor/classes/new">Schedule class</Link></div>        <section id="instant-class" className="studio-live-section">
           <h2 className="font-display text-2xl text-ink">Start instant meeting</h2>
           <p className="ef-muted mt-2 text-sm">
             Goes live immediately and opens the classroom. Enrolled students can join from Live

@@ -1,3 +1,4 @@
+import { programmeRoadmaps, publicProgrammeIds } from './programme-roadmaps'
 import {
   BadRequestException,
   ConflictException,
@@ -25,9 +26,8 @@ export class CoursesService {
   async list(userId?: string, category?: string, q?: string) {
     const courses = await this.prisma.course.findMany({
       where: {
-        published: true,
         archived: false,
-        lessons: { some: {} },
+        AND: [{ OR: [{ published: true }, { id: { in: publicProgrammeIds } }] }],
         ...(category ? { category } : {}),
         ...(q
           ? {
@@ -76,12 +76,12 @@ export class CoursesService {
   }
 
   async catalogue(query: Record<string, string>) {
-    // Page only public, lesson-ready courses. Management endpoints retain drafts.
+    // Include approved programme previews; unrelated private drafts stay private.
     const all = await this.list()
     const normalize = (value: string) => value.trim().replace(/animaion/ig, 'animation').replace(/\s+/g, ' ').toLowerCase()
-    const categories: Record<string, number> = {}
+    const categories: Record<string, number> = Object.create(null)
     for (const c of all) categories[normalize(c.category)] = (categories[normalize(c.category)] || 0) + 1
-    let filtered = all.filter(c => (!query.q || normalize(`${c.title} ${c.description} ${c.category}`).includes(normalize(query.q))) && (!query.category || normalize(c.category) === normalize(query.category)) && (!query.level || c.level.toLowerCase() === query.level.toLowerCase()) && (!query.price || (query.price === 'free' ? c.priceCents === 0 : c.priceCents > 0)) && (!query.duration || (query.duration === 'short' ? c.durationMinutes < 120 : c.durationMinutes >= 120)))
+    let filtered = all.filter(c => (!query.q || normalize(`${c.title} ${c.description} ${c.category}`).includes(normalize(query.q))) && (!query.category || normalize(c.category) === normalize(query.category)) && (!query.level || c.level.toLowerCase() === query.level.toLowerCase()) && (!query.price || (!c.feesPending && (query.price === 'free' ? c.priceCents === 0 : c.priceCents > 0))) && (!query.duration || (c.durationMinutes > 0 && (query.duration === 'short' ? c.durationMinutes < 120 : c.durationMinutes >= 120))))
     filtered.sort((a,b) => query.sort === 'newest' ? (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0) : query.sort === 'rating' ? (b.avgRating || 0) - (a.avgRating || 0) : query.sort === 'shortest' ? a.durationMinutes - b.durationMinutes : (b.enrollmentCount || 0) - (a.enrollmentCount || 0))
     const offset = Math.max(0, Math.min(100000, Math.floor(Number(query.offset) || 0)))
     const limit = Math.max(1, Math.min(24, Math.floor(Number(query.limit) || 24)))
@@ -107,8 +107,13 @@ export class CoursesService {
     const isOwner = userId === course.tutorId
     const isStaff = role === Role.Admin || role === Role.Tutor
     const archivedEnrollment = course.archived && userId ? await this.prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: id } } }) : null
-    if (!course.published && !isOwner && role !== Role.Admin && !archivedEnrollment) {
+    if (!course.published && !isOwner && role !== Role.Admin && !archivedEnrollment && !(programmeRoadmaps[id] && !course.archived)) {
       throw new NotFoundException('Course not found')
+    }
+
+    // A public roadmap does not expose private draft lessons, recordings or progress.
+    if (!course.published && !isOwner && role !== Role.Admin && !archivedEnrollment) {
+      return { ...this.mapCourse(course, false), lessons: [], sessions: [], canManage: false, isStaff }
     }
 
     const enrolled = userId
@@ -309,10 +314,14 @@ export class CoursesService {
 
   async enroll(courseId: string, userId: string) {
     const course = await this.prisma.course.findFirst({
-      where: { id: courseId, published: true },
+      where: { id: courseId, published: true, archived: false },
     })
     if (!course) {
       throw new NotFoundException('Course not found')
+    }
+
+    if (!(await this.prisma.lesson.count({ where: { courseId } }))) {
+      throw new BadRequestException('Enrollment is not open yet. Contact admissions about the next intake.')
     }
 
     const existing = await this.prisma.enrollment.findUnique({
@@ -531,6 +540,11 @@ export class CoursesService {
       enrolled,
       createdAt: course.createdAt,
       updatedAt: course.updatedAt,
+      roadmap: programmeRoadmaps[course.id]?.steps || [],
+      roadmapStatus: programmeRoadmaps[course.id] ? 'Proposed learning roadmap' : undefined,
+      feesPending: programmeRoadmaps[course.id]?.feesPending || false,
+      enrollmentOpen: course.published && !course.archived && (course._count?.lessons || 0) > 0,
+      ...(programmeRoadmaps[course.id]?.description && course.description.includes('Fees, duration, intake dates and lesson content are awaiting confirmation.') ? { description: programmeRoadmaps[course.id].description } : {}),
     }
   }
 }

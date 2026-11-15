@@ -206,7 +206,7 @@ export default function CourseDetailPage() {
           <>
             <div className="ef-course-heading mt-6">
               <p className="text-xs font-semibold   text-fern">
-                {course.category} · {course.level} · {formatPrice(course.priceCents)}
+                {course.category} · {course.level} · {course.feesPending?'Fees to be confirmed':formatPrice(course.priceCents)}
                 {reviews && reviews.count > 0 ? ` · ${reviews.average}★ (${reviews.count})` : ''}
               </p>
               <p className="ef-page-label">Course index / inside the course</p><h1 className="mt-2 ef-title">{course.title}</h1>
@@ -229,6 +229,8 @@ export default function CourseDetailPage() {
                   <Link href="/student" className="ef-btn">
                     My learning
                   </Link>
+                ) : course.enrollmentOpen === false ? (
+                  <a href={`mailto:ecofreelancetechnologyplus@gmail.com?subject=${encodeURIComponent('Course enquiry: '+course.title)}`} className="ef-btn">Ask about the next intake →</a>
                 ) : (
                   <button type="button" disabled={busy} onClick={enroll} className="ef-btn">
                     {busy ? 'Enrolling…' : 'Enroll'}
@@ -248,6 +250,8 @@ export default function CourseDetailPage() {
               {message && <p role="status" className="mt-4 text-moss">{message}</p>}
               {error && course && <p role="alert" className="mt-4 ef-text-danger">{error}</p>}
             </div>
+
+            {!!course.roadmap?.length && <section className="mt-10" aria-labelledby="roadmap-title"><p className="ef-section-label">Programme / the route ahead</p><h2 id="roadmap-title" className="mt-3 text-3xl">Your learning roadmap</h2><p className="ef-muted mt-3 max-w-2xl">{course.roadmapStatus || 'Learning roadmap'}. Topics and sequence may be refined by your tutor; this outline is separate from the lessons below.</p><ol className="ef-roadmap mt-6">{course.roadmap.map((step,index)=><li key={step}><span className="ef-meta">{String(index+1).padStart(2,'0')}</span><h3>{step}</h3></li>)}</ol>{course.enrollmentOpen === false && <p className="ef-toast" role="status">The programme is available to explore. Lesson content and enrollment are being prepared; contact admissions for intake dates{course.feesPending?', fees':''} and availability.</p>}</section>}
 
             {announcements.length > 0 && (
               <section className="mt-10">
