@@ -24,7 +24,7 @@ export function CoursePaymentPanel({courseId}: {courseId: string}) {
   async function refresh() {const result=await api.feeStatement(courseId);setStatement(result);return result}
   useEffect(()=>{let alive=true;setStatement(null);setError('');key.current=null;requestPayload.current=null;api.feeStatement(courseId).then(r=>{if(alive)setStatement(r)}).catch(e=>{if(alive)setError(e.message)});return()=>{alive=false}},[courseId,attempt])
   const pending=statement?.payments.find(active)
-  const failed=statement?.payments.find(p=>p.status==='Failed')
+  const failed=statement?.payments[0]?.status==='Failed'?statement.payments[0]:undefined
   useEffect(()=>{
     if (!pending || pending.status!=='Pending') return
     let alive=true, timer: ReturnType<typeof setTimeout>, checks=0
