@@ -10,3 +10,23 @@
 @media(min-width:700px){.paper-hero{padding-top:70px;padding-bottom:100px}.paper-hero-bottom{grid-template-columns:1fr 1.15fr;gap:50px}.paper-copy{padding-top:22px}.paper-workbench{margin-top:-110px;min-height:440px}.paper-workshop-grid{grid-template-columns:1fr 1fr;gap:70px}.paper-proof{padding-top:50px}.paper-course-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.paper-index-card:nth-child(2){transform:translateY(20px)}.paper-index-card:nth-child(2):hover{transform:translate(2px,22px)}.paper-programs{padding-block:64px 90px}}
 @media(min-width:1100px){.paper-hero h1>span:nth-child(2){margin-left:7%}.paper-hero-bottom{grid-template-columns:5fr 7fr;gap:90px}.paper-copy{margin-left:12%;max-width:350px}.paper-workbench{margin-top:-190px;min-height:500px}.paper-photo{width:62%;right:5%}.paper-notebook{width:44%;top:145px}.paper-terminal{width:74%}.paper-workshop-grid{grid-template-columns:7fr 5fr}.paper-proof{max-width:450px}}
 @media(prefers-reduced-motion:reduce){.paper-home *{animation:none!important;transition:none!important}}
+.paper-course-link {display:inline-flex;justify-content:space-between;align-items:center;gap:28px;min-height:54px;padding:14px 20px;border:var(--border-hard);background:var(--surface);color:var(--ink);box-shadow:var(--shadow-offset);font-size:14px;font-weight:700;transition:transform var(--motion-fast),box-shadow var(--motion-fast)}
+.paper-course-link:hover {transform:translate(2px,2px);box-shadow:var(--shadow-pressed)}
+@media(max-width:699px) {
+ .paper-hero {padding-top:32px;padding-bottom:52px}
+ .paper-hero h1 {font-size:clamp(44px,11.8vw,70px);line-height:.99;letter-spacing:-.06em}
+ .paper-hero-bottom {gap:28px;margin-top:28px}
+ .paper-copy {max-width:100%}
+ .paper-actions {gap:16px;width:100%}
+ .paper-primary,.paper-course-link {width:100%;min-height:54px}
+ .paper-workbench {min-height:350px;margin-top:20px}
+ .paper-photo {width:78%;right:2%;top:10px;transform:rotate(2deg)}
+ .paper-notebook {width:43%;top:108px;left:2%;transform:rotate(-5deg)}
+ .paper-terminal {width:88%;right:2%;bottom:0;transform:rotate(1deg)}
+ .paper-stamp {right:2%;top:-12px;font-size:10px;padding:8px 10px;transform:rotate(5deg)}
+ .paper-workshop {padding-bottom:52px}
+ .paper-home h2 {font-size:clamp(36px,10vw,58px)}
+ .paper-quote {margin-left:0}
+ .paper-terminal pre {min-height:108px;font-size:10px}
+}
+@media(max-width:359px){.paper-workbench{min-height:320px}.paper-terminal{width:94%}.paper-photo figcaption{font-size:9px}.paper-notebook{top:95px}}

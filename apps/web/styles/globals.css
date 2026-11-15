@@ -157,3 +157,57 @@ main :where(section, article, form)[id] { scroll-margin-top: 6rem; }
 .ef-roadmap {border-top:var(--border-hard);max-width:var(--reading-width)}
 .ef-roadmap li {display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;padding:24px 0;border-bottom:var(--border-rule);align-items:baseline}
 .ef-roadmap h3 {font-size:clamp(21px,2.5vw,29px);line-height:1.25}
+/* Mobile navigation and a clearer route back home. */
+.ef-site-header {position:sticky;top:0;box-shadow:0 1px 0 var(--rule)}
+.ef-site-header>div:first-child {max-width:var(--page-width)}
+.ef-breadcrumb {display:flex;gap:12px;align-items:center;width:min(100%,var(--page-width));margin:0 auto;padding:20px var(--page-gutter) 0;font:12px var(--font-mono);color:var(--muted)}
+.ef-breadcrumb a {display:inline-flex;min-height:36px;align-items:center;color:var(--link);text-decoration:underline}
+.ef-breadcrumb span:last-child {text-transform:capitalize}
+.ef-drawer {max-height:calc(100dvh - 140px - env(safe-area-inset-bottom));overscroll-behavior:contain}
+.ef-drawer-link {border-bottom:var(--border-rule);padding:14px 0}
+.ef-drawer-link[aria-current=page] {font-weight:700;text-decoration:underline;text-decoration-color:var(--signal);text-decoration-thickness:2px}
+.ef-roadmap-editor {margin-top:28px;padding-top:20px;border-top:var(--border-hard);min-width:0}
+.ef-roadmap-editor legend {padding-right:12px}
+.ef-roadmap-editor select {max-width:100%;text-overflow:ellipsis}
+.ef-install-wrap {width:min(100%,var(--page-width));margin:64px auto 0;padding-inline:var(--page-gutter)}
+.ef-install-strip {display:flex;flex-wrap:wrap;align-items:center;gap:24px;border-block:var(--border-hard);padding-block:28px}
+.ef-install-strip>div {flex:1;min-width:min(100%,240px)}
+.ef-install-strip h2 {font-size:var(--type-card);margin:8px 0}
+.ef-install-strip img {border:1px solid var(--ink);flex-shrink:0}
+.ef-install-guides {display:grid;gap:28px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:767px) {
+ body {padding-bottom:calc(68px + env(safe-area-inset-bottom))}
+ .ef-site-header>div:first-child {padding:12px 16px;gap:8px}
+ .ef-site-header>div:first-child>div {gap:4px}
+ .ef-wordmark {font-size:20px;min-width:0}
+ .ef-theme-toggle {padding:6px;min-width:40px}
+ .ef-header-notifications {position:fixed;top:70px;left:16px;right:16px;width:auto;max-width:none}
+ .ef-tabbar {position:fixed;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));bottom:0;left:0;right:0;z-index:42;padding:4px 8px calc(4px + env(safe-area-inset-bottom));border-top:var(--border-hard);background:var(--paper)}
+ .ef-tab {display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;min-height:54px;padding:4px 2px;font-size:10px;color:var(--muted);border-top:3px solid transparent}
+ .ef-tab svg {width:20px;height:20px;stroke:currentColor;stroke-width:1.7;fill:none}
+ .ef-tab[aria-current=page] {border-top-color:var(--signal);color:var(--ink);font-weight:700}
+ .ef-install-strip {gap:16px;align-items:start}
+ .ef-install-strip .ef-btn {width:100%}
+ .ef-install-guides {grid-template-columns:minmax(0,1fr)}
+ .ef-install-wrap {margin-top:44px}
+ .ef-breadcrumb {padding-top:12px}
+ input,textarea,select,.ef-input,.studio-search input {font-size:16px!important}
+ .ef-title {font-size:clamp(38px,10.8vw,64px);letter-spacing:-.055em}
+ .ef-hero {margin-bottom:24px}
+ main:not(.paper-home) {padding-top:24px}
+ .studio-dialog {max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain}
+ .studio-bulk {bottom:calc(80px + env(safe-area-inset-bottom))}
+}
+@media(max-width:359px){.ef-wordmark{font-size:18px}.ef-wordmark small{font-size:10px}.ef-site-header>div:first-child{padding-inline:12px}}
+@media(max-width:767px) {
+ .ef-auth-layout {padding-inline:0}
+ .ef-auth-layout>figure {order:2;margin-top:16px}
+ .ef-auth-layout>div {order:1}
+ .ef-install-strip>div {min-width:0;flex-basis:calc(100% - 68px)}
+ body:has(input:focus,textarea:focus,select:focus) .ef-tabbar {display:none}
+}
+.ef-site-header {padding-top:env(safe-area-inset-top)}
+.ef-drawer {max-height:calc(100dvh - 140px - env(safe-area-inset-bottom) - env(safe-area-inset-top))}
+@supports(padding:max(0px)) {
+ .paper-wrap,main:not(.paper-home),.ef-breadcrumb,.ef-install-wrap {padding-left:max(var(--page-gutter),env(safe-area-inset-left));padding-right:max(var(--page-gutter),env(safe-area-inset-right))}
+}

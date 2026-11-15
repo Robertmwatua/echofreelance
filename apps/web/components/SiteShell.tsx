@@ -1,6 +1,7 @@
+import { InstallApp } from './InstallApp'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useState, useRef } from 'react'
 import {
   api,
   AppNotification,
@@ -22,6 +23,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const [openNotifs, setOpenNotifs] = useState(false)
   const [notifs, setNotifs] = useState<AppNotification[]>([])
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuButton = useRef<HTMLButtonElement>(null)
   const [scrolled, setScrolled] = useState(false)
 
   const refreshUnread = useCallback(() => {
@@ -58,10 +60,12 @@ export function SiteShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!menuOpen) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false)
+      if (e.key === 'Escape') { setMenuOpen(false); menuButton.current?.focus() }
     }
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => { document.body.style.overflow = previous; window.removeEventListener('keydown', onKey) }
   }, [menuOpen])
 
   useEffect(() => {
@@ -136,7 +140,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
           <Link href="/" className="ef-wordmark" aria-label={SITE_NAME}>EchoFreelance.<small>Tech School</small></Link>
 
           {/* centre: primary navigation */}
-          <nav className="mx-auto hidden items-center gap-1 lg:flex" aria-label="Main">
+          <nav className="mx-auto hidden items-center gap-1 xl:flex" aria-label="Main"><Link href="/" aria-current={router.pathname === '/' ? 'page' : undefined} className="ef-nav-link">Home</Link>
             <Link href="/courses" aria-current={isActive('/courses') ? 'page' : undefined} className="ef-nav-link">Courses</Link>
             <Link href="/classes" aria-current={isActive('/classes') ? 'page' : undefined} className="ef-nav-link">Live classes</Link>
             <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-nav-link">Community</Link>
@@ -163,7 +167,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   {unread > 0 && <span className="ef-badge">{unread > 9 ? '9+' : unread}</span>}
                 </button>
                 {openNotifs && (
-                  <div className="ef-popover absolute right-0 mt-3 w-80 max-w-[90vw] p-3">
+                  <div className="ef-popover ef-header-notifications absolute right-0 mt-3 w-80 max-w-[90vw] p-3">
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <p className="ef-eyebrow">Notifications</p>
                       {unread > 0 && (
@@ -190,7 +194,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
             )}
 
             {user ? (
-              <details className="ef-account relative hidden lg:block" key={router.asPath} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node)) event.currentTarget.open = false }}>
+              <details className="ef-account relative hidden xl:block" key={router.asPath} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node)) event.currentTarget.open = false }}>
                 <summary className="ef-btn-ghost !py-2 cursor-pointer select-none text-sm">
                   <span className="ef-avatar !h-6 !w-6 !border-0 !bg-transparent !text-[11px] !text-fern">{(user.name || user.email).slice(0, 2).toUpperCase()}</span>
                   <span className="max-w-[9rem] truncate">{user.name || user.email}</span>
@@ -212,15 +216,17 @@ export function SiteShell({ children }: { children: ReactNode }) {
               </details>
             ) : (
               <>
-                <Link href="/login" className="hidden  px-3 py-2 text-sm font-medium text-ink/80 transition-colors hover:text-ink lg:inline-block">Log in</Link>
-                <Link href="/register" className="ef-btn hidden !px-4 !py-2 text-sm lg:inline-flex">Join school</Link>
+                <Link href="/login" className="hidden  px-3 py-2 text-sm font-medium text-ink/80 transition-colors hover:text-ink xl:inline-block">Log in</Link>
+                <Link href="/register" className="ef-btn hidden !px-4 !py-2 text-sm xl:inline-flex">Join school</Link>
               </>
             )}
 
             {/* mobile toggle */}
             <button
+              ref={menuButton}
               type="button"
-              className="ef-icon-btn lg:hidden"
+              aria-controls="mobile-navigation"
+              className="ef-icon-btn xl:hidden"
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen}
               onClick={() => { setMenuOpen((o) => !o); setOpenNotifs(false) }}
@@ -235,13 +241,13 @@ export function SiteShell({ children }: { children: ReactNode }) {
         </div>
 
         {menuOpen && (
-          <div className="ef-drawer lg:hidden">
+          <div id="mobile-navigation" className="ef-drawer xl:hidden">
             <nav className="flex flex-col gap-1" aria-label="Mobile">
               <button className="ef-drawer-link" onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('ef:open-search')) }}>Search courses · Ctrl K</button>
-                  <p className="ef-drawer-label">Browse</p>
+                  <p className="ef-drawer-label">Browse</p><Link href="/" aria-current={router.pathname === '/' ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Home</Link>
               <Link href="/courses" aria-current={isActive('/courses') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Courses</Link>
               <Link href="/classes" aria-current={isActive('/classes') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Live classes</Link>
-              <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Community</Link>
+              <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Community</Link><Link href="/install" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Install the school app ↗</Link>
 
               {user ? (
                 <>
@@ -259,7 +265,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   <Link href="/certificates/mine" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Certificates</Link>
                   <Link href="/settings" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Settings</Link>
 
-                  <div className="mt-4 flex items-center gap-3  px-3 py-3" style={{ background: 'rgb(var(--glass-hi))' }}>
+                  <div className="mt-4 flex items-center gap-3  px-3 py-3">
                     <span className="ef-avatar !h-9 !w-9">{(user.name || user.email).slice(0, 2).toUpperCase()}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-ink">{user.name || user.email}</span>
@@ -280,46 +286,12 @@ export function SiteShell({ children }: { children: ReactNode }) {
         )}
 
 
-        {openNotifs && (
-          <div className="border-t border-line bg-panel px-5 py-3 lg:hidden">
-            <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold   text-fern">
-                Notifications
-              </p>
-              {unread > 0 && (
-                <button type="button" onClick={readAll} className="text-xs text-fern hover:underline">
-                  Mark all read
-                </button>
-              )}
-            </div>
-            {notifs.length === 0 ? (
-              <p className="text-sm ef-muted">No notifications yet.</p>
-            ) : (
-              <ul className="max-h-64 space-y-2 overflow-y-auto">
-                {notifs.map((n) => (
-                  <li key={n.id}>
-                    <button
-                      type="button"
-                      onClick={() => readOne(n)}
-                      className={`w-full  px-2 py-2 text-left text-sm hover:bg-mist ${
-                        n.read ? 'opacity-60' : ''
-                      }`}
-                    >
-                      <span className="block font-medium">{n.title}</span>
-                      <span className="mt-0.5 block text-xs ef-muted">{n.body}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
       </header>
       <a href="#main-content" className="ef-skip-link">Skip to content</a>
-      <div id="main-content" tabIndex={-1}>{children}</div>
+      {router.pathname !== '/' && <nav className="ef-breadcrumb" aria-label="Breadcrumb"><Link href="/">← Home</Link><span aria-hidden="true">/</span><span>{router.pathname.startsWith('/tutor') ? 'Teaching studio' : router.pathname.split('/')[1].replace('discussions','Community')}</span></nav>}<div id="main-content" tabIndex={-1}>{children}</div>
 
       {/* mobile bottom tab bar */}
-      <nav className="ef-tabbar lg:hidden" aria-label="Primary">
+      <nav className="ef-tabbar xl:hidden" aria-label="Primary">
         <Link href="/" aria-current={router.pathname === '/' ? 'page' : undefined} className="ef-tab">
           <svg viewBox="0 0 24 24" aria-hidden><path d="M3 10.5 12 3l9 7.5" /><path d="M5.5 9.5V20h13V9.5" /></svg>
           <span>Home</span>
@@ -345,6 +317,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <div className="mx-auto max-w-6xl px-6"><AskTutor /></div>
       <CommandPalette />
 
+      <div className="ef-install-wrap"><InstallApp/></div>
       <footer className="ef-footer">
         <div className="mx-auto max-w-6xl px-6 py-14 sm:px-7 sm:py-16">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">

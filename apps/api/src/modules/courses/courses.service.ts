@@ -27,7 +27,7 @@ export class CoursesService {
     const courses = await this.prisma.course.findMany({
       where: {
         archived: false,
-        AND: [{ OR: [{ published: true }, { id: { in: publicProgrammeIds } }] }],
+        AND: [{ OR: [{ published: true }, { publicPreview: true }, { id: { in: publicProgrammeIds }, publicPreview: null }] }],
         ...(category ? { category } : {}),
         ...(q
           ? {
@@ -107,7 +107,7 @@ export class CoursesService {
     const isOwner = userId === course.tutorId
     const isStaff = role === Role.Admin || role === Role.Tutor
     const archivedEnrollment = course.archived && userId ? await this.prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: id } } }) : null
-    if (!course.published && !isOwner && role !== Role.Admin && !archivedEnrollment && !(programmeRoadmaps[id] && !course.archived)) {
+    if (!course.published && !isOwner && role !== Role.Admin && !archivedEnrollment && !((course.publicPreview ?? Boolean(programmeRoadmaps[id])) && !course.archived)) {
       throw new NotFoundException('Course not found')
     }
 
@@ -241,6 +241,8 @@ export class CoursesService {
         priceCents: dto.priceCents ?? 0,
         published: dto.published ?? false,
         tutorId,
+        ...(dto.roadmapSteps !== undefined ? { roadmapSteps: dto.roadmapSteps } : {}),
+        ...(dto.publicPreview !== undefined ? { publicPreview: dto.publicPreview } : {}),
       },
       include: {
         tutor: { select: { id: true, name: true, email: true } },
@@ -260,6 +262,8 @@ export class CoursesService {
     return this.prisma.course.update({
       where: { id },
       data: {
+        ...(dto.roadmapSteps !== undefined ? { roadmapSteps: dto.roadmapSteps } : {}),
+        ...(dto.publicPreview !== undefined ? { publicPreview: dto.publicPreview } : {}),
         ...(dto.archived !== undefined ? { archived: dto.archived, ...(dto.archived ? { published: false } : {}) } : {}),
         ...(dto.title !== undefined ? { title: dto.title } : {}),
         ...(dto.description !== undefined ? { description: dto.description } : {}),
@@ -282,7 +286,8 @@ export class CoursesService {
     return this.prisma.course.create({ data: {
       title: `${source.title} (copy)`, description: source.description,
       category: source.category, level: source.level, priceCents: source.priceCents,
-      tutorId: user.id, published: false, archived: false,
+      tutorId: user.id, published: false, archived: false, publicPreview: false,
+      ...(source.roadmapSteps != null ? { roadmapSteps: source.roadmapSteps } : programmeRoadmaps[id] ? { roadmapSteps: programmeRoadmaps[id].steps } : {}),
       lessons: { create: lessons.map(l => ({ title: l.title, content: l.content, order: l.order, durationMinutes: l.durationMinutes, videoUrl: l.videoUrl })) },
     } })
   }
@@ -513,6 +518,8 @@ export class CoursesService {
       priceCents: number
       published: boolean
       archived?: boolean
+      roadmapSteps?: unknown
+      publicPreview?: boolean | null
       tutorId: string
       tutor?: { id: string; name: string | null; email: string; headline?: string | null }
       _count?: { enrollments: number; lessons?: number; virtualClasses?: number }
@@ -540,8 +547,9 @@ export class CoursesService {
       enrolled,
       createdAt: course.createdAt,
       updatedAt: course.updatedAt,
-      roadmap: programmeRoadmaps[course.id]?.steps || [],
-      roadmapStatus: programmeRoadmaps[course.id] ? 'Proposed learning roadmap' : undefined,
+      roadmap: Array.isArray(course.roadmapSteps) ? course.roadmapSteps.filter((step): step is string => typeof step === 'string') : programmeRoadmaps[course.id]?.steps || [],
+      publicPreview: course.publicPreview ?? Boolean(programmeRoadmaps[course.id]),
+      roadmapStatus: course.roadmapSteps != null ? 'Tutor-authored learning roadmap' : programmeRoadmaps[course.id] ? 'Proposed learning roadmap' : undefined,
       feesPending: programmeRoadmaps[course.id]?.feesPending || false,
       enrollmentOpen: course.published && !course.archived && (course._count?.lessons || 0) > 0,
       ...(programmeRoadmaps[course.id]?.description && course.description.includes('Fees, duration, intake dates and lesson content are awaiting confirmation.') ? { description: programmeRoadmaps[course.id].description } : {}),

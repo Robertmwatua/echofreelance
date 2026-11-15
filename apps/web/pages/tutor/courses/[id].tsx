@@ -1,3 +1,4 @@
+import { RoadmapEditor, roadmapLines } from '../../../components/tutor/RoadmapEditor'
 import { useConfirmation } from '../../../components/Confirmation'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -30,6 +31,8 @@ function ManageCourse() {
   const [category, setCategory] = useState('Cybersecurity')
   const [level, setLevel] = useState('Beginner')
   const [priceCents, setPriceCents] = useState(0)
+  const [roadmap, setRoadmap] = useState('')
+  const [publicPreview, setPublicPreview] = useState(false)
   const [published, setPublished] = useState(false)
 
   const [lessonTitle, setLessonTitle] = useState('')
@@ -62,6 +65,8 @@ function ManageCourse() {
     setLevel(data.level)
     setPriceCents(data.priceCents)
     setPublished(data.published)
+    setRoadmap((data.roadmap || []).join('\n'))
+    setPublicPreview(Boolean(data.publicPreview))
     const cats = [...taught, ...catalog].map((c) => c.category).filter(Boolean)
     setKnownCategories(Array.from(new Set(cats)))
   }
@@ -82,7 +87,9 @@ function ManageCourse() {
         category: category.trim() || 'General',
         level,
         priceCents,
-        published,
+        roadmapSteps: roadmapLines(roadmap),
+        publicPreview,
+        published: published !== course?.published ? published : undefined,
       })
       await load()
       setMessage('Course saved.')
@@ -281,7 +288,7 @@ function ManageCourse() {
                   className="ef-input"
                 />
               </label>
-              <label className="flex items-center gap-2 text-sm">
+              <RoadmapEditor value={roadmap} change={setRoadmap} listed={publicPreview} setListed={setPublicPreview}/><label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
                   checked={published}

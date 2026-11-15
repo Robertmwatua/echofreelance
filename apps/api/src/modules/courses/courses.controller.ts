@@ -1,3 +1,4 @@
+import { programmeRoadmaps } from './programme-roadmaps'
 import {
   Body,
   Controller,
@@ -36,6 +37,9 @@ export class CoursesController {
   ) {
     return this.coursesService.list(user?.id, category, q)
   }
+
+  @Get('roadmap-templates')
+  roadmapTemplates() { return Object.values(programmeRoadmaps).map(({ title, steps }) => ({ title, steps })) }
 
   @Get('catalogue')
   catalogue(@Query() query: Record<string, string>) { return this.coursesService.catalogue(query) }

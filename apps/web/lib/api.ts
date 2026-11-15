@@ -49,6 +49,7 @@ export type CourseSession = {
 }
 
 export type Course = {
+  publicPreview?: boolean
   roadmap?: string[]
   roadmapStatus?: string
   feesPending?: boolean
@@ -381,9 +382,12 @@ export const api = {
       return {courses:filtered.slice(offset,offset+24),total:filtered.length,totalCourses:all.length,categories,hasMore:offset+24<filtered.length,suggested:all.slice(0,3)}
     }
   },
+  roadmapTemplates: () => request<Array<{title: string; steps: string[]}>>('/courses/roadmap-templates'),
   taughtCourses: () => request<Course[]>('/courses/taught'),
   enroll: (id: string) => request(`/courses/${id}/enroll`, { method: 'POST' }),
   createCourse: (body: {
+    roadmapSteps?: string[]
+    publicPreview?: boolean
     title: string
     description: string
     category?: string
@@ -401,6 +405,8 @@ export const api = {
       priceCents: number
       published: boolean
       archived: boolean
+      roadmapSteps: string[]
+      publicPreview: boolean
     }>,
   ) => request<Course>(`/courses/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   duplicateCourse: (id: string) => request<Course>(`/courses/${id}/duplicate`, { method: 'POST' }),

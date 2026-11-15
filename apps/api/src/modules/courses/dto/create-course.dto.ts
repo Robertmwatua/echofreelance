@@ -1,5 +1,9 @@
 import {
   IsBoolean,
+  IsArray,
+  ValidateIf,
+  ArrayMaxSize,
+  MaxLength,
   IsInt,
   IsOptional,
   IsString,
@@ -8,6 +12,19 @@ import {
 } from 'class-validator'
 
 export class CreateCourseDto {
+  @ValidateIf((_, value) => value !== undefined)
+  @IsArray()
+  @ArrayMaxSize(24)
+  @IsString({ each: true })
+  @MinLength(3, { each: true })
+  @MaxLength(180, { each: true })
+  roadmapSteps?: string[]
+
+  @ValidateIf((_, value) => value !== undefined)
+  @IsBoolean()
+  publicPreview?: boolean
+
+
   @IsString()
   @MinLength(3)
   title!: string
@@ -35,6 +52,19 @@ export class CreateCourseDto {
 }
 
 export class UpdateCourseDto {
+  @ValidateIf((_, value) => value !== undefined)
+  @IsArray()
+  @ArrayMaxSize(24)
+  @IsString({ each: true })
+  @MinLength(3, { each: true })
+  @MaxLength(180, { each: true })
+  roadmapSteps?: string[]
+
+  @ValidateIf((_, value) => value !== undefined)
+  @IsBoolean()
+  publicPreview?: boolean
+
+
   @IsOptional()
   @IsBoolean()
   archived?: boolean

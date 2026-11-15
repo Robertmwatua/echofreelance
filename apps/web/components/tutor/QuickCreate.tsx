@@ -1,3 +1,4 @@
+import { RoadmapEditor, roadmapLines } from './RoadmapEditor'
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/router'
 import { api, CATEGORIES } from '../../lib/api'
@@ -5,6 +6,8 @@ import { StudioDialog } from './StudioDialog'
 
 export function QuickCreate({ close, categories }: { close: () => void; categories: string[] }) {
   const router = useRouter()
+  const [roadmap, setRoadmap] = useState('')
+  const [publicPreview, setPublicPreview] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   async function submit(e: FormEvent<HTMLFormElement>) {
@@ -12,7 +15,7 @@ export function QuickCreate({ close, categories }: { close: () => void; categori
     const form = new FormData(e.currentTarget)
     setBusy(true); setError('')
     try {
-      const course = await api.createCourse({ title: String(form.get('title')).trim(), description: String(form.get('description')).trim(), category: String(form.get('category')).trim() || 'General', level: String(form.get('level')), priceCents: Number(form.get('price')), published: false })
+      const course = await api.createCourse({ title: String(form.get('title')).trim(), description: String(form.get('description')).trim(), category: String(form.get('category')).trim() || 'General', level: String(form.get('level')), priceCents: Number(form.get('price')), published: false, roadmapSteps: roadmapLines(roadmap), publicPreview })
       await router.push(`/tutor/courses/${course.id}#lessons`)
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not create course'); setBusy(false) }
   }
@@ -24,6 +27,7 @@ export function QuickCreate({ close, categories }: { close: () => void; categori
       <label className="studio-field">Program<input name="category" required defaultValue="General" list="studio-programs" className="ef-input" /><datalist id="studio-programs">{Array.from(new Set([...CATEGORIES, ...categories])).map(c => <option key={c}>{c}</option>)}</datalist></label>
       <label className="studio-field">Level<select name="level" className="ef-input"><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></label>
       <label className="studio-field">Price (USD cents)<input name="price" type="number" required min={0} step={1} defaultValue={0} className="ef-input" /><span className="ef-muted font-normal">100 cents = $1.00. Enter 0 only if this course is free.</span></label>
+      <RoadmapEditor value={roadmap} change={setRoadmap} listed={publicPreview} setListed={setPublicPreview}/>
       {error && <p role="alert" className="studio-error">{error}</p>}
       <button className="studio-primary w-full" disabled={busy}>{busy ? 'Creating…' : 'Create and add lessons →'}</button>
     </form>

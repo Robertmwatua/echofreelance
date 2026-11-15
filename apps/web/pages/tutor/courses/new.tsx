@@ -1,3 +1,4 @@
+import { RoadmapEditor, roadmapLines } from '../../../components/tutor/RoadmapEditor'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FormEvent, useEffect, useMemo, useState } from 'react'
@@ -21,6 +22,8 @@ function NewCourseForm() {
   const [category, setCategory] = useState<string>(CATEGORIES[0])
   const [level, setLevel] = useState('Beginner')
   const [priceCents, setPriceCents] = useState(0)
+  const [roadmap, setRoadmap] = useState('')
+  const [publicPreview, setPublicPreview] = useState(false)
   const published = false
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -51,6 +54,8 @@ function NewCourseForm() {
         category: category.trim() || 'General',
         level,
         priceCents,
+        roadmapSteps: roadmapLines(roadmap),
+        publicPreview,
         published,
       })
       router.push(`/tutor/courses/${course.id}`)
@@ -133,7 +138,7 @@ function NewCourseForm() {
             </label>
             <p className="ef-muted text-sm">New courses start as drafts. Add lessons, then publish from your studio.</p>
             {error && <p className="text-sm ef-text-danger ef-toast">{error}</p>}
-            <button type="submit" disabled={busy} className="ef-btn w-full sm:w-auto">
+            <RoadmapEditor value={roadmap} change={setRoadmap} listed={publicPreview} setListed={setPublicPreview}/><button type="submit" disabled={busy} className="ef-btn w-full sm:w-auto">
               {busy ? 'Saving…' : 'Create course'}
             </button>
           </form>

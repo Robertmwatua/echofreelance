@@ -43,7 +43,7 @@ export default function RegisterPage() {
             <p className="ef-muted mt-2 text-sm">
               Find your course, meet your tutors, and keep your learning in one place.
             </p>
-            <form onSubmit={onSubmit} className="ef-panel ef-glass-form mt-6 w-full space-y-5">
+            <form onSubmit={onSubmit} className="ef-panel mt-6 w-full space-y-5">
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Full name</span>
                 <input
