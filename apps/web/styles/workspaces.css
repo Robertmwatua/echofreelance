@@ -194,3 +194,17 @@ html.dark .studio-error,html.dark .studio-danger { color: var(--link); }
 .ef-honeypot {position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;}
 @media(min-width:900px){.ef-split-workspace{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:48px;}}
 @media print{.ef-workspace-nav{display:none;}}
+
+/* Payment method preview: no card entry or provider calls until activation. */
+.ef-payment-methods{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.ef-payment-method{border:2px solid var(--rule);background:var(--surface);color:var(--ink);padding:20px;text-align:left;min-width:0;display:grid;gap:12px;transition:transform var(--motion-fast),box-shadow var(--motion-fast)}
+.ef-payment-method-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.ef-payment-choice{color:var(--link)}
+.ef-payment-method[aria-pressed=true]{border-color:var(--ink);box-shadow:var(--shadow-offset)}
+.ef-payment-method:hover{transform:translate(2px,2px);box-shadow:var(--shadow-pressed)}
+.ef-card-checkout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1fr);gap:40px;align-items:start;border:1px solid var(--rule);padding:32px;background:var(--surface)}
+.ef-card-art{background:var(--ink);color:var(--paper);border:2px solid var(--ink);padding:24px;aspect-ratio:1.586;box-shadow:6px 6px 0 var(--rule);max-width:420px;width:100%;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.ef-card-art .ef-meta{font-size:11px;color:inherit}.ef-card-stamp{background:var(--signal);color:rgb(var(--button-ink-rgb));font:11px var(--mono);padding:4px 8px}.ef-card-number{font:clamp(14px,2vw,22px) var(--mono);margin:20px 0;white-space:nowrap}
+.ef-card-fields{display:grid;gap:16px;min-width:0}.ef-card-fields label{display:grid;gap:8px;font-size:14px;min-width:0}.ef-card-fields input{border:1px solid var(--rule);background:var(--paper);padding:12px;width:100%;min-width:0;opacity:1;color:var(--muted);cursor:not-allowed;font-family:var(--mono)}.ef-card-fields button:disabled{opacity:1;background:var(--paper);border-color:var(--rule);color:var(--muted);box-shadow:none;cursor:not-allowed;white-space:normal}
+@media(max-width:767px){.ef-card-checkout{grid-template-columns:1fr;padding:20px;gap:32px}.ef-payment-method{padding:16px}.ef-payment-method-top{align-items:flex-start}.ef-card-art{margin:0 auto}.ef-card-number{font-size:clamp(13px,4vw,22px)}}
+@media(max-width:380px){.ef-payment-methods{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.ef-payment-method{transition:none}.ef-payment-method:hover{transform:none}}
