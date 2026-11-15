@@ -238,3 +238,43 @@ html.dark .studio-error,html.dark .studio-danger { color: var(--link); }
 .ef-manage-menu{position:relative}.ef-manage-menu>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;list-style:none}.ef-manage-menu>nav{position:absolute;top:100%;right:0;min-width:220px;background:var(--surface);border:2px solid var(--ink);box-shadow:var(--shadow-offset);z-index:50;padding:8px;display:grid}.ef-manage-menu>nav a{padding:12px;min-height:44px;font-weight:600}.ef-manage-menu>nav a:hover{background:var(--paper)}
 .ef-action-button.ef-icon-btn{padding:10px;width:44px;height:44px;min-width:44px}.ef-icon-btn .ef-button-label{width:20px;min-width:20px;justify-content:center}.ef-icon-btn .ef-button-label>svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;flex-shrink:0}.ef-action-button.hidden{display:none}@media(min-width:640px){.ef-action-button.sm\:inline-flex{display:inline-flex}}@media(min-width:1280px){.ef-action-button.xl\:hidden{display:none}}
 .admin-working-grid>section{min-width:0}.admin-section-heading{flex-wrap:wrap}.admin-inbox>li{min-width:0}@media(max-width:1000px){.admin-working-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Course index: aligned tickets, readable subjects and intentional pagination. */
+.catalogue-grid{align-items:stretch;gap:28px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.catalogue-grid>li{display:flex;animation:course-arrive 420ms ease-out both}
+.catalogue-grid>li:nth-child(3n+2){animation-delay:60ms}.catalogue-grid>li:nth-child(3n){animation-delay:120ms}
+.catalogue-card{width:100%;display:flex;flex-direction:column;overflow:visible;border-left:2px solid var(--ink)}
+.catalogue-card-link{display:flex;flex-direction:column;flex:1;min-width:0;text-decoration:none;color:var(--ink)}
+.catalogue-card-body{display:flex;flex-direction:column;flex:1;padding:24px;min-width:0}
+.catalogue-ticket-code{font-weight:500;padding:14px 20px;flex-wrap:wrap}
+.catalogue-subject{display:flex;gap:12px;align-items:center;min-height:56px;margin-bottom:16px}
+.catalogue-subject p{font:500 12px/1.5 var(--mono);color:var(--muted);overflow-wrap:anywhere}
+.catalogue-subject-icon{display:grid;place-items:center;flex-shrink:0;width:48px;height:48px;border:2px solid currentColor;color:var(--subject-foundation);background:var(--paper)}
+.subject-security .catalogue-subject-icon{color:var(--subject-security)}.subject-code .catalogue-subject-icon{color:var(--subject-code)}.subject-creative .catalogue-subject-icon{color:var(--subject-creative)}
+.catalogue-card h2{font-size:28px;font-weight:700;line-height:1.12;min-height:94px;margin:0;display:block;overflow:visible;overflow-wrap:anywhere}
+.catalogue-stage-preview{margin-top:16px;min-height:134px;align-content:start}
+.catalogue-stage-preview li{font-size:14px;font-weight:500;line-height:1.5}
+.catalogue-card-details{margin-top:auto;padding-top:4px}
+.catalogue-instructor{font-size:13px;font-weight:500;margin-top:12px}.catalogue-meta{line-height:1.6;min-height:38px}
+.catalogue-price{font-size:16px;font-weight:700;min-height:44px;padding:0;margin-top:12px}
+.catalogue-open{margin-top:16px;font-size:14px;text-decoration:none;font-weight:700;min-height:52px;padding-right:0}
+.catalogue-open>span{color:var(--link);font-size:22px}
+.catalogue-card .catalogue-save{position:static;width:auto;height:auto;min-height:44px;margin:0 24px 24px;align-self:flex-start;padding:8px 12px;font-size:13px;box-shadow:2px 2px 0 var(--ink)}
+.catalogue-save .ef-button-label{display:flex;align-items:center;gap:8px}.catalogue-save svg{width:18px;height:18px;flex-shrink:0}
+.catalogue-tabs{gap:12px;padding:4px 6px 12px 0;border:0;flex-wrap:wrap;overflow:visible}
+.catalogue-tabs .ef-action-button{padding:10px 14px;min-height:44px;font-size:13px;color:var(--ink);white-space:normal;text-align:left;border:2px solid var(--rule);box-shadow:none;flex-shrink:1}
+.catalogue-tabs .ef-button-label{display:flex;gap:12px;align-items:center;justify-content:space-between;width:100%}
+.catalogue-tabs .ef-button-label>span{font:500 12px var(--mono);margin:0;padding:2px 6px;background:var(--paper)}
+.catalogue-tabs button[aria-current]{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.catalogue-tabs button[aria-current] .ef-button-label>span{color:var(--ink)}
+.catalogue-filter-row{padding-block:16px;border-block:1px solid var(--rule);margin:8px 0 28px;gap:16px}
+.catalogue-desktop-filters{gap:12px}.catalogue-filter-row .ef-action-button{font-size:13px;padding:10px 14px}
+.catalogue .ef-action-button.catalogue-mobile-filter{display:none}
+.catalogue-heading{padding-top:24px;margin-bottom:32px}.catalogue-heading .ef-title{font-size:clamp(42px,5.1vw,72px);line-height:1.03}
+.catalogue-search-block .catalogue-help{text-decoration:none;font-size:13px;margin-top:12px;line-height:1.5;width:100%;padding:12px;text-align:left}
+.catalogue-pagination{display:grid;justify-items:center;gap:16px;margin:48px 0 8px;padding-top:28px;border-top:2px solid var(--ink);text-align:center}
+@keyframes course-arrive{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:1050px){.catalogue-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalogue-card h2{min-height:64px}}
+@media(max-width:767px){.catalogue .ef-action-button.catalogue-mobile-filter{display:inline-flex}.catalogue-heading{gap:24px}.catalogue-search-block{width:100%}.catalogue-intro-photo{display:none}.catalogue-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:14px}.catalogue-tabs .ef-action-button{flex-shrink:0;max-width:240px;white-space:normal}.catalogue-filter-row{justify-content:flex-start}.catalogue-card-body{padding:20px}.catalogue-card .catalogue-save{margin:0 20px 20px}.catalogue-pagination .ef-action-button{width:100%}}
+@media(max-width:580px){.catalogue-grid{grid-template-columns:minmax(0,1fr);gap:24px}.catalogue-card h2{min-height:0;font-size:30px}.catalogue-stage-preview{min-height:0}.catalogue-meta{min-height:0}.catalogue-subject{min-height:48px}.catalogue-heading .ef-title{font-size:46px}}
+@media(prefers-reduced-motion:reduce){.catalogue-grid>li{animation:none}.catalogue-card:hover{transform:none}}

@@ -97,3 +97,7 @@ html.dark {
 }
 
 .dark { --danger: #ffb4ab; }
+
+/* Subject ink: readable accents for course illustrations in both themes. */
+:root{--subject-security:#286047;--subject-code:#34558c;--subject-creative:#864633;--subject-foundation:#745a14}
+html.dark{--subject-security:#a5d9b8;--subject-code:#a7c5f4;--subject-creative:#f3b6a4;--subject-foundation:#e8ce83}
