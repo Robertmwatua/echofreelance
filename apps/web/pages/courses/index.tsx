@@ -1,160 +1,38 @@
-import { CardSkeletons, FeedbackCard, PageHero } from '../../components/PageFeedback'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
-import { CourseCard } from '../../components/CourseCard'
+import Link from 'next/link'
 import DocumentHead from '../../components/DocumentHead'
-import { api, CATEGORIES, Course } from '../../lib/api'
+import { CourseCard } from '../../components/CourseCard'
+import { CatalogueSkeletons } from '../../components/catalogue/CatalogueSkeletons'
+import { CategoryTabs } from '../../components/catalogue/CategoryTabs'
+import { defaults, FilterBar, Filters } from '../../components/catalogue/FilterBar'
+import { api, Course, getStoredUser } from '../../lib/api'
 
-export default function CoursesPage() {
-  const router = useRouter()
-  const [courses, setCourses] = useState<Course[]>([])
-  const [category, setCategory] = useState('')
-  const [q, setQ] = useState('')
-  const [search, setSearch] = useState('')
-  const [sort, setSort] = useState('default')
-
-  /* the hero search and the suggestion chips route here with query params */
-  useEffect(() => {
-    if (!router.isReady) return
-    const qp = typeof router.query.q === 'string' ? router.query.q : ''
-    const cp = typeof router.query.category === 'string' ? router.query.category : ''
-    setQ(qp)
-    setSearch(qp)
-    setCategory(cp)
-  }, [router.isReady, router.query.q, router.query.category])
-
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [attempt, setAttempt] = useState(0)
-
-  useEffect(() => {
-    let active = true
-    setLoading(true)
-    setError('')
-    api
-      .courses({
-        category: category || undefined,
-        q: search || undefined,
-      })
-      .then(data => { if (active) setCourses(data) })
-      .catch((e: Error) => { if (active) setError(e.message) })
-      .finally(() => { if (active) setLoading(false) })
-    return () => { active = false }
-  }, [category, search, attempt])
-
-  const cats = useMemo(() => {
-    const fromData = Array.from(new Set(courses.map((c) => c.category).filter(Boolean)))
-    return Array.from(new Set([...CATEGORIES, ...fromData]))
-  }, [courses])
-
-  const displayed = useMemo(() => {
-    const result = [...courses]
-    if (sort === 'price') result.sort((a, b) => a.priceCents - b.priceCents)
-    if (sort === 'rating') result.sort((a, b) => (b.avgRating ?? -1) - (a.avgRating ?? -1))
-    return result
-  }, [courses, sort])
-
-  function resetFilters() {
-    setQ('')
-    setSearch('')
-    setCategory('')
-    setSort('default')
-    void router.replace('/courses', undefined, { shallow: true })
-  }
-
-  return (
-    <>
-      <DocumentHead title="Courses — EchoFreelance Tech School" />
-      <main className="relative mx-auto max-w-6xl px-6 py-12">
-        <div className="relative">
-        <PageHero eyebrow="Find your direction" title="Courses" description="Practical skills, thoughtful guidance, and a clear path forward. Find the course that fits your next chapter." />
-
-        <form
-          className="mt-6 flex flex-wrap gap-2"
-          onSubmit={(e) => {
-            e.preventDefault()
-            setSearch(q.trim())
-          }}
-        >
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            aria-label="Search courses"
-            placeholder="Search courses…"
-            className="ef-input max-w-md flex-1 text-sm"
-          />
-          <button type="submit" className="ef-btn">
-            Search
-          </button>
-          {search && (
-            <button
-              type="button"
-              className="ef-btn-ghost"
-              onClick={() => {
-                setQ('')
-                setSearch('')
-              }}
-            >
-              Clear
-            </button>
-          )}
-        </form>
-
-        <div className="ef-path-banner mt-6">
-          <span className="ef-eyebrow shrink-0">Study help</span>
-          <p className="min-w-0 flex-1 text-sm">
-            <b className="font-semibold text-ink">Not sure where to start?</b>{' '}
-            <span className="ef-muted">Tell the study assistant what you want to do and it will point you at a track.</span>
-          </p>
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new CustomEvent('ef:ask-tutor', { detail: { q: 'Where should I start?' } }))}
-            className="ef-btn-ghost !min-h-0 shrink-0 !px-4 !py-2 text-xs"
-          >
-            Ask the assistant
-          </button>
-        </div>
-
-        <div className="ef-filter-bar mt-6">
-          <button
-            type="button"
-            onClick={() => setCategory('')}
-            aria-pressed={!category}
-            className="ef-filter"
-          >
-            All
-          </button>
-          {cats.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setCategory(cat)}
-              aria-pressed={category === cat}
-              className="ef-filter"
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-          <p className="ef-meta" role="status">{loading ? 'Finding courses…' : error ? 'Catalogue unavailable' : `${courses.length} course${courses.length === 1 ? '' : 's'}${search ? ` matching “${search}”` : ''}`}</p>
-          <div className="flex flex-wrap items-center gap-3">
-            {(search || category) && <button type="button" onClick={resetFilters} className="ef-link min-h-[44px] text-sm">Clear filters</button>}
-            <label className="flex items-center gap-2 text-sm"><span className="ef-muted">Sort</span><select value={sort} onChange={e => setSort(e.target.value)} className="ef-input !w-auto !py-2 text-sm"><option value="default">Default order</option><option value="price">Price: low to high</option><option value="rating">Highest rated</option></select></label>
-          </div>
-        </div>
-        {loading && <CardSkeletons label="Loading courses" />}
-        {error && <FeedbackCard error title="Unable to load courses" description="Your next course is still here. We just couldn’t reach the catalog. Check your connection and try again." retry={() => setAttempt(a => a + 1)} />}
-        {!loading && !error && courses.length === 0 && (
-          <FeedbackCard title="No courses match just yet" description="Try another search or choose a different category to find your next course." />
-        )}
-
-        {!loading && !error && <ul className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {displayed.map(course => <li key={course.id}><CourseCard course={course} /></li>)}
-        </ul>}
-        </div>
-      </main>
-    </>
-  )
+type Result = Awaited<ReturnType<typeof api.catalogue>>
+const blank:Result={courses:[],total:0,totalCourses:0,categories:{},hasMore:false,suggested:[]}
+export default function CoursesPage(){
+ const router=useRouter()
+ const [data,setData]=useState<Result>(blank),[loading,setLoading]=useState(true),[more,setMore]=useState(false),[error,setError]=useState(''),[attempt,setAttempt]=useState(0)
+ const [q,setQ]=useState(''),[enrolled,setEnrolled]=useState<Course[]>([])
+ const input=useRef<HTMLInputElement>(null), sequence=useRef(0)
+ const str=(key:string)=>typeof router.query[key]==='string'?router.query[key] as string:''
+ const category=str('category'), query=str('q')
+ const filters:Filters={level:str('level'),price:str('price'),duration:str('duration'),sort:str('sort')||'popular'}
+ const filterKey=JSON.stringify({q:query,category,...filters})
+ function change(values:Record<string,string>){const next={...router.query,...values};Object.keys(next).forEach(k=>{if(!next[k]||next[k]==='popular')delete next[k]});void router.replace({pathname:'/courses',query:next},undefined,{shallow:true,scroll:false})}
+ function clear(){setQ('');void router.replace('/courses',undefined,{shallow:true,scroll:false})}
+ useEffect(()=>{setQ(query)},[query])
+ useEffect(()=>{if(!router.isReady||q===query)return;const timer=setTimeout(()=>change({q:q.trim()}),250);return()=>clearTimeout(timer)},[q,query,router.isReady,category,filters.level,filters.price,filters.duration,filters.sort])
+ useEffect(()=>{if(!router.isReady)return;const id=++sequence.current;setLoading(true);setError('');setMore(false);setData(old=>({...old,courses:[],total:0,hasMore:false}));api.catalogue({q:query,category,...filters}).then(result=>{if(sequence.current===id)setData(result)}).catch(e=>{if(sequence.current===id)setError(e.message)}).finally(()=>{if(sequence.current===id)setLoading(false)});return()=>{sequence.current++}},[router.isReady,filterKey,attempt])
+ useEffect(()=>{if(getStoredUser())api.myCourses().then(c=>setEnrolled(c.filter(c=>(c.progress?.percent||0)<100).slice(0,3))).catch(()=>{});function key(e:KeyboardEvent){if(e.key==='/'&&!e.metaKey&&!e.ctrlKey&&!(e.target as HTMLElement).closest('input,textarea,select,[contenteditable=true]')){e.preventDefault();input.current?.focus()}}document.addEventListener('keydown',key);return()=>document.removeEventListener('keydown',key)},[])
+ async function loadMore(){const id=sequence.current;setMore(true);setError('');try{const result=await api.catalogue({q:query,category,...filters,offset:String(data.courses.length)});if(id===sequence.current)setData(old=>({...result,courses:[...old.courses,...result.courses]}))}catch(e){if(id===sequence.current)setError(e instanceof Error?e.message:'Could not load more courses')}finally{if(id===sequence.current)setMore(false)}}
+ function help(){window.dispatchEvent(new CustomEvent('ef:ask-tutor',{detail:{q:'Where should I start?'}}))}
+ return <><DocumentHead title="Courses — EchoFreelance Tech School"/><main className="ef-workspace catalogue mx-auto max-w-[1248px] px-5 pb-16 pt-6 sm:px-6">
+ <header className="catalogue-heading"><div><p className="ef-page-label">02 / The course index</p><h1 className="ef-title">Find your next<br/>piece of work.</h1><p className="ef-muted mt-5 max-w-xl">Cybersecurity, software and cloud. Learn the ideas, then put them to work.</p><span className="ef-meta mt-5 block" aria-live="polite">{loading?'Loading…':`${data.total} course${data.total===1?'':'s'}`}</span></div><div className="catalogue-search-block"><label className="studio-search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><span className="sr-only">Search courses</span><input ref={input} value={q} onChange={e=>setQ(e.target.value)} placeholder="Search courses"/><kbd>/</kbd></label><button className="catalogue-help" onClick={help}>Not sure where to start? Ask the assistant</button></div></header>
+ {enrolled.length>0&&<section className="catalogue-continue" aria-labelledby="continue-title"><h2 id="continue-title">Continue learning</h2><div>{enrolled.map(c=><article key={c.id}><Link href={`/courses/${c.id}`}>{c.title}</Link><progress value={c.progress?.percent||0} max={100} aria-label={`${c.title} progress`}/><span className="ef-muted">{c.progress?.percent||0}% complete</span><Link className="studio-ghost" href={`/courses/${c.id}`}>Resume →</Link></article>)}</div></section>}
+ <CategoryTabs categories={data.categories} total={data.totalCourses} value={category} onChange={v=>change({category:v})}/>
+ <FilterBar filters={filters} change={(key,value)=>change({[key]:value})} clear={clear}/>
+ {error&&<p className="studio-error mb-5" role="alert">Could not load courses. {error} <button className="studio-ghost" onClick={()=>setAttempt(a=>a+1)}>Retry</button></p>}
+ {loading?<CatalogueSkeletons/>:!error||data.courses.length?<>{data.courses.length?<ul className="catalogue-grid">{data.courses.map(c=><li key={c.id}><CourseCard course={c}/></li>)}</ul>:<><div className="catalogue-empty"><p className="ef-section-label">Index / next step</p><h2 className="mt-3">{data.totalCourses ? 'No courses match your filters.' : 'The next courses are being prepared.'}</h2><p className="ef-muted mt-3">{data.totalCourses ? 'Try another topic or clear your filters.' : 'Tutors are preparing the lessons. Check the live schedule while you wait.'}</p><Link href="/classes" className="ef-btn-ghost mt-3">Browse live classes →</Link><button className="studio-primary mt-4" onClick={clear}>Clear filters</button></div>{data.suggested.length>0&&<section className="mt-8"><h2 className="mb-4 text-lg font-semibold">Popular courses</h2><ul className="catalogue-grid">{data.suggested.map(c=><li key={c.id}><CourseCard course={c}/></li>)}</ul></section>}</>}{data.hasMore&&<div className="mt-8 text-center"><button className="studio-secondary" disabled={more} onClick={loadMore}>{more?'Loading…':'Load more courses'}</button><p className="ef-muted mt-3 text-sm">Showing {data.courses.length} of {data.total}</p></div>}</>:null}
+ </main></>
 }

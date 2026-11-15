@@ -1,3 +1,5 @@
+import { FeedbackCard, CardSkeletons } from '../../components/PageFeedback'
+import { useConfirmation } from '../../components/Confirmation'
 import { ClassWorkspace } from '../../components/ClassWorkspace'
 import { LiveDot } from '../../components/LiveDot'
 import Link from 'next/link'
@@ -30,6 +32,7 @@ function StatusPill({ status }: { status: string }) {
 }
 
 export default function ClassDetailPage() {
+  const { confirm, confirmation } = useConfirmation()
   const router = useRouter()
   const id = typeof router.query.id === 'string' ? router.query.id : ''
   const [item, setItem] = useState<VirtualClass | null>(null)
@@ -93,7 +96,7 @@ export default function ClassDetailPage() {
   }
 
   async function deleteClass() {
-    if (!window.confirm('Delete this class, its attendance, notes, and reminders? This cannot be undone.')) return
+    if (!await confirm('Delete this class, its attendance, notes, and reminders? This cannot be undone.')) return
     setBusy(true)
     try { await api.deleteClass(id); router.push('/tutor') }
     catch (e) { setError(e instanceof Error ? e.message : 'Could not delete class'); setBusy(false) }
@@ -116,12 +119,13 @@ export default function ClassDetailPage() {
 
   return (
     <>
-      <DocumentHead title={item ? `${item.title} — Live class` : 'Live class'} />
+      {confirmation}<DocumentHead title={item ? `${item.title} — Live class` : 'Live class'} />
       <main className="mx-auto max-w-3xl px-6 py-12">
         <Link href="/classes" className="text-sm text-fern hover:underline">
           ← Schedule
         </Link>
-        {error && !item && <p className="mt-8 text-red-400">{error}</p>}
+        {!item && !error && <CardSkeletons label="Loading session details" count={1}/>}
+        {error && !item && <FeedbackCard error title="This room couldn’t be loaded." description={error} retry={() => { void load() }} action={{href:'/classes',label:'Back to the schedule'}}/>}
         {item && (
           <div className="ef-panel ef-rise mt-6 !p-0 overflow-hidden">
             <div
@@ -133,7 +137,7 @@ export default function ClassDetailPage() {
                   {formatWhen(item.startsAt)} – {formatWhen(item.endsAt)}
                 </span>
               </div>
-              <h1 className="mt-3 font-display text-4xl text-moss">{item.title}</h1>
+              <p className="ef-page-label">Schedule / session details</p><h1 className="mt-3   text-ink ef-title">{item.title}</h1>
               {item.description && <p className="ef-muted mt-3 text-lg">{item.description}</p>}
               <p className="mt-4 text-sm ef-muted">
                 Course:{' '}
@@ -201,14 +205,14 @@ export default function ClassDetailPage() {
                 )}
               </div>
               {item.registered && !item.canEnterRoom && item.status === 'Scheduled' && <p className="ef-panel mt-4">You’re registered. The tutor will open the room when the session starts. <button className="ef-link" onClick={() => load().catch(e => setError(e.message))}>Refresh status</button></p>}
-              {item.canManage && <div className="mt-5 flex flex-wrap gap-3">{!['Completed', 'Cancelled'].includes(item.status) && <button disabled={busy} className="ef-btn-ghost" onClick={async () => { if (!window.confirm('Cancel this class?')) return; setBusy(true); try { await api.updateClass(id, { status: 'Cancelled' }); await load() } catch (e) { setError(e instanceof Error ? e.message : 'Could not cancel class') } finally { setBusy(false) } }}>Cancel class</button>}<button disabled={busy || item.status === 'Live'} onClick={deleteClass} className="ef-btn-ghost">Delete class</button>{item.status === 'Live' && <p className="ef-meta self-center">Mark completed or cancel before deleting.</p>}</div>}
+              {item.canManage && <div className="mt-5 flex flex-wrap gap-3">{!['Completed', 'Cancelled'].includes(item.status) && <button disabled={busy} className="ef-btn-ghost" onClick={async () => { if (!await confirm('Cancel this class?')) return; setBusy(true); try { await api.updateClass(id, { status: 'Cancelled' }); await load() } catch (e) { setError(e instanceof Error ? e.message : 'Could not cancel class') } finally { setBusy(false) } }}>Cancel class</button>}<button disabled={busy || item.status === 'Live'} onClick={deleteClass} className="ef-btn-ghost">Delete class</button>{item.status === 'Live' && <p className="ef-meta self-center">Mark completed or cancel before deleting.</p>}</div>}
               {(item.enrolled || item.canManage) && <ClassWorkspace classId={item.id} canManage={Boolean(item.canManage)} canRemind={!['Completed', 'Cancelled'].includes(item.status) && new Date(item.endsAt) > new Date()} />}
-              {message && <p className="mt-4 text-moss">{message}</p>}
-              {error && item && <p className="mt-4 text-red-400">{error}</p>}
+              {message && <p className="mt-4 text-moss ef-toast">{message}</p>}
+              {error && item && <p className="mt-4 ef-text-danger ef-toast">{error}</p>}
 
               {item.canManage && (
                 <div className="mt-8 border-t border-line pt-6">
-                  <h2 className="font-display text-xl text-moss">Recording library</h2>
+                  <h2 className="font-display text-xl text-ink">Recording library</h2>
                   <p className="mt-1 text-sm ef-muted">
                     Paste a replay link after the session (YouTube, Drive, Loom…). Students see it
                     here and on the course page.
@@ -237,14 +241,14 @@ export default function ClassDetailPage() {
                 <div className="mt-8 border-t border-line pt-6">
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
-                      <h2 className="font-display text-xl text-moss">Attendance roster</h2>
+                      <h2 className="font-display text-xl text-ink">Attendance roster</h2>
                       <p className="mt-1 text-sm ef-muted">
                         {roster.entered}/{roster.registered} entered the room
                       </p>
                     </div>
-                    <div className="h-2 w-40 overflow-hidden rounded-full bg-mist/80">
+                    <div className="h-2 w-40 overflow-hidden  bg-mist/80">
                       <div
-                        className="h-full rounded-full bg-moss transition-all"
+                        className="h-full  bg-moss transition-all"
                         style={{
                           width: `${
                             roster.registered

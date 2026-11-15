@@ -204,12 +204,12 @@ export default function CourseDetailPage() {
         {error && !course && <div className="ef-panel mt-8" role="alert"><p>{error}</p><button className="ef-btn-ghost mt-4" onClick={() => setAttempt(a => a + 1)}>Try again</button></div>}
         {course && (
           <>
-            <div className="ef-panel mt-6">
-              <p className="text-xs font-semibold uppercase tracking-wide text-fern">
+            <div className="ef-course-heading mt-6">
+              <p className="text-xs font-semibold   text-fern">
                 {course.category} · {course.level} · {formatPrice(course.priceCents)}
                 {reviews && reviews.count > 0 ? ` · ${reviews.average}★ (${reviews.count})` : ''}
               </p>
-              <h1 className="mt-2 ef-title">{course.title}</h1>
+              <p className="ef-page-label">Course index / inside the course</p><h1 className="mt-2 ef-title">{course.title}</h1>
               <p className="ef-muted mt-4 text-lg">{course.description}</p>
 
               {course.progress && (
@@ -246,12 +246,12 @@ export default function CourseDetailPage() {
                 )}
               </div>
               {message && <p role="status" className="mt-4 text-moss">{message}</p>}
-              {error && course && <p role="alert" className="mt-4 text-red-400">{error}</p>}
+              {error && course && <p role="alert" className="mt-4 ef-text-danger">{error}</p>}
             </div>
 
             {announcements.length > 0 && (
               <section className="mt-10">
-                <h2 className="font-display text-2xl text-moss">Announcements</h2>
+                <h2 className="font-display text-2xl text-ink">Announcements</h2>
                 <ul className="mt-4 space-y-3">
                   {announcements.map((a) => (
                     <li key={a.id} className="ef-panel !p-4">
@@ -268,7 +268,7 @@ export default function CourseDetailPage() {
 
             {course.sessions && course.sessions.length > 0 && (
               <section className="mt-10">
-                <h2 className="font-display text-2xl text-moss">Live sessions & recordings</h2>
+                <h2 className="font-display text-2xl text-ink">Live sessions & recordings</h2>
                 <p className="ef-muted mt-1 text-sm">
                   Upcoming classes and saved replays for this course.
                 </p>
@@ -277,7 +277,7 @@ export default function CourseDetailPage() {
                     <li key={s.id} className="ef-session-card !py-4">
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <p className="text-xs uppercase tracking-wide ef-muted">
+                          <p className="text-xs   ef-muted">
                             {s.status} · {formatWhen(s.startsAt)}
                           </p>
                           <Link
@@ -314,11 +314,11 @@ export default function CourseDetailPage() {
             )}
 
             <section className="mt-10">
-              <h2 className="font-display text-2xl text-moss">Syllabus</h2>
+              <h2 className="font-display text-2xl text-ink">Syllabus</h2>
               {course.lessons?.length === 0 && <p className="ef-panel mt-4 ef-muted">The tutor hasn’t added lessons yet.</p>}
               <ul className="mt-4 space-y-4">
                 {(course.lessons || []).map((lesson) => (
-                  <li key={lesson.id}><details className="ef-lesson rounded-xl border border-line bg-panel">
+                  <li key={lesson.id}><details className="ef-lesson  border border-line bg-panel">
                     <summary><span className="font-semibold">{lesson.order + 1}. {lesson.title}</span><span className="ef-meta ml-3">{lesson.durationMinutes} min · {lesson.locked ? 'Locked' : lesson.completed ? 'Completed' : 'Not completed'}</span></summary>
                     <div className="ef-lesson-body flex flex-col gap-6">
                       <div>
@@ -337,7 +337,7 @@ export default function CourseDetailPage() {
                                 >
                                   {r.title}
                                 </a>
-                                <span className="ml-2 text-xs uppercase ef-muted">{r.kind}</span>
+                                <span className="ml-2 text-xs  ef-muted">{r.kind}</span>
                               </li>
                             ))}
                           </ul>
@@ -397,7 +397,7 @@ export default function CourseDetailPage() {
             </section>
 
             <section id="discussion" className="mt-10 scroll-mt-24">
-              <h2 className="font-display text-2xl text-moss">Discussion</h2>
+              <h2 className="font-display text-2xl text-ink">Discussion</h2>
               <p className="ef-muted mt-1 text-sm">Ask questions and share insights with the class.</p>
               <ul className="mt-4 space-y-3">
                 {discussions.length === 0 && (
@@ -407,7 +407,7 @@ export default function CourseDetailPage() {
                   <li key={p.id} className="ef-panel !p-4">
                     <p className="text-sm font-medium text-ink">
                       {p.author.name || 'Member'}
-                      <span className="ml-2 text-xs font-normal uppercase ef-muted">
+                      <span className="ml-2 text-xs font-normal  ef-muted">
                         {p.author.role}
                       </span>
                     </p>
@@ -438,7 +438,7 @@ export default function CourseDetailPage() {
             </section>
 
             <section className="mt-10">
-              <h2 className="font-display text-2xl text-moss">Assignments</h2>
+              <h2 className="font-display text-2xl text-ink">Assignments</h2>
               {assignments.length === 0 && (
                 <p className="ef-muted mt-3 text-sm">No assignments yet.</p>
               )}
@@ -506,7 +506,7 @@ export default function CourseDetailPage() {
             </section>
 
             <section className="mt-10">
-              <h2 className="font-display text-2xl text-moss">Reviews</h2>
+              <h2 className="font-display text-2xl text-ink">Reviews</h2>
               {reviews && reviews.count === 0 && (
                 <p className="ef-muted mt-3 text-sm">No reviews yet.</p>
               )}

@@ -21,7 +21,7 @@ function NewCourseForm() {
   const [category, setCategory] = useState<string>(CATEGORIES[0])
   const [level, setLevel] = useState('Beginner')
   const [priceCents, setPriceCents] = useState(0)
-  const [published, setPublished] = useState(false)
+  const published = false
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [knownCategories, setKnownCategories] = useState<string[]>([])
@@ -69,7 +69,7 @@ function NewCourseForm() {
           <Link href="/tutor" className="ef-link text-sm">
             ← Tutor desk
           </Link>
-          <h1 className="mt-4 font-display text-4xl text-moss sm:text-5xl">Create a course</h1>
+          <p className="ef-page-label">Workshop / a new course</p><h1 className="mt-4   text-ink  ef-title">Teach what you know.</h1>
           <p className="ef-muted mt-2 text-sm">
             Set the basics now — add lessons, assignments, and live classes after.
           </p>
@@ -131,16 +131,8 @@ function NewCourseForm() {
               />
               <span className="mt-1 block text-xs ef-muted">0 = free</span>
             </label>
-            <label className="flex items-center gap-2.5 text-sm text-ink/85">
-              <input
-                type="checkbox"
-                checked={published}
-                onChange={(e) => setPublished(e.target.checked)}
-                className="h-4 w-4 rounded border-line accent-moss"
-              />
-              Publish to catalog immediately
-            </label>
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            <p className="ef-muted text-sm">New courses start as drafts. Add lessons, then publish from your studio.</p>
+            {error && <p className="text-sm ef-text-danger ef-toast">{error}</p>}
             <button type="submit" disabled={busy} className="ef-btn w-full sm:w-auto">
               {busy ? 'Saving…' : 'Create course'}
             </button>

@@ -1,3 +1,4 @@
+import { RedirectNote } from '../components/ui'
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { getStoredUser, homeForRole } from '../lib/api'
@@ -9,5 +10,5 @@ export default function DashboardRedirect() {
     const user = getStoredUser()
     router.replace(user ? homeForRole(user.role) : '/login')
   }, [router])
-  return <main className="px-5 py-16 ef-muted">Redirecting…</main>
+  return <RedirectNote href="/login"/>
 }

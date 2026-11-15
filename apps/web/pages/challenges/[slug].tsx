@@ -1,3 +1,4 @@
+import { RedirectNote } from '../../components/ui'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
@@ -6,5 +7,5 @@ export default function ChallengeSlugRedirect() {
   useEffect(() => {
     router.replace('/discussions')
   }, [router])
-  return null
+  return <RedirectNote href="/discussions"/>
 }

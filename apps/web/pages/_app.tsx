@@ -1,5 +1,7 @@
-import '../styles/editorial-home.css'
+import '../styles/tokens.css'
 import '../styles/globals.css'
+import '../styles/editorial-home.css'
+import '../styles/workspaces.css'
 import type { AppProps } from 'next/app'
 import { SiteShell } from '../components/SiteShell'
 import DocumentHead from '../components/DocumentHead'

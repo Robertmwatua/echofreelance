@@ -37,8 +37,8 @@ export default function LoginPage() {
           <TechPhoto variant="login" />
 
           <div className="min-w-0 flex flex-col justify-center py-2 sm:px-4 lg:px-4">
-            <p className="ef-eyebrow">EchoFreelance Tech School</p>
-            <h1 className="ef-title mt-4">Sign in</h1>
+            <p className="ef-eyebrow">Account / welcome back</p>
+            <h1 className="ef-title mt-4">Back to the work.</h1>
             <p className="ef-muted mt-2 text-sm">
               Access your courses, live classrooms, and learning hub.
             </p>
@@ -67,7 +67,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                 />
               </label>
-              {error && <p className="text-sm text-red-400">{error}</p>}
+              {error && <p className="text-sm ef-text-danger ef-toast">{error}</p>}
               <button type="submit" disabled={busy} className="ef-btn w-full">
                 {busy ? 'Signing in…' : 'Sign in'}
               </button>

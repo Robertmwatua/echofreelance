@@ -1,3 +1,4 @@
+import { CardSkeletons } from '../../components/PageFeedback'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
@@ -25,19 +26,20 @@ export default function CertificatePage() {
         <Link href="/certificates/mine" className="text-sm text-fern hover:underline">
           ← My certificates
         </Link>
-        {error && <p className="mt-8 text-red-400">{error}</p>}
+        {!cert && !error && <CardSkeletons label="Loading certificate" count={1}/>}
+        {error && <p className="mt-8 ef-text-danger ef-toast">{error}</p>}
         {cert && (
-          <div className="ef-panel mt-6 border border-moss/30 text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-fern">
+          <div className="ef-panel mt-6 text-center">
+            <p className="text-xs font-semibold  font-mono text-fern">
               EchoFreelance Tech School
             </p>
-            <h1 className="mt-4 font-display text-3xl text-moss">Certificate of completion</h1>
+            <h1 className="mt-4   text-ink ef-title">Certificate of completion</h1>
             <p className="ef-muted mt-6 text-lg">This certifies that</p>
             <p className="mt-2 font-display text-2xl text-ink">
               {cert.user?.name || cert.user?.email || 'Learner'}
             </p>
             <p className="ef-muted mt-6">has completed</p>
-            <p className="mt-2 font-display text-2xl text-moss">{cert.course.title}</p>
+            <p className="mt-2 font-display text-2xl text-ink">{cert.course.title}</p>
             <p className="mt-2 text-sm ef-muted">
               {[cert.course.category, cert.course.level].filter(Boolean).join(' · ')}
             </p>

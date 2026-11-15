@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -25,6 +26,8 @@ export class CoursesService {
     const courses = await this.prisma.course.findMany({
       where: {
         published: true,
+        archived: false,
+        lessons: { some: {} },
         ...(category ? { category } : {}),
         ...(q
           ? {
@@ -40,6 +43,7 @@ export class CoursesService {
         tutor: { select: { id: true, name: true, email: true, headline: true } },
         _count: { select: { enrollments: true, lessons: true } },
         reviews: { select: { rating: true } },
+        lessons: { select: { durationMinutes: true } },
       },
       orderBy: { createdAt: 'desc' },
     })
@@ -66,8 +70,22 @@ export class CoursesService {
         ...mapped,
         avgRating,
         reviewCount: ratings.length,
+        durationMinutes: course.lessons.reduce((sum,l) => sum + l.durationMinutes,0),
       }
     })
+  }
+
+  async catalogue(query: Record<string, string>) {
+    // Page only public, lesson-ready courses. Management endpoints retain drafts.
+    const all = await this.list()
+    const normalize = (value: string) => value.trim().replace(/animaion/ig, 'animation').replace(/\s+/g, ' ').toLowerCase()
+    const categories: Record<string, number> = {}
+    for (const c of all) categories[normalize(c.category)] = (categories[normalize(c.category)] || 0) + 1
+    let filtered = all.filter(c => (!query.q || normalize(`${c.title} ${c.description} ${c.category}`).includes(normalize(query.q))) && (!query.category || normalize(c.category) === normalize(query.category)) && (!query.level || c.level.toLowerCase() === query.level.toLowerCase()) && (!query.price || (query.price === 'free' ? c.priceCents === 0 : c.priceCents > 0)) && (!query.duration || (query.duration === 'short' ? c.durationMinutes < 120 : c.durationMinutes >= 120)))
+    filtered.sort((a,b) => query.sort === 'newest' ? (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0) : query.sort === 'rating' ? (b.avgRating || 0) - (a.avgRating || 0) : query.sort === 'shortest' ? a.durationMinutes - b.durationMinutes : (b.enrollmentCount || 0) - (a.enrollmentCount || 0))
+    const offset = Math.max(0, Math.min(100000, Math.floor(Number(query.offset) || 0)))
+    const limit = Math.max(1, Math.min(24, Math.floor(Number(query.limit) || 24)))
+    return { courses: filtered.slice(offset, offset + limit), total: filtered.length, totalCourses: all.length, categories, hasMore: offset + limit < filtered.length, suggested: [...all].sort((a,b) => (b.enrollmentCount || 0) - (a.enrollmentCount || 0)).slice(0,3) }
   }
 
   async findOne(id: string, userId?: string, role?: Role) {
@@ -88,7 +106,8 @@ export class CoursesService {
 
     const isOwner = userId === course.tutorId
     const isStaff = role === Role.Admin || role === Role.Tutor
-    if (!course.published && !isOwner && role !== Role.Admin) {
+    const archivedEnrollment = course.archived && userId ? await this.prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: id } } }) : null
+    if (!course.published && !isOwner && role !== Role.Admin && !archivedEnrollment) {
       throw new NotFoundException('Course not found')
     }
 
@@ -179,26 +198,35 @@ export class CoursesService {
     const courses = await this.prisma.course.findMany({
       where: { tutorId },
       include: {
+        reviews: { select: { rating: true } },
         tutor: { select: { id: true, name: true, email: true } },
         _count: { select: { enrollments: true, lessons: true, virtualClasses: true } },
       },
       orderBy: { updatedAt: 'desc' },
     })
-    return courses.map((c) => this.mapCourse(c, false))
+    return courses.map((c) => {
+      const ratings = c.reviews.map(r => r.rating)
+      return { ...this.mapCourse(c, false), avgRating: ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null, reviewCount: ratings.length }
+    })
   }
 
   async listAllAdmin() {
     const courses = await this.prisma.course.findMany({
       include: {
+        reviews: { select: { rating: true } },
         tutor: { select: { id: true, name: true, email: true } },
         _count: { select: { enrollments: true, lessons: true } },
       },
       orderBy: { updatedAt: 'desc' },
     })
-    return courses.map((c) => this.mapCourse(c, false))
+    return courses.map((c) => {
+      const ratings = c.reviews.map(r => r.rating)
+      return { ...this.mapCourse(c, false), avgRating: ratings.length ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null, reviewCount: ratings.length }
+    })
   }
 
   async create(tutorId: string, dto: CreateCourseDto) {
+    if (dto.published) throw new BadRequestException('Create a draft and add at least one lesson before publishing.')
     return this.prisma.course.create({
       data: {
         title: dto.title,
@@ -218,9 +246,16 @@ export class CoursesService {
   async update(id: string, user: AuthUser, dto: UpdateCourseDto) {
     const course = await this.requireCourse(id)
     this.assertCanManage(course.tutorId, user)
+    if (dto.published === true) {
+      if (dto.archived ?? course.archived) throw new BadRequestException('Restore this course before publishing.')
+      const lessons = await this.prisma.lesson.count({ where: { courseId: id } })
+      if (!lessons) throw new BadRequestException('Add at least one lesson before publishing.')
+      if ((dto.description ?? course.description).includes('Fees, duration, intake dates and lesson content are awaiting confirmation.')) throw new BadRequestException('Review the prospectus details and confirm pricing before publishing.')
+    }
     return this.prisma.course.update({
       where: { id },
       data: {
+        ...(dto.archived !== undefined ? { archived: dto.archived, ...(dto.archived ? { published: false } : {}) } : {}),
         ...(dto.title !== undefined ? { title: dto.title } : {}),
         ...(dto.description !== undefined ? { description: dto.description } : {}),
         ...(dto.category !== undefined ? { category: dto.category } : {}),
@@ -233,6 +268,18 @@ export class CoursesService {
         lessons: { orderBy: { order: 'asc' } },
       },
     })
+  }
+
+  async duplicate(id: string, user: AuthUser) {
+    const source = await this.requireCourse(id)
+    this.assertCanManage(source.tutorId, user)
+    const lessons = await this.prisma.lesson.findMany({ where: { courseId: id }, orderBy: { order: 'asc' } })
+    return this.prisma.course.create({ data: {
+      title: `${source.title} (copy)`, description: source.description,
+      category: source.category, level: source.level, priceCents: source.priceCents,
+      tutorId: user.id, published: false, archived: false,
+      lessons: { create: lessons.map(l => ({ title: l.title, content: l.content, order: l.order, durationMinutes: l.durationMinutes, videoUrl: l.videoUrl })) },
+    } })
   }
 
   async remove(id: string, user: AuthUser) {
@@ -456,6 +503,7 @@ export class CoursesService {
       level: string
       priceCents: number
       published: boolean
+      archived?: boolean
       tutorId: string
       tutor?: { id: string; name: string | null; email: string; headline?: string | null }
       _count?: { enrollments: number; lessons?: number; virtualClasses?: number }
@@ -472,6 +520,7 @@ export class CoursesService {
       level: course.level,
       priceCents: course.priceCents,
       published: course.published,
+      archived: course.archived ?? false,
       tutorId: course.tutorId,
       instructorId: course.tutorId,
       tutor: course.tutor,

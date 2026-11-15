@@ -35,7 +35,7 @@ function MyCerts() {
     <>
       <DocumentHead title="My certificates — EchoFreelance Tech School" />
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <PageHero eyebrow="Progress worth keeping" title="Certificates" description="A record of the skills you’ve built and the courses you’ve completed." />
+        <PageHero eyebrow="05 / Proof of work" title="Certificates" description="A record of the skills you’ve built and the courses you’ve completed." />
         {loading && <CardSkeletons label="Loading certificates" />}
         {error && <FeedbackCard error title="Unable to load certificates" description="We couldn’t connect right now. Please check your connection and try again." retry={() => setAttempt(a => a + 1)} />}
         {certs.length === 0 && !loading && !error && (

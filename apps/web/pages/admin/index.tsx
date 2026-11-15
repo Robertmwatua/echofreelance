@@ -1,3 +1,4 @@
+import { PageHeading, Toast } from '../../components/ui'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import DocumentHead from '../../components/DocumentHead'
@@ -63,23 +64,18 @@ function AdminConsole() {
     <>
       <DocumentHead title="Admin — EchoFreelance Tech School" />
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <p className="text-xs font-semibold uppercase tracking-wider text-fern">Admin</p>
-        <h1 className="mt-1 font-display text-4xl text-moss">Campus control</h1>
-        <p className="ef-muted mt-2">
-          Promote tutors, reset credentials, and watch the school grow. Courses are created by
-          tutors — not seeded.
-        </p>
+        <PageHeading label="07 / Administration" title="Keep the school moving." description="People, permissions and the details that keep learning on track." />
         <div className="mt-4">
           <Link href="/settings" className="text-sm text-fern hover:underline">
             Your account settings →
           </Link>
         </div>
 
-        {error && <p className="mt-6 text-red-400">{error}</p>}
-        {message && <p className="mt-6 text-moss">{message}</p>}
+        {error && <Toast error>{error}</Toast>}
+        {message && <Toast>{message}</Toast>}
 
         {stats && (
-          <dl className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <dl className="ef-admin-stats mt-10">
             {[
               ['Students', stats.students],
               ['Tutors', stats.tutors],
@@ -88,70 +84,20 @@ function AdminConsole() {
               ['All courses', stats.courses],
               ['Upcoming classes', stats.upcomingClasses],
             ].map(([label, value]) => (
-              <div key={label as string} className="ef-panel !p-4">
-                <dt className="text-xs uppercase tracking-wide ef-muted">{label}</dt>
-                <dd className="mt-1 font-display text-3xl text-moss">{value}</dd>
+              <div key={label as string} className="">
+                <dt className="text-xs   ef-muted">{label}</dt>
+                <dd className="mt-1 font-display text-3xl text-ink">{value}</dd>
               </div>
             ))}
           </dl>
         )}
 
         <section className="mt-14">
-          <h2 className="font-display text-2xl text-moss">People & credentials</h2>
-          <ul className="mt-6 space-y-4">
-            {users.map((user) => (
-              <li key={user.id} className="ef-panel !p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="font-medium text-ink">{user.name || 'Unnamed'}</p>
-                    <p className="text-sm ef-muted">
-                      {user.email} · {user.role}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {(['Student', 'Tutor', 'Admin'] as Role[]).map((role) => (
-                      <button
-                        key={role}
-                        type="button"
-                        disabled={user.role === role}
-                        onClick={() => changeRole(user.id, role)}
-                        className="ef-btn-ghost !px-3 !py-1.5 text-xs disabled:opacity-40"
-                      >
-                        {role}
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setResetId(user.id)
-                        setNewPassword('')
-                      }}
-                      className="ef-btn-ghost !px-3 !py-1.5 text-xs"
-                    >
-                      Reset password
-                    </button>
-                  </div>
-                </div>
-                {resetId === user.id && (
-                  <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-line pt-4">
-                    <label className="block flex-1 text-sm">
-                      <span className="mb-1 block ef-muted">New password</span>
-                      <input
-                        type="password"
-                        minLength={8}
-                        className="ef-input"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                      />
-                    </label>
-                    <button type="button" className="ef-btn" onClick={() => resetPassword(user.id)}>
-                      Save
-                    </button>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
+          <h2 className="font-display text-2xl text-ink">People & credentials</h2>
+          <div className="ef-table-scroll mt-6"><table className="ef-data-table"><caption className="sr-only">School accounts and role management</caption><thead><tr><th scope="col">Person</th><th scope="col">Role</th><th scope="col">Manage access</th></tr></thead><tbody>
+            {users.map(user=><tr key={user.id}><td><p className="font-semibold">{user.name || 'Unnamed account'}</p><p className="ef-meta mt-1">{user.email}</p></td><td><span className="ef-pill">{user.role}</span></td><td><div className="flex flex-wrap gap-3">{(['Student','Tutor','Admin'] as Role[]).map(role=><button key={role} type="button" disabled={user.role===role} onClick={()=>changeRole(user.id,role)} aria-label={`Set ${user.name || user.email} role to ${role}`} className="ef-btn-ghost text-xs">{role}</button>)}<button type="button" onClick={()=>{setResetId(user.id);setNewPassword('')}} className="ef-btn-ghost text-xs">Reset password</button></div>
+            {resetId===user.id&&<div className="mt-4 flex flex-wrap items-end gap-4 border-t border-line pt-4"><label className="block flex-1 text-sm"><span className="mb-2 block">New password</span><input type="password" minLength={8} className="ef-input" value={newPassword} onChange={e=>setNewPassword(e.target.value)}/></label><button type="button" className="ef-btn" onClick={()=>resetPassword(user.id)}>Save password</button><button className="ef-btn-ghost" onClick={()=>setResetId(null)}>Cancel</button></div>}</td></tr>)}
+          </tbody></table>{!users.length&&<p className="ef-meta p-6">{error?'Account list unavailable.':'Loading school accounts…'}</p>}</div>
         </section>
       </main>
     </>

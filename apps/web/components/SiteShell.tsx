@@ -11,6 +11,7 @@ import {
 } from '../lib/api'
 import { SITE_NAME } from '../lib/brand'
 import { applyTheme, getStoredTheme, Theme, toggleTheme } from '../lib/theme'
+import { CommandPalette } from './CommandPalette'
 import { AskTutor } from './AskTutor'
 
 export function SiteShell({ children }: { children: ReactNode }) {
@@ -125,20 +126,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const role = user ? normalizeRole(user.role) : null
 
   const linkClass =
-    'block rounded-lg px-3 py-2.5 text-ink/90 transition hover:bg-mist/70 hover:text-moss lg:inline lg:rounded-none lg:px-0 lg:py-0 lg:hover:bg-transparent'
+    'block  px-3 py-2.5 text-ink/90 transition hover:bg-mist/70 hover:text-moss lg:inline  lg:px-0 lg:py-0 lg:hover:bg-transparent'
 
   return (
     <div className="min-h-screen font-sans text-ink">
       <header className={`ef-site-header ${scrolled ? 'is-scrolled' : ''}`}>
 
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-5 py-3 sm:px-7">
-          {/* brand */}
-          <Link href="/" className="group flex items-center gap-2.5" aria-label={SITE_NAME}>
-            <span className="ef-brand-mark" aria-hidden>EF</span>
-            <span className="font-display text-sm font-medium leading-tight tracking-tight text-ink sm:text-base lg:text-lg">
-              <span className="sm:hidden">EchoFreelance<span className="ef-muted block text-[10px] font-normal tracking-wide">TECH SCHOOL</span></span><span className="hidden sm:inline">{SITE_NAME}</span>
-            </span>
-          </Link>
+          <Link href="/" className="ef-wordmark" aria-label={SITE_NAME}>EchoFreelance.<small>Tech School</small></Link>
 
           {/* centre: primary navigation */}
           <nav className="mx-auto hidden items-center gap-1 lg:flex" aria-label="Main">
@@ -148,7 +143,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
             {role === 'Student' && (
               <Link href="/student" aria-current={isActive('/student') ? 'page' : undefined} className="ef-nav-link">My learning</Link>
             )}
-            {role === 'Tutor' && (
+            {(role === 'Tutor' || role === 'Admin') && (
               <Link href="/tutor" aria-current={isActive('/tutor') ? 'page' : undefined} className="ef-nav-link">Tutor</Link>
             )}
             {role === 'Admin' && (
@@ -158,14 +153,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
           {/* right: actions */}
           <div className="ml-auto flex items-center gap-2">
-            {router.pathname === '/' && <button className="hidden px-2 py-3 text-xs sm:block" onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {key:'k',ctrlKey:true,bubbles:true}))}>Search <span className="ml-1 font-mono">Ctrl K</span></button>}
-            <button type="button" onClick={() => setTheme(toggleTheme())} className="ef-icon-btn" aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>
-              {theme === 'dark' ? (
-                <svg viewBox="0 0 24 24" aria-hidden><circle cx="12" cy="12" r="4.2" /><path d="M12 2.6v2M12 19.4v2M2.6 12h2M19.4 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4" /></svg>
-              ) : (
-                <svg viewBox="0 0 24 24" aria-hidden><path d="M20 14.2A8.2 8.2 0 1 1 9.8 4a6.6 6.6 0 0 0 10.2 10.2z" /></svg>
-              )}
-            </button>
+            <button className="ef-nav-search hidden sm:inline-flex" onClick={() => window.dispatchEvent(new CustomEvent('ef:open-search'))}>Search <kbd>Ctrl K</kbd></button>
+            <button type="button" onClick={() => setTheme(toggleTheme())} className="ef-theme-toggle" aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>{theme === 'dark' ? 'Light' : 'Dark'}</button>
 
             {user && (
               <div className="relative">
@@ -187,7 +176,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                       <ul className="max-h-72 space-y-1 overflow-y-auto">
                         {notifs.map((n) => (
                           <li key={n.id}>
-                            <button type="button" onClick={() => readOne(n)} className={`w-full rounded-lg px-2.5 py-2 text-left text-sm transition-colors hover:bg-mist ${n.read ? 'opacity-60' : ''}`}>
+                            <button type="button" onClick={() => readOne(n)} className={`w-full  px-2.5 py-2 text-left text-sm transition-colors hover:bg-mist ${n.read ? 'opacity-60' : ''}`}>
                               <span className="block font-medium text-ink">{n.title}</span>
                               <span className="ef-muted mt-0.5 block text-xs">{n.body}</span>
                             </button>
@@ -210,19 +199,20 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 <div className="ef-popover absolute right-0 mt-3 w-64 p-2">
                   <p className="px-3 pb-2 pt-1 text-xs ef-muted">
                     {user.email}
-                    <span className="ml-1 text-[10px] uppercase tracking-wider text-fern">{role}</span>
+                    <span className="ml-1 text-[10px]   text-fern">{role}</span>
                   </p>
                   <hr className="ef-divider my-1" />
                   <Link href="/notes" className="ef-account-action">Notes</Link>
                   <Link href="/certificates/mine" className="ef-account-action">Certificates</Link>
                   <Link href="/settings" className="ef-account-action">Settings</Link>
+                  <button type="button" onClick={() => setTheme(toggleTheme())} className="ef-account-action">{theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}</button>
                   <hr className="ef-divider my-1" />
-                  <button type="button" onClick={logout} className="ef-account-action text-red-400">Log out</button>
+                  <button type="button" onClick={logout} className="ef-account-action ef-text-danger">Log out</button>
                 </div>
               </details>
             ) : (
               <>
-                <Link href="/login" className="hidden rounded-full px-3 py-2 text-sm font-medium text-ink/80 transition-colors hover:text-ink lg:inline-block">Log in</Link>
+                <Link href="/login" className="hidden  px-3 py-2 text-sm font-medium text-ink/80 transition-colors hover:text-ink lg:inline-block">Log in</Link>
                 <Link href="/register" className="ef-btn hidden !px-4 !py-2 text-sm lg:inline-flex">Join school</Link>
               </>
             )}
@@ -247,7 +237,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
         {menuOpen && (
           <div className="ef-drawer lg:hidden">
             <nav className="flex flex-col gap-1" aria-label="Mobile">
-              <p className="ef-drawer-label">Browse</p>
+              <button className="ef-drawer-link" onClick={() => { setMenuOpen(false); window.dispatchEvent(new CustomEvent('ef:open-search')) }}>Search courses · Ctrl K</button>
+                  <p className="ef-drawer-label">Browse</p>
               <Link href="/courses" aria-current={isActive('/courses') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Courses</Link>
               <Link href="/classes" aria-current={isActive('/classes') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Live classes</Link>
               <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Community</Link>
@@ -258,7 +249,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   {role === 'Student' && (
                     <Link href="/student" aria-current={isActive('/student') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>My learning</Link>
                   )}
-                  {role === 'Tutor' && (
+                  {(role === 'Tutor' || role === 'Admin') && (
                     <Link href="/tutor" aria-current={isActive('/tutor') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Tutor desk</Link>
                   )}
                   {role === 'Admin' && (
@@ -268,14 +259,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   <Link href="/certificates/mine" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Certificates</Link>
                   <Link href="/settings" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Settings</Link>
 
-                  <div className="mt-4 flex items-center gap-3 rounded-xl px-3 py-3" style={{ background: 'rgb(var(--glass-hi))' }}>
+                  <div className="mt-4 flex items-center gap-3  px-3 py-3" style={{ background: 'rgb(var(--glass-hi))' }}>
                     <span className="ef-avatar !h-9 !w-9">{(user.name || user.email).slice(0, 2).toUpperCase()}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-ink">{user.name || user.email}</span>
-                      <span className="text-[11px] uppercase tracking-wider text-fern">{role}</span>
+                      <span className="text-[11px]   text-fern">{role}</span>
                     </span>
                   </div>
-                  <button type="button" onClick={logout} className="ef-drawer-link mt-1 text-left text-red-400">Log out</button>
+                  <button type="button" onClick={logout} className="ef-drawer-link mt-1 text-left ef-text-danger">Log out</button>
                 </>
               ) : (
                 <>
@@ -292,7 +283,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
         {openNotifs && (
           <div className="border-t border-line bg-panel px-5 py-3 lg:hidden">
             <div className="mb-2 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wide text-fern">
+              <p className="text-xs font-semibold   text-fern">
                 Notifications
               </p>
               {unread > 0 && (
@@ -310,7 +301,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                     <button
                       type="button"
                       onClick={() => readOne(n)}
-                      className={`w-full rounded-md px-2 py-2 text-left text-sm hover:bg-mist ${
+                      className={`w-full  px-2 py-2 text-left text-sm hover:bg-mist ${
                         n.read ? 'opacity-60' : ''
                       }`}
                     >
@@ -351,16 +342,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
         </Link>
       </nav>
 
-      <AskTutor />
+      <div className="mx-auto max-w-6xl px-6"><AskTutor /></div>
+      <CommandPalette />
 
       <footer className="ef-footer">
         <div className="mx-auto max-w-6xl px-6 py-14 sm:px-7 sm:py-16">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-2">
-              <Link href="/" className="flex items-center gap-2.5">
-                <span className="ef-brand-mark" aria-hidden>EF</span>
-                <span className="font-display text-lg tracking-tight text-ink">{SITE_NAME}</span>
-              </Link>
+              <Link href="/" className="ef-wordmark">EchoFreelance.<small>Tech School / Malindi, Kenya</small></Link>
               <p className="ef-muted mt-4 max-w-sm text-sm leading-relaxed">
                 Practical courses and live classes in cybersecurity, software and cloud — taught by tutors you can actually talk to.
               </p>

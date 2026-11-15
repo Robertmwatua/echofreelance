@@ -38,7 +38,7 @@ export default function RegisterPage() {
           <TechPhoto variant="register" />
 
           <div className="min-w-0 flex flex-col justify-center py-2 sm:px-4 lg:px-4">
-            <p className="ef-eyebrow">A new chapter starts here</p>
+            <p className="ef-eyebrow">Account / your first step</p>
             <h1 className="ef-title mt-4">Create your account.</h1>
             <p className="ef-muted mt-2 text-sm">
               Find your course, meet your tutors, and keep your learning in one place.
@@ -81,7 +81,7 @@ export default function RegisterPage() {
                 />
               </label>
               <div className="flex flex-wrap items-center justify-between gap-3"><p id="password-help" className="ef-meta text-xs">Use at least 8 characters.</p><button type="button" className="ef-link min-h-[44px] text-sm" aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? 'Hide password' : 'Show password'}</button></div>
-              {error && <div role="alert" className="rounded-lg border border-amber-800/40 bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-100"><p className="font-semibold">We couldn’t create your account</p><p className="mt-1">{error === 'Failed to fetch' ? 'Check your connection and try again. Your details are still here.' : error}</p></div>}
+              {error && <div role="alert" className="ef-toast"><p className="font-semibold">We couldn’t create your account</p><p className="mt-1">{error === 'Failed to fetch' ? 'Check your connection and try again. Your details are still here.' : error}</p></div>}
               <button type="submit" disabled={busy} className="ef-btn w-full">
                 {busy ? 'Creating your account…' : 'Create account →'}
               </button>

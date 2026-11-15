@@ -11,6 +11,9 @@ export function getStoredTheme(): Theme {
 export function applyTheme(theme: Theme) {
   if (typeof document === 'undefined') return
   document.documentElement.classList.toggle('dark', theme === 'dark')
+  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+  if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta) }
+  meta.content = getComputedStyle(document.documentElement).getPropertyValue('--paper').trim()
   localStorage.setItem(KEY, theme)
 }
 

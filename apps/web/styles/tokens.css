@@ -1,0 +1,96 @@
+/* EchoFreelance editorial system. Values extracted from the approved homepage.
+   This is the only palette/type/spacing/shadow/motion definition file. */
+:root {
+  color-scheme: light;
+  --paper-rgb: 244 241 234;
+  --ink-rgb: 20 19 15;
+  --surface-rgb: 255 253 247;
+  --muted-rgb: 98 95 85;
+  --rule-rgb: 199 193 180;
+  --link-rgb: 166 44 12;
+  --orange-rgb: 255 79 31;
+  --button-ink-rgb: 20 19 15;
+  --inverse-paper-rgb: 25 26 22;
+  --inverse-ink-rgb: 244 241 234;
+  --scrim-rgb: 20 19 15;
+  --fixed-muted-rgb: 98 95 85;
+  --shadow-inverse-card: 6px 6px 0 var(--muted);
+  --shadow-inverse-pressed: 4px 4px 0 var(--muted);
+  --paper: rgb(var(--paper-rgb));
+  --ink: rgb(var(--ink-rgb));
+  --surface: rgb(var(--surface-rgb));
+  --muted: rgb(var(--muted-rgb));
+  --rule: rgb(var(--rule-rgb));
+  --signal: rgb(var(--orange-rgb));
+  --link: rgb(var(--link-rgb));
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-ui: Inter, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --display: var(--font-display);
+  --mono: var(--font-mono);
+  --type-hero: clamp(58px, 10.5vw, 152px);
+  --type-page: clamp(44px, 5.6vw, 82px);
+  --type-section: clamp(27px, 3vw, 44px);
+  --type-card: 29px;
+  --type-body: 16px;
+  --type-ui: 14px;
+  --type-meta: 12px;
+  --tracking-display: -.065em;
+  --tracking-card: -.045em;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 34px;
+  --space-9: 40px;
+  --space-10: 48px;
+  --space-11: 64px;
+  --space-12: 86px;
+  --page-gutter: clamp(20px, 3vw, 48px);
+  --page-width: 1440px;
+  --reading-width: 1100px;
+  --copy-width: 700px;
+  --border-hard: 2px solid var(--ink);
+  --border-rule: 1px solid var(--rule);
+  --shadow-offset: 4px 4px 0 var(--ink);
+  --shadow-card: 6px 6px 0 var(--ink);
+  --shadow-raised: 8px 8px 0 var(--ink);
+  --shadow-pressed: 2px 2px 0 var(--ink);
+  --motion-fast: 150ms;
+  --motion-reveal: 650ms;
+  --reveal-step: 90ms;
+  --hover-shift: 2px;
+  --radius: 0px;
+  /* Existing Tailwind names are compatibility aliases, never separate palettes. */
+  --c-ink: var(--ink-rgb);
+  --c-muted: var(--muted-rgb);
+  --c-panel: var(--surface-rgb);
+  --c-sand: var(--paper-rgb);
+  --c-mist: var(--surface-rgb);
+  --c-line: var(--rule-rgb);
+  --c-moss: var(--link-rgb);
+  --c-fern: var(--link-rgb);
+  --c-citrus: var(--orange-rgb);
+  --c-action: var(--orange-rgb);
+  --c-action-text: var(--button-ink-rgb);
+}
+html.dark {
+  color-scheme: dark;
+  --paper-rgb: 25 26 22;
+  --ink-rgb: 244 241 234;
+  --surface-rgb: 34 35 30;
+  --muted-rgb: 188 183 170;
+  --rule-rgb: 87 89 78;
+  --link-rgb: 255 165 135;
+}
+@keyframes editorial-reveal {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes editorial-pulse { 50% { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

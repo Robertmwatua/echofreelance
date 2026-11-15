@@ -163,7 +163,7 @@ export function AskTutor() {
     <>
       <button type="button" onClick={() => setOpen(true)} className="ef-tutor-fab" aria-label="Ask the study assistant">
         <HelpIcon />
-        <span>Study help</span>
+        <span className="sr-only">Help</span>
       </button>
 
       {open && (
@@ -174,7 +174,7 @@ export function AskTutor() {
               <span className="ef-ask-icon"><HelpIcon /></span>
               <div className="min-w-0">
                 <b className="block text-sm font-semibold text-ink">Study assistant</b>
-                <span className="font-accent text-[10px] uppercase tracking-[0.16em] text-fern">Automated · not a tutor</span>
+                <span className="font-accent text-[10px]   text-fern">Automated · not a tutor</span>
               </div>
               <button type="button" onClick={() => setOpen(false)} className="ef-icon-btn ml-auto !h-9 !w-9" aria-label="Close">
                 <svg viewBox="0 0 24 24" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg>

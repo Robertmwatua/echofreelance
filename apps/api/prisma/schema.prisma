@@ -74,6 +74,7 @@ model Course {
   level          String               @default("Beginner")
   priceCents     Int                  @default(0)
   published      Boolean              @default(false)
+  archived       Boolean              @default(false)
   tutorId        String
   tutor          User                 @relation("CourseTutor", fields: [tutorId], references: [id])
   createdAt      DateTime             @default(now())

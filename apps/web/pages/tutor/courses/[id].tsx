@@ -1,3 +1,4 @@
+import { useConfirmation } from '../../../components/Confirmation'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FormEvent, useEffect, useState } from 'react'
@@ -15,6 +16,7 @@ export default function TutorCourseManagePage() {
 }
 
 function ManageCourse() {
+  const { confirm, confirmation } = useConfirmation()
   const router = useRouter()
   const id = typeof router.query.id === 'string' ? router.query.id : ''
   const [course, setCourse] = useState<Course | null>(null)
@@ -198,7 +200,7 @@ function ManageCourse() {
   }
 
   async function deleteCourse() {
-    if (!window.confirm('Delete this course and all its lessons, classes, and enrollments?')) {
+    if (!await confirm('Delete this course and all its lessons, classes, and enrollments?')) {
       return
     }
     setBusy(true)
@@ -214,20 +216,20 @@ function ManageCourse() {
 
   return (
     <>
-      <DocumentHead title={course ? `Manage ${course.title}` : 'Manage course'} />
+      {confirmation}<DocumentHead title={course ? `Manage ${course.title}` : 'Manage course'} />
       <main className="relative mx-auto max-w-3xl px-6 py-12">
         <div className="relative">
         <Link href="/tutor" className="ef-link text-sm">
           ← Tutor desk
         </Link>
-        <h1 className="mt-4 font-display text-4xl text-moss sm:text-5xl">Manage course</h1>
+        <p className="ef-page-label">Workshop / course editor</p><h1 className="mt-4   text-ink  ef-title">Shape the next lesson.</h1>
         {!course && !error && <p className="mt-6 ef-muted">Loading…</p>}
-        {error && <p className="mt-6 text-red-400">{error}</p>}
-        {message && <p className="mt-4 text-moss">{message}</p>}
+        {error && <p className="mt-6 ef-text-danger ef-toast">{error}</p>}
+        {message && <p className="mt-4 text-moss ef-toast">{message}</p>}
 
         {course && (
           <>
-            <form onSubmit={saveCourse} className="ef-panel mt-8 space-y-4">
+            <form id="details" onSubmit={saveCourse} className="ef-panel mt-8 space-y-4">
               <label className="block text-sm">
                 <span className="mb-1.5 block font-medium text-ink/85">Title</span>
                 <input
@@ -294,14 +296,14 @@ function ManageCourse() {
                 type="button"
                 disabled={busy}
                 onClick={deleteCourse}
-                className="ml-3 rounded-md border border-red-500/40 px-5 py-3 text-sm font-semibold text-red-400 hover:bg-red-500/10 disabled:opacity-60"
+                className="ef-btn-ghost ml-3"
               >
                 Delete course
               </button>
             </form>
 
             <section className="ef-panel mt-10">
-              <h2 className="font-display text-2xl text-moss">Student performance</h2>
+              <h2 className="font-display text-2xl text-ink" id="students">Student performance</h2>
               <p className="ef-muted mt-1 text-sm">
                 {report
                   ? `${report.studentCount} enrolled${
@@ -315,7 +317,7 @@ function ManageCourse() {
               {report && report.students.length > 0 && (
                 <div className="mt-4 overflow-x-auto">
                   <table className="w-full min-w-[640px] text-left text-sm">
-                    <thead className="border-b border-line text-xs uppercase tracking-wide ef-muted">
+                    <thead className="border-b border-line text-xs   ef-muted">
                       <tr>
                         <th className="py-2 pr-3 font-medium">Student</th>
                         <th className="py-2 pr-3 font-medium">Progress</th>
@@ -354,7 +356,7 @@ function ManageCourse() {
             </section>
 
             <section className="ef-panel mt-8">
-              <h2 className="font-display text-2xl text-moss">Notify students</h2>
+              <h2 className="font-display text-2xl text-ink">Notify students</h2>
               <p className="ef-muted mt-1 text-sm">
                 Sends an in-app alert to everyone enrolled (shows under Alerts).
               </p>
@@ -381,7 +383,7 @@ function ManageCourse() {
             </section>
 
             <section className="ef-panel mt-8">
-              <h2 className="font-display text-2xl text-moss">Lessons</h2>
+              <h2 className="font-display text-2xl text-ink" id="lessons">Lessons</h2>
               <ul className="mt-4 space-y-3">
                 {(course.lessons || []).map((lesson) => (
                   <li key={lesson.id} className="border-t border-moss/10 pt-3">
@@ -470,7 +472,7 @@ function ManageCourse() {
             </section>
 
             <section className="ef-panel mt-8">
-              <h2 className="font-display text-2xl text-moss">Announcements</h2>
+              <h2 className="font-display text-2xl text-ink">Announcements</h2>
               <form onSubmit={postAnnouncement} className="mt-4 space-y-3">
                 <input
                   required
@@ -494,7 +496,7 @@ function ManageCourse() {
             </section>
 
             <section className="ef-panel mt-8">
-              <h2 className="font-display text-2xl text-moss">Assignments</h2>
+              <h2 className="font-display text-2xl text-ink">Assignments</h2>
               <form onSubmit={addAssignment} className="mt-4 space-y-3">
                 <input
                   required

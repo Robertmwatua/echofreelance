@@ -27,7 +27,7 @@ export function AskAnything() {
   return <div>
     <form onSubmit={submit} className="ef-ask" role="search">
       <span className="ef-ask-icon" aria-hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg></span>
-      <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} className="ef-ask-input" placeholder="Search courses and skills" aria-label="Search courses" type="search" />
+      <input ref={inputRef} value={value} onChange={e => setValue(e.target.value)} className="ef-input ef-ask-input" placeholder="Search courses and skills" aria-label="Search courses" type="search" />
       <kbd className="ef-kbd" aria-hidden>{isMac ? '⌘' : 'Ctrl'} K</kbd>
       <button type="submit" className="ef-btn !min-h-[40px] !px-3 !py-2 text-xs">Search</button>
     </form>

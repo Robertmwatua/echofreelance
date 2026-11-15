@@ -14,12 +14,14 @@ module.exports = {
         line: 'rgb(var(--c-line) / <alpha-value>)',
       },
       fontFamily: {
-        display: ['"Inter"', 'system-ui', 'sans-serif'],
-        sans: ['"Inter"', 'system-ui', 'sans-serif'],
-        accent: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)'],
+        sans: ['var(--font-ui)'],
+        accent: ['var(--font-mono)'],
+        mono: ['var(--font-mono)'],
       },
       boxShadow: {
-        glow: '0 1px 2px rgb(0 0 0 / 0.05)',
+        offset: 'var(--shadow-offset)',
+        ticket: 'var(--shadow-card)',
       },
     },
   },

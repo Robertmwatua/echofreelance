@@ -63,7 +63,7 @@ function NewClassForm() {
         <Link href="/tutor" className="text-sm text-fern hover:underline">
           ← Tutor desk
         </Link>
-        <h1 className="mt-4 font-display text-4xl text-moss">Schedule a live class</h1>
+        <p className="ef-page-label">Schedule / a new session</p><h1 className="mt-4   text-ink ef-title">Make room for questions.</h1>
         <p className="ef-muted mt-2">
           A private classroom room is created automatically (in-browser video). Optional: paste your
           own Meet/Zoom link instead.
@@ -136,7 +136,7 @@ function NewClassForm() {
               placeholder="Leave blank for built-in live classroom"
             />
           </label>
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm ef-text-danger ef-toast">{error}</p>}
           <button type="submit" disabled={busy || !courseId} className="ef-btn">
             {busy ? 'Scheduling…' : 'Publish session'}
           </button>

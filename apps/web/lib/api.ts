@@ -56,11 +56,15 @@ export type Course = {
   level: string
   priceCents: number
   published: boolean
+  archived?: boolean
+  createdAt?: string
+  updatedAt?: string
   tutorId: string
   tutor?: Pick<UserProfile, 'id' | 'name' | 'email' | 'headline'>
   instructor?: Pick<UserProfile, 'id' | 'name' | 'email'>
   enrollmentCount?: number
   lessonCount?: number
+  durationMinutes?: number
   classCount?: number
   enrolled?: boolean
   canManage?: boolean
@@ -358,6 +362,21 @@ export const api = {
   },
   course: (id: string) => request<Course>(`/courses/${id}`),
   myCourses: () => request<Course[]>('/courses/mine'),
+  catalogue: async (query: Record<string,string>): Promise<{ courses: Course[]; total: number; totalCourses: number; categories: Record<string,number>; hasMore: boolean; suggested: Course[] }> => {
+    try { return await request(`/courses/catalogue?${new URLSearchParams(query)}`) }
+    catch (error) {
+      // Keep the catalogue available while an older API is being deployed.
+      if (!(error instanceof Error) || !/Cannot GET|404|Course not found/i.test(error.message)) throw error
+      const normalize = (v: string) => v.trim().replace(/animaion/ig,'animation').replace(/\s+/g,' ').toLowerCase()
+      const all = (await request<Course[]>('/courses')).filter(c => c.published && !c.archived && (c.lessonCount || 0) > 0)
+      const categories: Record<string,number> = Object.create(null)
+      all.forEach(c => { const key=normalize(c.category); categories[key]=(categories[key]||0)+1 })
+      const filtered=all.filter(c=>(!query.q||normalize(`${c.title} ${c.description}`).includes(normalize(query.q)))&&(!query.category||normalize(c.category)===normalize(query.category))&&(!query.level||normalize(c.level)===normalize(query.level))&&(!query.price||(query.price==='free'?c.priceCents===0:c.priceCents>0))&&(!query.duration||(c.durationMinutes!=null&&(query.duration==='short'?c.durationMinutes<120:c.durationMinutes>=120))))
+      filtered.sort((a,b)=>query.sort==='newest'?(b.createdAt||'').localeCompare(a.createdAt||''):query.sort==='rating'?(b.avgRating||0)-(a.avgRating||0):query.sort==='shortest'?(a.durationMinutes||Infinity)-(b.durationMinutes||Infinity):(b.enrollmentCount||0)-(a.enrollmentCount||0))
+      const offset=Math.max(0,Number(query.offset)||0)
+      return {courses:filtered.slice(offset,offset+24),total:filtered.length,totalCourses:all.length,categories,hasMore:offset+24<filtered.length,suggested:all.slice(0,3)}
+    }
+  },
   taughtCourses: () => request<Course[]>('/courses/taught'),
   enroll: (id: string) => request(`/courses/${id}/enroll`, { method: 'POST' }),
   createCourse: (body: {
@@ -377,8 +396,10 @@ export const api = {
       level: string
       priceCents: number
       published: boolean
+      archived: boolean
     }>,
   ) => request<Course>(`/courses/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
+  duplicateCourse: (id: string) => request<Course>(`/courses/${id}/duplicate`, { method: 'POST' }),
   deleteCourse: (id: string) => request(`/courses/${id}`, { method: 'DELETE' }),
   addLesson: (
     courseId: string,

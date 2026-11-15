@@ -1,67 +1,13 @@
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { Course, formatPrice } from '../lib/api'
-
-export function CourseCard({ course }: { course: Course }) {
-  const tutor = course.tutor?.name || course.instructor?.name
-  /* a real signal from real data — not an invented recommendation */
-  const topRated = course.avgRating != null && course.avgRating >= 4.5 && (course.reviewCount || 0) >= 3
-
-  function askAbout() {
-    window.dispatchEvent(new CustomEvent('ef:ask-tutor', {
-      detail: { q: `Is "${course.title}" right for me?` },
-    }))
-  }
-
-  return (
-    <article className="ef-session-card flex h-full flex-col">
-      <div className="flex items-start justify-between gap-3">
-        <p className="ef-eyebrow">{course.category}</p>
-        {topRated && <span className="ef-course-badge">Top rated</span>}
-      </div>
-
-      <h2 className="mt-4 font-display text-xl font-semibold leading-snug tracking-tight">
-        <Link href={`/courses/${course.id}`} className="transition-colors hover:text-moss">
-          {course.title}
-        </Link>
-      </h2>
-
-      <p className="ef-muted mt-3 line-clamp-3 text-sm leading-6">{course.description}</p>
-
-      <dl className="ef-meta mt-6 grid grid-cols-2 gap-x-4 gap-y-3">
-        <div>
-          <dt className="text-[11px] uppercase tracking-wider">Level</dt>
-          <dd className="font-medium text-ink">{course.level}</dd>
-        </div>
-        <div>
-          <dt className="text-[11px] uppercase tracking-wider">Lessons</dt>
-          <dd className="font-medium text-ink">{course.lessonCount ?? '—'}</dd>
-        </div>
-        {course.avgRating != null && (
-          <div className="col-span-2">
-            <dt className="text-[11px] uppercase tracking-wider">Rating</dt>
-            <dd className="font-medium text-ink">
-              {course.avgRating}/5 · {course.reviewCount || 0} review{course.reviewCount === 1 ? '' : 's'}
-            </dd>
-          </div>
-        )}
-      </dl>
-
-      {tutor && <p className="ef-meta mt-4">With {tutor}</p>}
-
-      <button type="button" onClick={askAbout} className="ef-ask-link mt-5 mb-5 self-start">
-        Course questions <span aria-hidden>↗</span>
-      </button>
-
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
-        <span className="font-accent text-sm font-semibold text-ink">{formatPrice(course.priceCents)}</span>
-        <Link
-          href={`/courses/${course.id}`}
-          className="ef-btn-ghost !py-2 text-sm"
-          aria-label={`${course.enrolled ? 'Continue' : 'View'} ${course.title}`}
-        >
-          {course.enrolled ? 'Continue learning' : 'View course'}
-        </Link>
-      </div>
-    </article>
-  )
+import { categoryLabel, normalizeCategory } from './catalogue/CategoryTabs'
+export function durationLabel(minutes?:number){if(!minutes)return '';return `${Math.floor(minutes/60)?`${Math.floor(minutes/60)}h `:''}${minutes%60?`${minutes%60}m`:''}`.trim()}
+export function courseCode(course:Pick<Course,'id'|'category'>){const category=normalizeCategory(course.category);const prefix=category.includes('security')?'SEC':category.includes('cloud')?'CLD':category.includes('software')?'DEV':'COURSE';return `${prefix}-${course.id.slice(-4).toUpperCase()}`}
+export function CourseCard({course}:{course:Course}){
+ const [saved,setSaved]=useState(false)
+ useEffect(()=>{try{setSaved(JSON.parse(localStorage.getItem('ef_saved_courses')||'[]').includes(course.id))}catch{}},[course.id])
+ function save(){try{const ids:string[]=JSON.parse(localStorage.getItem('ef_saved_courses')||'[]');const next=saved?ids.filter(id=>id!==course.id):Array.from(new Set([...ids,course.id]));localStorage.setItem('ef_saved_courses',JSON.stringify(next));setSaved(!saved)}catch{}}
+ const tutor=course.tutor?.name||course.instructor?.name||'School tutor'
+ return <article className="catalogue-card"><Link href={`/courses/${course.id}`} className="catalogue-card-link"><div className="catalogue-ticket-code"><span>{courseCode(course)}</span><span>{course.level}</span></div><div className="catalogue-card-body"><p className="ef-meta mb-3">{categoryLabel(course.category)}</p><h2>{course.title}</h2><p className="catalogue-instructor"><span className="ef-avatar !h-7 !w-7" aria-hidden>{tutor.split(' ').map(w=>w[0]).slice(0,2).join('')}</span>{tutor}</p><p className="catalogue-meta">{course.lessonCount?`${course.lessonCount} lesson${course.lessonCount===1?'':'s'}${course.durationMinutes?` · ${durationLabel(course.durationMinutes)}`:''}`:'Lessons being prepared'}</p>{course.avgRating!=null&&!!course.reviewCount?<p className="catalogue-rating">★ {course.avgRating.toFixed(1)} <span className="ef-muted">({course.reviewCount} {course.reviewCount===1?'review':'reviews'})</span></p>:<p className="catalogue-rating ef-muted">Not rated yet</p>}<div className="catalogue-price">{formatPrice(course.priceCents)}</div></div></Link><button className="catalogue-save" aria-label={`${saved?'Unsave':'Save'} ${course.title} on this device`} aria-pressed={saved} onClick={save}><svg viewBox="0 0 24 24" width="18" height="18" fill={saved?'currentColor':'none'} stroke="currentColor" strokeWidth="1.6" aria-hidden><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg></button></article>
 }

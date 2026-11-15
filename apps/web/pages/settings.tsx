@@ -77,18 +77,18 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
   return (
     <>
       <DocumentHead title="Settings — EchoFreelance Tech School" />
-      <main className="mx-auto max-w-2xl px-6 py-12">
-        <p className="text-xs font-semibold uppercase tracking-wider text-fern">Account</p>
-        <h1 className="mt-1 font-display text-4xl text-moss">Settings</h1>
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        <p className="text-xs font-semibold   text-fern">06 / Your account</p>
+        <h1 className="mt-1   text-ink ef-title">Make yourself<br/>at home.</h1>
         <p className="ef-muted mt-2">
           Update your profile and login credentials
           {stored?.role ? ` · signed in as ${stored.role}` : ''}.
         </p>
 
-        {message && <p className="mt-6 text-moss">{message}</p>}
-        {error && <p className="mt-6 text-red-400">{error}</p>}
+        {message && <p className="mt-6 text-moss ef-toast">{message}</p>}
+        {error && <p className="mt-6 ef-text-danger ef-toast">{error}</p>}
 
-        <form onSubmit={saveProfile} className="ef-panel mt-8 space-y-4">
+        <div className="ef-settings-forms"><form onSubmit={saveProfile} className="ef-panel mt-8 space-y-4">
           <h2 className="font-display text-xl text-ink">Profile</h2>
           <label className="block text-sm">
             <span className="mb-1 block font-medium text-ink/90">Display name</span>
@@ -158,7 +158,7 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
           </button>
         </form>
 
-        <p className="mt-8 text-sm ef-muted">
+        </div><p className="mt-8 text-sm ef-muted">
           <Link href="/" className="text-fern hover:underline">
             ← Back to campus
           </Link>

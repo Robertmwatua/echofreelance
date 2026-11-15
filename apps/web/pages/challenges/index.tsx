@@ -14,7 +14,7 @@ export default function ChallengesRedirect() {
     <>
       <DocumentHead title="Discussions — EchoFreelance Tech School" />
       <main className="mx-auto max-w-3xl px-5 py-16">
-        <p className="ef-muted">Redirecting to discussions…</p>
+        <p className="ef-section-label">Community / moving rooms</p><h1 className="ef-title mt-4">One conversation at a time.</h1>
         <Link href="/discussions" className="ef-link mt-4 inline-block">
           Go to discussions
         </Link>

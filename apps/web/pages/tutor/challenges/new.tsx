@@ -1,3 +1,4 @@
+import { RedirectNote } from '../../../components/ui'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
@@ -6,5 +7,5 @@ export default function TutorChallengeRedirect() {
   useEffect(() => {
     router.replace('/tutor')
   }, [router])
-  return null
+  return <RedirectNote href="/tutor"/>
 }

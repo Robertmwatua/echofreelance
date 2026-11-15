@@ -37,7 +37,7 @@ export default function LiveRoomPage() {
     <main className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div>
         <Link href={id ? `/classes/${id}` : '/classes'} className="ef-link text-sm">← Leave room</Link>
-        <h1 className="mt-2 font-display text-2xl sm:text-3xl">{session?.title || 'Live classroom'}</h1>
+        <p className="ef-page-label">Classroom / your live room</p><h1 className="mt-2    ef-title">{session?.title || 'Live classroom'}</h1>
       </div>{session?.roomUrl && !left && <a href={session.roomUrl} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className="ef-btn-ghost">Open 8×8 fallback</a>}</div>
       <p className="ef-meta mb-5">Allow camera and microphone in your browser. If an embedded browser has trouble, open the classroom in Chrome, Edge, Firefox, or Safari. Screen-sharing availability depends on your device. The external 8×8 fallback returns to the provider’s page after hangup; use this built-in room for the class recap.</p>
       {loading && <p className="ef-panel" role="status">Authorizing your classroom access…</p>}

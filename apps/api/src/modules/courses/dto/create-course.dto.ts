@@ -36,6 +36,10 @@ export class CreateCourseDto {
 
 export class UpdateCourseDto {
   @IsOptional()
+  @IsBoolean()
+  archived?: boolean
+
+  @IsOptional()
   @IsString()
   @MinLength(3)
   title?: string

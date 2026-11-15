@@ -35,7 +35,7 @@ function NotesHome() {
     <>
       <DocumentHead title="My notes — EchoFreelance Tech School" />
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <PageHero eyebrow="Your study companion" title="My notes" description="Your ideas, discoveries, and useful details, collected in one quiet place." />
+        <PageHero eyebrow="04 / Your notebook" title="My notes" description="Your ideas, discoveries, and useful details, collected in one quiet place." />
         {loading && <CardSkeletons label="Loading my notes" />}
         {error && <FeedbackCard error title="Unable to load my notes" description="We couldn’t connect right now. Please check your connection and try again." retry={() => setAttempt(a => a + 1)} />}
         {notes.length === 0 && !loading && !error && (
@@ -44,7 +44,7 @@ function NotesHome() {
         {!loading && !error && <ul className="mt-8 grid gap-6 md:grid-cols-2">
           {notes.map((n) => (
             <li key={n.id} className="ef-panel !p-4">
-              <p className="text-xs uppercase tracking-wide text-fern">
+              <p className="ef-meta">
                 {n.lesson?.course.title}
               </p>
               <Link

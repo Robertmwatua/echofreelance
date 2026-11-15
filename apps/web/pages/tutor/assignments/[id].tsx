@@ -1,3 +1,4 @@
+import { FeedbackCard } from '../../../components/PageFeedback'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FormEvent, useEffect, useState } from 'react'
@@ -61,9 +62,9 @@ function GradePanel() {
         <Link href="/tutor" className="text-sm text-fern hover:underline">
           ← Tutor desk
         </Link>
-        <h1 className="mt-4 font-display text-4xl text-moss">Submissions</h1>
-        {error && <p className="mt-4 text-red-400">{error}</p>}
-        <ul className="mt-8 space-y-4">
+        <p className="ef-page-label">Workshop / assignment review</p><h1 className="mt-4   text-ink ef-title">See the work. Give direction.</h1>
+        {error && <p className="mt-4 ef-text-danger ef-toast">{error}</p>}
+        {!rows.length && !error && <FeedbackCard title="No submissions to review yet." description="Student work will appear here when it is submitted." action={{href:'/tutor',label:'Back to your courses'}}/>}<ul className="mt-8 space-y-4">
           {rows.map((row) => (
             <li key={row.id} className="ef-panel">
               <p className="font-medium">{row.user.name || row.user.email}</p>

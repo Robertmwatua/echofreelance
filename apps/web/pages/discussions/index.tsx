@@ -43,7 +43,7 @@ function DiscussionsHome() {
     <>
       <DocumentHead title="Community — EchoFreelance Tech School" />
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <PageHero eyebrow="Better together" title="Community" description="Bring your questions, share what you’re building, and learn alongside your classmates." />
+        <PageHero eyebrow="03 / The common room" title="Ask it out loud." description="Bring your questions, share what you’re building, and learn alongside your classmates." />
         {loading && <CardSkeletons label="Loading community" />}
         {error && <FeedbackCard error title="Unable to load your community" description="We couldn’t reach your course discussions. Try again in a moment." retry={() => setAttempt(a => a + 1)} />}
         {!loading && courses.length === 0 && !error && (
@@ -55,14 +55,14 @@ function DiscussionsHome() {
               <Link href={`/courses/${c.id}#discussion`} className="font-display text-xl hover:text-moss">
                 {c.title}
               </Link>
-              <p className="mt-1 text-xs uppercase tracking-wide text-fern">{c.category}</p>
+              <p className="mt-1 text-xs   text-fern">{c.category}</p>
               {(previews[c.id] || []).length === 0 ? (
                 <p className="ef-muted mt-3 text-sm">No posts yet — start the conversation on the course page.</p>
               ) : (
                 <ul className="mt-3 space-y-2">
                   {previews[c.id].map((p) => (
                     <li key={p.id} className="text-sm ef-muted">
-                      <span className="font-medium text-ink">{p.author.name || 'Member'}:</span>{' '}
+                      <span className="font-medium text-ink">{p.author.name || 'Member'}:</span>{p.author.id === c.tutorId && <span className="ef-stamp mx-2">Tutor reply</span>}{' '}
                       {p.body.slice(0, 120)}
                       {p.body.length > 120 ? '…' : ''}
                     </li>

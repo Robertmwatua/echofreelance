@@ -37,6 +37,9 @@ export class CoursesController {
     return this.coursesService.list(user?.id, category, q)
   }
 
+  @Get('catalogue')
+  catalogue(@Query() query: Record<string, string>) { return this.coursesService.catalogue(query) }
+
   @UseGuards(JwtAuthGuard)
   @Get('mine')
   mine(@CurrentUser() user: AuthUser) {
@@ -93,6 +96,13 @@ export class CoursesController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.coursesService.update(id, user, dto)
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Tutor, Role.Admin)
+  @Post(':id/duplicate')
+  duplicate(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.coursesService.duplicate(id, user)
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

@@ -1,3 +1,4 @@
+import { CardSkeletons } from './PageFeedback'
 import { useRouter } from 'next/router'
 import { ReactNode, useEffect, useState } from 'react'
 import { api, getStoredUser, homeForRole, normalizeRole, UserProfile } from '../lib/api'
@@ -36,11 +37,11 @@ export function RequireRole({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router.asPath, roles.join('|'), attempt])
 
-  if (error) return <main className="ef-page"><div role="alert" className="ef-panel"><h1 className="font-display text-2xl">Unable to verify your session</h1><p className="ef-muted mt-3">{error}</p><button className="ef-btn mt-4" onClick={() => { setError(''); setAttempt(a => a + 1) }}>Try again</button></div></main>
+  if (error) return <main className="ef-page"><div role="alert" className="ef-panel"><h1 className="  ef-title">Unable to verify your session</h1><p className="ef-muted mt-3 ef-toast">{error}</p><button className="ef-btn mt-4" onClick={() => { setError(''); setAttempt(a => a + 1) }}>Try again</button></div></main>
 
   if (!ready || !user) {
     return (
-      <main className="mx-auto max-w-6xl px-5 py-16 ef-muted">Checking access…</main>
+      <main className="mx-auto max-w-6xl px-5 py-16"><p className="ef-section-label" role="status">Account / checking access…</p><CardSkeletons label="Checking your session" count={2}/></main>
     )
   }
 
