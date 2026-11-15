@@ -96,3 +96,4 @@ docs/audits/changed-files.txt
 docs/audits/lighthouse-before.json
 docs/audits/responsive-checks.json
 docs/audits/ux-release.md
+docs/audits/lighthouse-after.json

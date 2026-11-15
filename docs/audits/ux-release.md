@@ -102,3 +102,18 @@ Actual token contrast ratios: orange button / ink: 5.66:1, light muted / paper: 
 The recorded JSX migration converted 211 action controls and 56 low-priority navigation links. Inline references were not converted (0); inline support email/privacy references remain links. Native summary controls, dialog scrims and whole-card navigation retain their native semantics. Primary/secondary/danger buttons share Button.tsx; tertiary navigation uses NavigationLink, never an action button.
 
 Final browser matrix: 24 checks across Admin, People, Tutor editor and Fees, in light and dark at 390/768/1440px; all confirmed the expected page heading and zero horizontal overflow. Evidence: `responsive-checks.json`. Keyboard search selection and editor Ctrl+S were exercised; draft autosave persisted. The offline fallback was observed without private account content. 17 local HTTP permission checks passed.
+
+### Published Lighthouse mobile comparison
+
+Same public homepage, Lighthouse 12.8.2, simulated mobile throttling and 4× CPU slowdown. Single before/after runs, so network/cache variability applies; these are not guarantees for every device.
+
+| Metric | Before | After |
+|---|---:|---:|
+| Performance | 58 | 80 |
+| Accessibility | 100 | 100 |
+| SEO | 100 | 100 |
+| Largest contentful paint | 4.2 s | 3.4 s |
+| Total blocking time | 970 ms | 270 ms |
+| Cumulative layout shift | 0 | 0 |
+
+Live acceptance: frontend admin/people/courses/classes/reports, sitemap and robots returned HTTP 200; public catalogue retained 20 courses; anonymous overview and student-group requests returned HTTP 401. No real student account, email or financial transaction was used in these acceptance checks. Manual Fast 3G interaction testing and an exhaustive keyboard sweep of every route were not performed; see the explicit 24-screen matrix and exercised keyboard flows above.
