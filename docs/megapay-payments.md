@@ -1,6 +1,6 @@
 # Course fees and MegaPay instalments
 
-Agreed policy: collect KES through the school's active **General** MegaPay linked account. Any first verified instalment (minimum KES 1) unlocks course access. Students may pay the remaining balance later. This does not enforce a later payment deadline, revoke access for outstanding balances, or prevent certificates for students with a balance.
+Agreed policy: collect KES through the school's active **General** MegaPay linked account. New student quotes require **50% of discounted tuition** to unlock access by default. Admins can change the access-deposit percentage and offer discounts. Existing quotes retain their previously agreed total and unlock threshold. Students may pay the remaining balance later. See [School operations](school-operations.md) for the current fee controls and brochure import. This does not enforce a later payment deadline, revoke access for outstanding balances, or prevent certificates for students with a balance.
 
 ## Connect the live account
 
@@ -19,7 +19,7 @@ The provider's current integration contract is documented at https://megapay.co.
 - Choose an amount (whole KES, at most the remaining balance and KES 150,000/request), enter a Kenyan M-Pesa number, then confirm the prompt.
 - Pending requests poll for approximately two minutes. **Check payment status** remains available afterward; webhooks also trigger verification.
 - **Fees & receipts** in the account/mobile menu lists fee statements. Each statement records amount, status, timestamp, masked phone, school reference and confirmed M-Pesa receipt.
-- A successful first instalment and enrolment are written in the same database transaction. Subsequent instalments reduce the balance without duplicating enrolment.
+- A verified payment and any enrolment earned by reaching the quoted access deposit are written in the same database transaction. Subsequent instalments reduce the balance without duplicating enrolment.
 - Existing enrolments remain accessible. Their historical paid amounts are unknown and are not fabricated or charged again. Ask the school to reconcile any previous balance separately.
 - Each account's total is quoted on its first request, including an unsuccessful attempt. Later course price changes apply to new student quotes, not existing accounts.
 

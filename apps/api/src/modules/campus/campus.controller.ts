@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, UseGuards } from '@nestjs/common'
 import { Role } from '@prisma/client'
 import { AuthUser, CurrentUser } from '../../common/current-user.decorator'
 import { Roles } from '../../common/roles.decorator'
@@ -46,9 +46,10 @@ export class CampusController {
     return this.campusService.createAnnouncement(user!, dto)
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('lessons/:lessonId/resources')
-  resources(@Param('lessonId') lessonId: string) {
-    return this.campusService.listResources(lessonId)
+  resources(@Param('lessonId') lessonId: string,@CurrentUser() user:AuthUser) {
+    return this.campusService.listResources(lessonId,user)
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -72,6 +73,10 @@ export class CampusController {
   ) {
     return this.campusService.claimCertificate(courseId, user!)
   }
+
+  @UseGuards(JwtAuthGuard,RolesGuard) @Roles(Role.Tutor,Role.Admin)
+  @Delete('resources/:id')
+  removeResource(@Param('id') id:string,@CurrentUser() user:AuthUser){return this.campusService.removeResource(id,user)}
 
   @Get('certificates/:code')
   getCert(@Param('code') code: string) {

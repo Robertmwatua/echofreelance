@@ -21,6 +21,8 @@ import {
   CreateCourseDto,
   CreateLessonDto,
   UpdateCourseDto,
+  UpdateLessonDto,
+  ReorderLessonsDto,
 } from './dto/create-course.dto'
 import { NotifyCourseDto } from './dto/notify-course.dto'
 
@@ -126,6 +128,13 @@ export class CoursesController {
   ) {
     return this.coursesService.addLesson(id, user, dto)
   }
+
+  @UseGuards(JwtAuthGuard,RolesGuard) @Roles(Role.Tutor,Role.Admin)
+  @Patch(':id/lessons/:lessonId')
+  editLesson(@Param('id') id:string,@Param('lessonId') lessonId:string,@CurrentUser() user:AuthUser,@Body() dto:UpdateLessonDto){return this.coursesService.editLesson(id,lessonId,user,dto)}
+  @UseGuards(JwtAuthGuard,RolesGuard) @Roles(Role.Tutor,Role.Admin)
+  @Post(':id/lessons/reorder')
+  reorder(@Param('id') id:string,@CurrentUser() user:AuthUser,@Body() dto:ReorderLessonsDto){return this.coursesService.reorder(id,user,dto.lessonIds)}
 
   @UseGuards(JwtAuthGuard)
   @Post(':id/enroll')

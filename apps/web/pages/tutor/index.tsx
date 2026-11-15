@@ -1,3 +1,4 @@
+import {AssignedTasks} from '../../components/tutor/AssignedTasks'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -17,7 +18,7 @@ function TutorDesk() {
   const [loading,setLoading] = useState(true), [error,setError] = useState(''), [tab,setTab] = useState('Courses')
   async function reload() { try { const c=await api.taughtCourses();setCourses(c);setError('') } catch(e) {setError(e instanceof Error?e.message:'Could not load courses');throw e} finally {setLoading(false)} }
   useEffect(()=>{void reload().catch(()=>{})},[])
-  return <><DocumentHead title="Creator studio — EchoFreelance Tech School"/><main className="ef-workspace studio mx-auto max-w-[1440px] px-5 pb-24 pt-6 sm:px-8">
+  return <><DocumentHead title="Creator studio — EchoFreelance Tech School"/><main className="ef-workspace studio mx-auto max-w-[1440px] px-5 pb-24 pt-6 sm:px-8"><AssignedTasks/>
     <p className="ef-page-label">Workshop / tutor desk</p><nav className="studio-subnav" aria-label="Tutor studio">{['Courses','Live classes','Students','Earnings'].map(t=><button key={t} aria-current={tab===t?'page':undefined} onClick={()=>setTab(t)}>{t}</button>)}<Link href="/settings">Settings</Link></nav>
     {tab==='Courses' && <CourseStudio courses={courses} setCourses={setCourses} loading={loading} error={error} reload={reload}/>}
     {tab==='Live classes' && <TutorLiveClasses courses={courses}/>}

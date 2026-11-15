@@ -1,22 +1,14 @@
-import { FormEvent, useEffect, useState } from 'react'
-import { api, Course, formatPrice, getStoredUser } from '../lib/api'
-import { useConfirmation } from './Confirmation'
-
-export function CourseFeeEditor({course, updated}: {course: Course; updated: () => Promise<void>}) {
-  const [admin,setAdmin] = useState(false)
-  const [amount,setAmount] = useState('')
-  const [busy,setBusy] = useState(false)
-  const [notice,setNotice] = useState('')
-  const {confirm,confirmation} = useConfirmation()
-  useEffect(() => { setAdmin(getStoredUser()?.role === 'Admin'); setAmount(course.feeConfirmed ? String(course.priceCents/100) : '') },[course.id,course.priceCents,course.feeConfirmed])
-  async function save(e: FormEvent) {
-    e.preventDefault()
-    const value = Number(amount)
-    if (!amount.trim() || !Number.isInteger(value) || value<0 || value>1000000) {setNotice('Enter a whole KES amount from 0 to 1,000,000.');return}
-    if (!await confirm(`Confirm ${value === 0 ? 'a free course' : formatPrice(value*100)} as the total school fee for ${course.title}? Existing student quotes and course access will stay unchanged.`)) return
-    setBusy(true);setNotice('')
-    try {const result=await api.setCourseFee(course.id,value);await updated();setNotice(result.message)} catch(e) {setNotice(e instanceof Error?e.message:'Could not save the fee.')} finally {setBusy(false)}
-  }
-  if(!admin) return null
-  return <section className="ef-panel mt-6" aria-labelledby="fee-editor-title"><p className="ef-section-label">Admin / school fees</p><h2 id="fee-editor-title" className="mt-3 text-2xl">Set the fee. Keep it clear.</h2><p className="ef-muted mt-3">{course.feeConfirmed?`Current total: ${formatPrice(course.priceCents)}.`:'No confirmed fee yet. Payments are disabled.'} Students choose an instalment amount; their first verified payment unlocks access.</p><form onSubmit={save} className="mt-5 space-y-4"><label className="block text-sm"><span className="mb-2 block">Total course fee (KES)</span><input className="ef-input" type="number" inputMode="numeric" min="0" max="1000000" step="1" required value={amount} onChange={e=>setAmount(e.target.value)} disabled={busy}/></label><p className="ef-meta">0 explicitly makes this course free. Fee changes apply to new student quotes only.</p><button className="ef-btn" disabled={busy}>{busy?'Saving…':'Confirm school fee'}</button></form>{notice&&<p className="ef-toast mt-4" role="status">{notice}</p>}{confirmation}</section>
+import {FormEvent,useEffect,useState} from 'react'
+import {api,Course,formatKes,getStoredUser} from '../lib/api'
+import {localDate} from '../lib/school-api'
+import {useConfirmation} from './Confirmation'
+export function CourseFeeEditor({course,updated}:{course:Course;updated:()=>Promise<void>}){
+ const [admin,setAdmin]=useState(false),[amount,setAmount]=useState(''),[deposit,setDeposit]=useState(50),[discount,setDiscount]=useState(0),[until,setUntil]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState('')
+ const {confirm,confirmation}=useConfirmation()
+ useEffect(()=>{setAdmin(getStoredUser()?.role==='Admin');setAmount(course.feeConfirmed?String((course.tuitionCents??course.priceCents)/100):'');setDeposit(course.depositPercent??50);setDiscount(course.discountPercent??0);setUntil(course.discountUntil?localDate(course.discountUntil):'')},[course])
+ const activeDiscount=until&&new Date(until).getTime()<=Date.now()?0:discount
+ const tuition=Math.ceil(Number(amount||0)*(100-activeDiscount)/100),minimum=Math.ceil(tuition*deposit/100)
+ async function save(e:FormEvent){e.preventDefault();const value=Number(amount);if(!amount.trim()||!Number.isInteger(value)||value<0||value>1000000){setNotice('Enter a whole KES tuition fee from 0 to 1,000,000.');return}if(!await confirm(`Confirm a KES ${value.toLocaleString()} tuition fee, ${discount}% discount and ${deposit}% access deposit for ${course.title}? Existing student quotes and access keep their agreed terms.`))return;setBusy(true);setNotice('');try{const r=await api.setCourseFee(course.id,value,{depositPercent:deposit,discountPercent:discount,discountUntil:until?new Date(until).toISOString():null});await updated();setNotice(r.message)}catch(e){setNotice(e instanceof Error?e.message:'Could not save fee policy.')}finally{setBusy(false)}}
+ if(!admin)return null
+ return <section className="ef-panel mt-6" aria-labelledby="fee-editor-title"><p className="ef-section-label">Admin / tuition & access</p><h2 id="fee-editor-title" className="mt-3 text-3xl">A clear price. A clear first step.</h2><p className="ef-muted mt-4">{course.feeConfirmed?`Current advertised tuition: ${formatKes(course.priceCents)}.`:'No confirmed fee yet. Payments are disabled.'} New quotes use the discount and deposit you set here. Existing quotes are preserved.</p><form className="mt-6 space-y-5" onSubmit={save}><label className="block">Full tuition fee (KES)<input required className="ef-input mt-2" type="number" min={0} max={1000000} step={1} inputMode="numeric" value={amount} onChange={e=>setAmount(e.target.value)} disabled={busy}/></label><div className="grid gap-5 sm:grid-cols-2"><label>Deposit to unlock (%)<input required className="ef-input mt-2" type="number" min={1} max={100} step={1} value={deposit} onChange={e=>setDeposit(Number(e.target.value))} disabled={busy}/></label><label>Tuition discount (%)<input required className="ef-input mt-2" type="number" min={0} max={100} step={1} value={discount} onChange={e=>setDiscount(Number(e.target.value))} disabled={busy}/></label></div><label className="block">Discount ends (optional)<input className="ef-input mt-2" type="datetime-local" value={until} onChange={e=>setUntil(e.target.value)} disabled={busy}/></label><p className="ef-meta">No end date keeps the discount active until changed. Expired discounts do not apply to new quotes. Enter 0 tuition to make the course free.</p><div className="ef-toast"><p>New-student preview: {formatKes(tuition*100)} tuition after discount.</p><p className="mt-2">{formatKes(minimum*100)} must be paid before access unlocks ({deposit}%). Amounts round up to a whole shilling.</p></div><p className="ef-meta">Registration: {formatKes(course.registrationFeeCents||0)} · Certification: {formatKes(course.certificationFeeCents||0)}. These are displayed separately and are not collected in tuition checkout.</p><button className="ef-btn" disabled={busy}>{busy?'Saving…':'Confirm fees & access rule'}</button></form>{notice&&<p role="status" className="ef-toast mt-5">{notice}</p>}{confirmation}</section>
 }

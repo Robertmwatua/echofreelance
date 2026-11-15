@@ -16,7 +16,7 @@ const fixtureIds=[]
 const accountWhere=(f)=>({userId_courseId:{userId:f.user.id,courseId:f.course.id}})
 async function fixture(){
  const user=await db.user.create({data:{email:`payment-${randomUUID()}@example.invalid`,passwordHash:'test-only',role:'Student'}})
- const course=await db.course.create({data:{title:'Isolated payment test',description:'Disposable payment integration test course',tutorId:user.id,published:true,feeConfirmed:true,priceCents:100000,lessons:{create:{title:'Lesson one',content:'Local test only'}}}})
+ const course=await db.course.create({data:{title:'Isolated payment test',description:'Disposable payment integration test course',tutorId:user.id,published:true,feeConfirmed:true,priceCents:100000,depositPercent:1,lessons:{create:{title:'Lesson one',content:'Local test only'}}}})
  fixtureIds.push({user,course})
  let initiateCalls=0,statusCalls=0,override=null,unknown=false
  const provider={configured:()=>true,initiate:async()=>{initiateCalls++;if(unknown)throw Error('timeout');return {success:'200',transaction_request_id:`TEST-${randomUUID()}`}},status:async(id)=>{

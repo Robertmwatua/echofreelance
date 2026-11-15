@@ -1,3 +1,4 @@
+import { feeQuote } from '../payments/fee-policy'
 import { programmeRoadmaps, publicProgrammeIds } from './programme-roadmaps'
 import {
   BadRequestException,
@@ -14,6 +15,7 @@ import {
   CreateCourseDto,
   CreateLessonDto,
   UpdateCourseDto,
+  UpdateLessonDto,
 } from './dto/create-course.dto'
 
 @Injectable()
@@ -41,9 +43,9 @@ export class CoursesService {
       },
       include: {
         tutor: { select: { id: true, name: true, email: true, headline: true } },
-        _count: { select: { enrollments: true, lessons: true } },
+        _count: { select: { enrollments: true, lessons: {where:{published:true}} } },
         reviews: { select: { rating: true } },
-        lessons: { select: { durationMinutes: true } },
+        lessons: { where:{published:true}, select: { durationMinutes: true } },
       },
       orderBy: { createdAt: 'desc' },
     })
@@ -105,6 +107,7 @@ export class CoursesService {
     }
 
     const isOwner = userId === course.tutorId
+    if (!isOwner && role !== Role.Admin) {course.lessons=course.lessons.filter(l=>l.published);course._count.lessons=course.lessons.length}
     const isStaff = role === Role.Admin || role === Role.Tutor
     const archivedEnrollment = course.archived && userId ? await this.prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: id } } }) : null
     if (!course.published && !isOwner && role !== Role.Admin && !archivedEnrollment && !((course.publicPreview ?? Boolean(programmeRoadmaps[id])) && !course.archived)) {
@@ -256,7 +259,7 @@ export class CoursesService {
     if (dto.priceCents !== undefined && dto.priceCents !== course.priceCents) throw new ForbiddenException('An administrator must confirm fees using the school fee controls.')
     if (dto.published === true) {
       if (dto.archived ?? course.archived) throw new BadRequestException('Restore this course before publishing.')
-      const lessons = await this.prisma.lesson.count({ where: { courseId: id } })
+      const lessons = await this.prisma.lesson.count({ where: { courseId: id, published:true } })
       if (!lessons) throw new BadRequestException('Add at least one lesson before publishing.')
       if ((dto.description ?? course.description).includes('Fees, duration, intake dates and lesson content are awaiting confirmation.')) throw new BadRequestException('Review the prospectus details and confirm pricing before publishing.')
     }
@@ -289,7 +292,7 @@ export class CoursesService {
       category: source.category, level: source.level, priceCents: source.priceCents,
       tutorId: user.id, published: false, archived: false, publicPreview: false,
       ...(source.roadmapSteps != null ? { roadmapSteps: source.roadmapSteps } : programmeRoadmaps[id] ? { roadmapSteps: programmeRoadmaps[id].steps } : {}),
-      lessons: { create: lessons.map(l => ({ title: l.title, content: l.content, order: l.order, durationMinutes: l.durationMinutes, videoUrl: l.videoUrl })) },
+      lessons: { create: lessons.map(l => ({ published:false, title: l.title, content: l.content, order: l.order, durationMinutes: l.durationMinutes, videoUrl: l.videoUrl })) },
     } })
   }
 
@@ -315,10 +318,26 @@ export class CoursesService {
         order,
         durationMinutes: dto.durationMinutes ?? 30,
         videoUrl: dto.videoUrl,
+        published:false,
       },
     })
   }
 
+  async editLesson(courseId:string,lessonId:string,user:AuthUser,dto:UpdateLessonDto) {
+    const course=await this.requireCourse(courseId);this.assertCanManage(course.tutorId,user)
+    const lesson=await this.prisma.lesson.findFirst({where:{id:lessonId,courseId}})
+    if(!lesson)throw new NotFoundException('Lesson not found')
+    return this.prisma.lesson.update({where:{id:lessonId},data:{title:dto.title.trim(),content:dto.content,durationMinutes:dto.durationMinutes,videoUrl:dto.videoUrl||null,published:dto.published}})
+  }
+  async reorder(courseId:string,user:AuthUser,ids:string[]) {
+    const course=await this.requireCourse(courseId);this.assertCanManage(course.tutorId,user)
+    return this.prisma.$transaction(async tx=>{
+      const lessons=await tx.lesson.findMany({where:{courseId},select:{id:true}})
+      if(ids.length!==lessons.length||new Set(ids).size!==ids.length||lessons.some(l=>!ids.includes(l.id)))throw new BadRequestException('The lesson list changed. Reload before reordering.')
+      for(let order=0;order<ids.length;order++)await tx.lesson.update({where:{id:ids[order]},data:{order}})
+      return {ok:true}
+    },{isolationLevel:'Serializable'})
+  }
   async enroll(courseId: string, userId: string) {
     const course = await this.prisma.course.findFirst({
       where: { id: courseId, published: true, archived: false },
@@ -339,7 +358,7 @@ export class CoursesService {
     }
 
     if (!course.feeConfirmed) throw new BadRequestException('The school has not confirmed fees for this course yet.')
-    if (course.priceCents > 0) throw new ForbiddenException('Pay your first instalment through M-Pesa to unlock this course.')
+    if (feeQuote(course).totalCents > 0) throw new ForbiddenException('Pay your first instalment through M-Pesa to unlock this course.')
 
     return this.prisma.enrollment.create({
       data: { courseId, userId },
@@ -521,6 +540,12 @@ export class CoursesService {
       category?: string
       level: string
       priceCents: number
+      depositPercent?:number
+      discountPercent?:number
+      discountUntil?:Date|null
+      programmeDuration?:string|null
+      registrationFeeCents?:number
+      certificationFeeCents?:number
       feeConfirmed?: boolean
       published: boolean
       archived?: boolean
@@ -540,7 +565,13 @@ export class CoursesService {
       description: course.description,
       category: course.category ?? 'General',
       level: course.level,
-      priceCents: course.priceCents,
+      priceCents: feeQuote(course).totalCents,
+      tuitionCents:course.priceCents,
+      ...feeQuote(course),
+      programmeDuration:course.programmeDuration,
+      discountUntil:course.discountUntil,
+      registrationFeeCents:course.registrationFeeCents,
+      certificationFeeCents:course.certificationFeeCents,
       published: course.published,
       archived: course.archived ?? false,
       tutorId: course.tutorId,

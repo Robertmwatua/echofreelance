@@ -211,6 +211,8 @@ export default function CourseDetailPage() {
               </p>
               <p className="ef-page-label">Course index / inside the course</p><h1 className="mt-2 ef-title">{course.title}</h1>
               <p className="ef-muted mt-4 text-lg">{course.description}</p>
+              {course.programmeDuration&&<p className="ef-meta mt-4">Programme duration: {course.programmeDuration}</p>}
+              {course.feeConfirmed&&<div className="ef-toast mt-5"><p>{course.discountPercent?`${course.discountPercent}% tuition discount. `:''}{course.priceCents>0?`${formatPrice(course.unlockCents||0)} deposit (${course.depositPercent||50}%) to unlock lessons.`:'Tuition is free.'}</p>{!!(course.registrationFeeCents||course.certificationFeeCents)&&<p className="ef-meta mt-2">Registration KES {(course.registrationFeeCents||0)/100} · Certification KES {(course.certificationFeeCents||0)/100}. Separate from tuition checkout.</p>}</div>}
 
               {course.progress && (
                 <div className="mt-6">
@@ -230,7 +232,7 @@ export default function CourseDetailPage() {
                     My learning
                   </Link>
                 ) : course.enrollmentOpen === false ? (
-                  <a href={`mailto:ecofreelancetechnologyplus@gmail.com?subject=${encodeURIComponent('Course enquiry: '+course.title)}`} className="ef-btn">Ask about the next intake →</a>
+                  <Link href={`/admissions?course=${course.id}`} className="ef-btn">Ask about the next intake →</Link>
                 ) : course.feesPending ? (
                   <p className="ef-toast">The school is confirming fees. Please check back before enrolling.</p>
                 ) : course.priceCents > 0 ? (

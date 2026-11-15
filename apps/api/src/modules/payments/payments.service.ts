@@ -1,3 +1,5 @@
+import { receiptPdf } from './receipt'
+import { feeQuote } from './fee-policy'
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common'
 import { CoursePayment, Prisma, Role } from '@prisma/client'
 import { AuthUser } from '../../common/current-user.decorator'
@@ -16,25 +18,27 @@ export class PaymentsService {
       catch (e) { if ((e as {code?: string}).code !== 'P2034' || attempt >= 2) throw e }
     }
   }
-  async setFee(courseId: string, amountKes: number) {
+  async setFee(courseId: string, amountKes: number, policy: {depositPercent?:number;discountPercent?:number;discountUntil?:string|null} = {}) {
     const course = await this.prisma.course.findUnique({ where: { id: courseId } })
     if (!course) throw new NotFoundException('Course not found')
     if (!Number.isInteger(amountKes) || amountKes < 0 || amountKes * 100 > MAX_FEE_CENTS) throw new BadRequestException('Enter a whole KES fee from 0 to 1,000,000.')
-    await this.prisma.course.update({ where: { id: courseId }, data: { priceCents: amountKes * 100, feeConfirmed: true } })
+    await this.prisma.course.update({ where: { id: courseId }, data: { priceCents: amountKes * 100, feeConfirmed: true, depositPercent: policy.depositPercent ?? course.depositPercent, discountPercent: policy.discountPercent ?? course.discountPercent, ...(policy.discountUntil !== undefined ? {discountUntil:policy.discountUntil?new Date(policy.discountUntil):null}: {}) } })
     return { amountKes, message: 'Fee confirmed. Existing student fee quotes and access are unchanged.' }
   }
   private view(payment: CoursePayment) {
     return { id: payment.id, amountCents: payment.amountCents, status: payment.status, receipt: payment.receipt, detail: payment.detail, createdAt: payment.createdAt, settledAt: payment.settledAt, phone: `••••${payment.phone.slice(-4)}`, providerId: payment.providerId }
   }
   async summary(courseId: string, userId: string) {
-    const course = await this.prisma.course.findUnique({ where: { id: courseId }, include: { _count: { select: { lessons: true } } } })
+    const course = await this.prisma.course.findUnique({ where: { id: courseId }, include: { _count: { select: { lessons: {where:{published:true}} } } } })
     const account = await this.prisma.courseFeeAccount.findUnique({ where: { userId_courseId: { userId, courseId } }, include: { payments: { orderBy: { createdAt: 'desc' } } } })
     if (!course || (!account && !course.published && !course.publicPreview && course.tutorId !== userId)) throw new NotFoundException('Course unavailable for payment')
     const paid = account?.payments.filter(p => p.status === 'Succeeded').reduce((n,p) => n+p.amountCents,0) || 0
-    const total = account?.totalCents ?? course.priceCents
+    const quote=feeQuote(course)
+    const total = account?.totalCents ?? quote.totalCents
+    const unlockCents=account?.unlockCents ?? quote.unlockCents
     const enrolled = Boolean(await this.prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId } } }))
     const legacyAccess = enrolled && !account
-    return { courseId, title: course.title, currency: 'KES', feeConfirmed: course.feeConfirmed, totalCents: total, paidCents: paid, balanceCents: legacyAccess ? 0 : Math.max(0,total-paid), legacyAccess, enrolled,
+    return { courseId, title: course.title, currency: 'KES', baseCents: account?.baseCents ?? quote.baseCents, discountPercent:account?.discountPercent ?? quote.discountPercent, depositPercent:account?.depositPercent ?? quote.depositPercent, unlockCents, unlockRemainingCents:Math.max(0,unlockCents-paid), registrationFeeCents:course.registrationFeeCents, certificationFeeCents:course.certificationFeeCents, feeConfirmed: course.feeConfirmed, totalCents: total, paidCents: paid, balanceCents: legacyAccess ? 0 : Math.max(0,total-paid), legacyAccess, enrolled, minPaymentCents:enrolled?100:Math.min(15000000,Math.max(100,unlockCents-paid)),
       canPay: this.provider.configured() && course.feeConfirmed && course.published && !course.archived && course._count.lessons > 0 && !legacyAccess && total > paid,
       configured: this.provider.configured(), payments: account?.payments.map(p => this.view(p)) || [] }
   }
@@ -48,20 +52,23 @@ export class PaymentsService {
     let payment: CoursePayment
     try {
       payment = await this.serial(async tx => {
-        const course = await tx.course.findUnique({ where: { id: courseId }, include: { _count: { select: { lessons: true } } } })
+        const course = await tx.course.findUnique({ where: { id: courseId }, include: { _count: { select: { lessons: {where:{published:true}} } } } })
         if (!course || !course.published || course.archived || !course._count.lessons) throw new BadRequestException('Enrollment is not open for this course yet.')
         if (!course.feeConfirmed) throw new BadRequestException('This course does not have a payable fee. Contact the school.')
         let account = await tx.courseFeeAccount.findUnique({ where: { userId_courseId: { userId, courseId } } })
         if (!account) {
-          if (course.priceCents <= 0) throw new BadRequestException('This course is free. Use Enroll on the course page.')
+          if (feeQuote(course).totalCents <= 0) throw new BadRequestException('This course is free. Use Enroll on the course page.')
           const enrollment = await tx.enrollment.findUnique({ where: { userId_courseId: { userId, courseId } } })
           if (enrollment) throw new BadRequestException('Your existing enrollment is preserved. Contact the school for any historical fee balance.')
-          account = await tx.courseFeeAccount.create({ data: { userId, courseId, totalCents: course.priceCents } })
+          account = await tx.courseFeeAccount.create({ data: { userId, courseId, ...feeQuote(course) } })
         }
+        if((dto.quotedTotalCents!==undefined&&dto.quotedTotalCents!==account.totalCents)||(dto.quotedDepositCents!==undefined&&dto.quotedDepositCents!==account.unlockCents))throw new ConflictException('The tuition quote changed. Refresh your statement and review the total before paying.')
         const payments = await tx.coursePayment.findMany({ where: { accountId: account.id } })
         if (payments.some(p => p.activeKey)) throw new ConflictException('A payment is already awaiting confirmation. Check its status before trying again.')
         const paid = payments.filter(p => p.status === 'Succeeded').reduce((n,p) => n+p.amountCents,0)
         if (!Number.isInteger(dto.amountKes) || dto.amountKes < 1 || dto.amountKes > 150000 || dto.amountKes*100 > account.totalCents-paid) throw new BadRequestException('Enter a whole KES amount between 1 and your remaining balance (maximum KES 150,000 per payment).')
+        const minimum=Math.min(15000000,Math.max(100,account.unlockCents-paid))
+        if(dto.amountKes*100<minimum)throw new BadRequestException(`Pay at least KES ${minimum/100} towards the access deposit. Your quote requires KES ${account.unlockCents/100} paid before lessons unlock.`)
         const recent = await tx.coursePayment.count({ where: { account: { userId }, createdAt: { gt: new Date(Date.now()-15*60*1000) } } })
         if (recent >= 10) throw new ConflictException('Too many payment requests. Please wait 15 minutes.')
         return tx.coursePayment.create({ data: { accountId: account.id, amountCents: dto.amountKes*100, phone: normalizePhone(dto.phone), requestKey: dto.requestKey, activeKey: `${userId}:${courseId}` } })
@@ -115,8 +122,9 @@ export class PaymentsService {
         await this.serial(async tx => {
           const fresh = await tx.coursePayment.findUnique({ where: { id: payment.id }, include: { account: true } })
           if (!fresh || fresh.status !== 'Pending') return
-          await tx.coursePayment.update({ where: { id: payment.id }, data: { status: 'Succeeded', receipt: String(result.TransactionReceipt).toUpperCase(), settledAt: new Date(), activeKey: null, detail: 'Payment verified. Course access is unlocked.' } })
-          await tx.enrollment.upsert({ where: { userId_courseId: { userId: fresh.account.userId, courseId: fresh.account.courseId } }, create: { userId: fresh.account.userId, courseId: fresh.account.courseId }, update: {} })
+          await tx.coursePayment.update({ where: { id: payment.id }, data: { status: 'Succeeded', receipt: String(result.TransactionReceipt).toUpperCase(), settledAt: new Date(), activeKey: null, detail: 'Payment verified and added to your fee statement.' } })
+          const aggregate=await tx.coursePayment.aggregate({where:{accountId:fresh.accountId,status:'Succeeded'},_sum:{amountCents:true}})
+          if ((aggregate._sum.amountCents||0)>=fresh.account.unlockCents) await tx.enrollment.upsert({ where: { userId_courseId: { userId: fresh.account.userId, courseId: fresh.account.courseId } }, create: { userId: fresh.account.userId, courseId: fresh.account.courseId }, update: {} })
         })
       } catch (e) {
         if ((e as {code?: string}).code !== 'P2002') throw e
@@ -145,6 +153,20 @@ export class PaymentsService {
     const balances = await this.prisma.coursePayment.groupBy({ by: ['accountId'], where: { accountId: { in: [...new Set(payments.map(p => p.accountId))] }, status: 'Succeeded' }, _sum: { amountCents: true } })
     const paid = new Map(balances.map(b => [b.accountId,b._sum.amountCents || 0]))
     return { total, configured: this.provider.configured(), payments: payments.map(p => ({ ...this.view(p), user: p.account.user, course: p.account.course, totalCents: p.account.totalCents, paidCents: paid.get(p.accountId) || 0, balanceCents: Math.max(0,p.account.totalCents-(paid.get(p.accountId) || 0)) })) }
+  }
+  async receipt(id:string,user:AuthUser) {
+    const payment=await this.prisma.coursePayment.findUnique({where:{id},include:{account:{include:{user:{select:{name:true,email:true}},course:{select:{title:true}}}}}})
+    if(!payment)throw new NotFoundException('Receipt not found')
+    if(payment.account.userId!==user.id&&user.role!==Role.Admin)throw new ForbiddenException()
+    if(payment.status!=='Succeeded'||!payment.receipt||!payment.settledAt)throw new BadRequestException('A receipt is available after payment verification.')
+    const previous=await this.prisma.coursePayment.aggregate({where:{accountId:payment.accountId,status:'Succeeded',settledAt:{lte:payment.settledAt}},_sum:{amountCents:true}})
+    const paidCents=previous._sum.amountCents||0
+    return receiptPdf({reference:payment.id,receipt:payment.receipt,student:payment.account.user.name||payment.account.user.email,email:payment.account.user.email,course:payment.account.course.title,amountCents:payment.amountCents,totalCents:payment.account.totalCents,paidCents,balanceCents:Math.max(0,payment.account.totalCents-paidCents),settledAt:payment.settledAt})
+  }
+  async reconciliation(offset=0) {
+    const accounts=await this.prisma.courseFeeAccount.findMany({skip:offset,take:30,orderBy:{createdAt:'desc'},include:{user:{select:{name:true,email:true}},course:{select:{id:true,title:true}},payments:{select:{id:true,status:true,amountCents:true,createdAt:true}}}})
+    const total=await this.prisma.courseFeeAccount.count()
+    return {total,items:accounts.map(a=>{const paidCents=a.payments.filter(p=>p.status==='Succeeded').reduce((n,p)=>n+p.amountCents,0);return {id:a.id,user:a.user,course:a.course,totalCents:a.totalCents,paidCents,balanceCents:Math.max(0,a.totalCents-paidCents),unlockRemainingCents:Math.max(0,a.unlockCents-paidCents),delayed:a.payments.filter(p=>['Initiating','Pending','Review'].includes(p.status)&&Date.now()-p.createdAt.getTime()>15*60000).map(p=>({id:p.id,status:p.status,createdAt:p.createdAt})),hasPayment:paidCents>0}})}
   }
   async mine(userId: string) {
     const accounts = await this.prisma.courseFeeAccount.findMany({ where: { userId }, select: { courseId: true } })

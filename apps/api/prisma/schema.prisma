@@ -40,6 +40,9 @@ model User {
   id                    String                 @id @default(cuid())
   email                 String                 @unique
   name                  String?
+  sessionVersion        Int @default(0)
+  authTokens            AccountToken[]
+  googleIdentities      GoogleIdentity[]
   passwordHash          String
   role                  Role                   @default(Student)
   bio                   String?
@@ -65,6 +68,10 @@ model User {
   classNotes            ClassNote[]
   classReminders        ClassReminder[]
   feeAccounts           CourseFeeAccount[]
+  applications          JobApplication[]
+  jobsCreated           JobPosting[]
+  tasksAssigned         SchoolTask[] @relation("TaskAssignee")
+  tasksCreated          SchoolTask[] @relation("TaskCreator")
 }
 
 model Course {
@@ -75,6 +82,12 @@ model Course {
   level          String               @default("Beginner")
   priceCents     Int                  @default(0)
   feeConfirmed   Boolean              @default(false)
+  depositPercent Int @default(50)
+  discountPercent Int @default(0)
+  discountUntil DateTime?
+  programmeDuration String?
+  registrationFeeCents Int @default(0)
+  certificationFeeCents Int @default(0)
   published      Boolean              @default(false)
   archived       Boolean              @default(false)
   roadmapSteps   Json?
@@ -93,6 +106,7 @@ model Course {
   announcements  CourseAnnouncement[]
   discussions    DiscussionPost[]
   feeAccounts    CourseFeeAccount[]
+  enquiries      AdmissionEnquiry[]
 }
 
 model Lesson {
@@ -104,6 +118,7 @@ model Lesson {
   order           Int              @default(0)
   durationMinutes Int              @default(30)
   videoUrl        String?
+  published       Boolean          @default(true)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   progress        LessonProgress[]
@@ -366,6 +381,10 @@ model CourseFeeAccount {
   userId String
   courseId String
   totalCents Int
+  baseCents Int?
+  discountPercent Int @default(0)
+  unlockCents Int @default(100)
+  depositPercent Int @default(0)
   createdAt DateTime @default(now())
   user User @relation(fields: [userId], references: [id], onDelete: Restrict)
   course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
@@ -390,4 +409,90 @@ model CoursePayment {
   settledAt DateTime?
   @@index([accountId, createdAt])
   @@index([status, createdAt])
+}
+
+model JobPosting {
+  id String @id @default(cuid())
+  title String
+  company String
+  location String
+  kind String
+  description String
+  deadline DateTime?
+  published Boolean @default(false)
+  createdById String
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  applications JobApplication[]
+  @@index([published, deadline])
+}
+model JobApplication {
+  id String @id @default(cuid())
+  jobId String
+  userId String
+  job JobPosting @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  coverLetter String
+  resumeUrl String
+  portfolioUrl String?
+  status String @default("Received")
+  reviewNotes String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([jobId, userId])
+  @@index([status, createdAt])
+}
+model AdmissionEnquiry {
+  id String @id @default(cuid())
+  courseId String?
+  course Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  name String
+  email String
+  phone String?
+  message String
+  status String @default("New")
+  notes String @default("")
+  consentedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([status, createdAt])
+}
+model SchoolTask {
+  id String @id @default(cuid())
+  title String
+  details String @default("")
+  dueAt DateTime
+  done Boolean @default(false)
+  assigneeId String?
+  assignee User? @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  createdById String
+  createdBy User @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([done, dueAt])
+}
+model SubmissionLimit {
+  bucket String @id
+  count Int @default(1)
+  expiresAt DateTime
+  @@index([expiresAt])
+}
+
+model AccountToken {
+  id String @id @default(cuid())
+  hash String @unique
+  purpose String
+  userId String?
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([expiresAt])
+}
+model GoogleIdentity {
+  subject String @id
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }

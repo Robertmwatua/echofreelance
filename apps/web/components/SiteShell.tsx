@@ -143,7 +143,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
           <nav className="mx-auto hidden items-center gap-1 xl:flex" aria-label="Main"><Link href="/" aria-current={router.pathname === '/' ? 'page' : undefined} className="ef-nav-link">Home</Link>
             <Link href="/courses" aria-current={isActive('/courses') ? 'page' : undefined} className="ef-nav-link">Courses</Link>
             <Link href="/classes" aria-current={isActive('/classes') ? 'page' : undefined} className="ef-nav-link">Live classes</Link>
-            <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-nav-link">Community</Link>
+            <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-nav-link">Community</Link><Link href="/careers" aria-current={isActive('/careers') ? 'page' : undefined} className="ef-nav-link">Careers</Link>
             {role === 'Student' && (
               <Link href="/student" aria-current={isActive('/student') ? 'page' : undefined} className="ef-nav-link">My learning</Link>
             )}
@@ -207,7 +207,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   </p>
                   <hr className="ef-divider my-1" />
                   <Link href="/fees" className="ef-account-action">Fees & receipts</Link>
-                  <Link href="/notes" className="ef-account-action">Notes</Link>
+                  {role==='Admin'&&<Link href="/admin/planner" className="ef-account-action">School planner</Link>}<Link href="/careers" className="ef-account-action">Careers & applications</Link><Link href="/notes" className="ef-account-action">Notes</Link>
                   <Link href="/certificates/mine" className="ef-account-action">Certificates</Link>
                   <Link href="/settings" className="ef-account-action">Settings</Link>
                   <button type="button" onClick={() => setTheme(toggleTheme())} className="ef-account-action">{theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}</button>
@@ -248,7 +248,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   <p className="ef-drawer-label">Browse</p><Link href="/" aria-current={router.pathname === '/' ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Home</Link>
               <Link href="/courses" aria-current={isActive('/courses') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Courses</Link>
               <Link href="/classes" aria-current={isActive('/classes') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Live classes</Link>
-              <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Community</Link><Link href="/install" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Install the school app ↗</Link>
+              <Link href="/discussions" aria-current={isActive('/discussions') ? 'page' : undefined} className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Community</Link><Link href="/careers" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Careers & applications</Link><Link href="/admissions" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Ask admissions</Link><Link href="/install" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Install the school app ↗</Link>
 
               {user ? (
                 <>
@@ -336,7 +336,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 <li><Link href="/courses" className="ef-footer-link">Courses</Link></li>
                 <li><Link href="/classes" className="ef-footer-link">Live classes</Link></li>
                 <li><Link href="/challenges" className="ef-footer-link">Challenges</Link></li>
-                <li><Link href="/discussions" className="ef-footer-link">Community</Link></li>
+                <li><Link href="/discussions" className="ef-footer-link">Community</Link></li><li><Link href="/careers" className="ef-footer-link">Careers</Link></li><li><Link href="/admissions" className="ef-footer-link">Admissions</Link></li>
               </ul>
             </div>
 
@@ -347,7 +347,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   <>
                     <li><Link href="/notes" className="ef-footer-link">Notes</Link></li>
                     <li><Link href="/certificates/mine" className="ef-footer-link">Certificates</Link></li>
-                    <li><Link href="/settings" className="ef-footer-link">Settings</Link></li>
+                    <li><Link href="/fees" className="ef-footer-link">Fees & receipts</Link></li><li><Link href="/settings" className="ef-footer-link">Settings</Link></li>
                   </>
                 ) : (
                   <>

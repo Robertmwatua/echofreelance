@@ -1,3 +1,4 @@
+import { accessibleLesson } from '../../common/lesson-access'
 import {
   BadRequestException,
   ForbiddenException,
@@ -90,7 +91,8 @@ export class CampusService {
     })
   }
 
-  async listResources(lessonId: string) {
+  async listResources(lessonId: string,user:AuthUser) {
+    await accessibleLesson(this.prisma,lessonId,user)
     return this.prisma.lessonResource.findMany({
       where: { lessonId },
       orderBy: { createdAt: 'desc' },
@@ -137,10 +139,10 @@ export class CampusService {
   }
 
   async issueCertificateIfEligible(userId: string, courseId: string) {
-    const total = await this.prisma.lesson.count({ where: { courseId } })
+    const total = await this.prisma.lesson.count({ where: { courseId,published:true } })
     if (total === 0) return null
     const lessons = await this.prisma.lesson.findMany({
-      where: { courseId },
+      where: { courseId,published:true },
       select: { id: true },
     })
     const completed = await this.prisma.lessonProgress.count({
@@ -175,6 +177,12 @@ export class CampusService {
     return cert
   }
 
+  async removeResource(id:string,user:AuthUser) {
+    const resource=await this.prisma.lessonResource.findUnique({where:{id},include:{lesson:{include:{course:true}}}})
+    if(!resource)throw new NotFoundException()
+    if(user.role!==Role.Admin&&resource.lesson.course.tutorId!==user.id)throw new ForbiddenException()
+    await this.prisma.lessonResource.delete({where:{id}});return {ok:true}
+  }
   async myCertificates(userId: string) {
     return this.prisma.certificate.findMany({
       where: { userId },

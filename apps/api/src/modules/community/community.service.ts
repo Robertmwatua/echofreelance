@@ -1,3 +1,4 @@
+import { accessibleLesson } from '../../common/lesson-access'
 import {
   ForbiddenException,
   Injectable,
@@ -77,24 +78,7 @@ export class CommunityService {
   }
 
   async upsertNote(lessonId: string, user: AuthUser, dto: UpsertNoteDto) {
-    const lesson = await this.prisma.lesson.findUnique({
-      where: { id: lessonId },
-      include: { course: true },
-    })
-    if (!lesson) throw new NotFoundException('Lesson not found')
-
-    const enrolled = await this.prisma.enrollment.findUnique({
-      where: {
-        userId_courseId: { userId: user.id, courseId: lesson.courseId },
-      },
-    })
-    if (
-      !enrolled &&
-      lesson.course.tutorId !== user.id &&
-      user.role !== Role.Admin
-    ) {
-      throw new ForbiddenException('Enroll to save notes for this lesson')
-    }
+    await accessibleLesson(this.prisma,lessonId,user)
 
     return this.prisma.lessonNote.upsert({
       where: { userId_lessonId: { userId: user.id, lessonId } },

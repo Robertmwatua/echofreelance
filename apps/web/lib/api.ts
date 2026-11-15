@@ -13,6 +13,7 @@ export type UserProfile = {
 
 export type Lesson = {
   id: string
+  published?:boolean
   title: string
   content?: string
   order: number
@@ -49,6 +50,15 @@ export type CourseSession = {
 }
 
 export type Course = {
+  tuitionCents?:number
+  baseCents?:number
+  discountPercent?:number
+  discountUntil?:string|null
+  depositPercent?:number
+  unlockCents?:number
+  programmeDuration?:string|null
+  registrationFeeCents?:number
+  certificationFeeCents?:number
   feeConfirmed?: boolean
   currency?: string
   publicPreview?: boolean
@@ -293,7 +303,7 @@ export function getStoredUser(): UserProfile | null {
   }
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers || {})
   if (!headers.has('Content-Type') && options.body) {
     headers.set('Content-Type', 'application/json')
@@ -331,14 +341,23 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export type CoursePayment = { id: string; amountCents: number; status: 'Initiating'|'Pending'|'Succeeded'|'Failed'|'Review'; receipt: string|null; detail: string; createdAt: string; settledAt: string|null; phone: string; providerId: string|null }
-export type FeeStatement = { courseId: string; title: string; currency: 'KES'; feeConfirmed: boolean; totalCents: number; paidCents: number; balanceCents: number; legacyAccess: boolean; enrolled: boolean; canPay: boolean; configured: boolean; payments: CoursePayment[] }
+export type FeeStatement = { courseId: string; title: string; currency: 'KES'; baseCents:number; discountPercent:number; depositPercent:number; unlockCents:number; unlockRemainingCents:number; minPaymentCents:number; registrationFeeCents:number; certificationFeeCents:number; feeConfirmed: boolean; totalCents: number; paidCents: number; balanceCents: number; legacyAccess: boolean; enrolled: boolean; canPay: boolean; configured: boolean; payments: CoursePayment[] }
 export type AdminPayment = CoursePayment & { user: { name: string|null; email: string }; course: { id: string; title: string }; totalCents: number; paidCents: number; balanceCents: number }
 
 export const api = {
+  authOptions: () => request<{googleClientId:string|null;resetConfigured:boolean}>('/auth/options'),
+  googleChallenge: () => request<{challenge:string}>('/auth/google/challenge'),
+  googleLogin: (credential:string,challenge:string) => request<AuthResponse>('/auth/google',{method:'POST',body:JSON.stringify({credential,challenge})}),
+  forgotPassword: (email:string) => request<{message:string}>('/auth/forgot-password',{method:'POST',body:JSON.stringify({email})}),
+  resetPassword: (token:string,password:string) => request<{message:string}>('/auth/reset-password',{method:'POST',body:JSON.stringify({token,password})}),
+  editLesson: (courseId:string,id:string,body:{title:string;content:string;durationMinutes:number;videoUrl:string|null;published:boolean}) => request<Lesson>(`/courses/${courseId}/lessons/${id}`,{method:'PATCH',body:JSON.stringify(body)}),
+  reorderLessons: (id:string,lessonIds:string[]) => request(`/courses/${id}/lessons/reorder`,{method:'POST',body:JSON.stringify({lessonIds})}),
+  removeResource: (id:string) => request(`/resources/${id}`,{method:'DELETE'}),
+  reconciliation: (offset:number) => request<{total:number;items:Array<{id:string;user:{name:string|null;email:string};course:{id:string;title:string};totalCents:number;paidCents:number;balanceCents:number;unlockRemainingCents:number;delayed:Array<{id:string;status:string;createdAt:string}>}>}>(`/payments/reconciliation?offset=${offset}`),
   feeStatement: (id: string) => request<FeeStatement>(`/payments/courses/${id}`),
   myFees: () => request<FeeStatement[]>('/payments/mine'),
-  setCourseFee: (id: string, amountKes: number) => request<{message: string}>(`/payments/courses/${id}/fee`, {method: 'PATCH', body: JSON.stringify({amountKes})}),
-  startPayment: (id: string, body: {amountKes: number; phone: string; requestKey: string}) => request<CoursePayment>(`/payments/courses/${id}`, {method: 'POST', body: JSON.stringify(body)}),
+  setCourseFee: (id: string, amountKes: number, policy: {depositPercent:number;discountPercent:number;discountUntil:string|null}) => request<{message: string}>(`/payments/courses/${id}/fee`, {method: 'PATCH', body: JSON.stringify({amountKes,...policy})}),
+  startPayment: (id: string, body: {amountKes: number; phone: string; requestKey: string;quotedTotalCents:number;quotedDepositCents:number}) => request<CoursePayment>(`/payments/courses/${id}`, {method: 'POST', body: JSON.stringify(body)}),
   checkPayment: (id: string) => request<CoursePayment>(`/payments/${id}/check`, {method: 'POST'}),
   recoverPayment: (id: string, providerId: string) => request<CoursePayment>(`/payments/${id}/recover`, {method: 'POST', body: JSON.stringify({providerId})}),
   adminPayments: (offset: number) => request<{total: number; configured: boolean; payments: AdminPayment[]}>(`/payments/admin?offset=${offset}`),
@@ -636,3 +655,15 @@ export const CATEGORIES = [
 export const CTF_CATEGORIES = ['Pwn', 'Web', 'Crypto', 'Forensics', 'Reverse', 'Misc'] as const
 
 export type ClassNote = { id: string; body: string; expiresAt: string | null; createdAt: string; author: { name: string | null } }
+
+export function safeNext(value:unknown,fallback='/student') {
+  if(typeof value!=='string'||!value.startsWith('/')||value.startsWith('//')||value.includes('\\')||/[\u0000-\u001f\u007f]/.test(value))return fallback
+  try {const parsed=new URL(value,'https://school.invalid');return parsed.origin==='https://school.invalid'?parsed.pathname+parsed.search+parsed.hash:fallback}catch{return fallback}
+}
+export async function downloadReceipt(id:string) {
+  const token=getToken()
+  const response=await fetch(`${API_URL}/api/payments/${encodeURIComponent(id)}/receipt`,{headers:token?{Authorization:`Bearer ${token}`}:{}})
+  if(!response.ok){const body=await response.json().catch(()=>null);throw new Error(body?.message||'Receipt could not be downloaded.')}
+  const url=URL.createObjectURL(await response.blob()),link=document.createElement('a')
+  link.href=url;link.download=`EchoFreelance-receipt-${id}.pdf`;link.click();setTimeout(()=>URL.revokeObjectURL(url),10000)
+}

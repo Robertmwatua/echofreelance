@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Header, HttpCode, Param, Patch, Post, Query, StreamableFile, UseGuards } from '@nestjs/common'
 import { Role } from '@prisma/client'
 import { AuthUser, CurrentUser } from '../../common/current-user.decorator'
 import { Roles } from '../../common/roles.decorator'
@@ -14,12 +14,16 @@ export class PaymentsController {
   mine(@CurrentUser() user: AuthUser) { return this.payments.mine(user.id) }
   @UseGuards(JwtAuthGuard, RolesGuard) @Roles(Role.Admin) @Get('admin')
   admin(@Query('offset') offset?: string) { return this.payments.adminList(Math.max(0,Math.min(100000,Math.floor(Number(offset)||0)))) }
+  @UseGuards(JwtAuthGuard, RolesGuard) @Roles(Role.Admin) @Get('reconciliation')
+  reconciliation(@Query('offset') offset?:string){return this.payments.reconciliation(Math.max(0,Math.min(100000,Math.floor(Number(offset)||0))))}
   @UseGuards(JwtAuthGuard, RolesGuard) @Roles(Role.Admin) @Patch('courses/:id/fee')
-  fee(@Param('id') id: string, @Body() body: SetCourseFeeDto) { return this.payments.setFee(id,body.amountKes) }
+  fee(@Param('id') id: string, @Body() body: SetCourseFeeDto) { return this.payments.setFee(id,body.amountKes,body) }
   @UseGuards(JwtAuthGuard) @Get('courses/:id')
   summary(@Param('id') id: string, @CurrentUser() user: AuthUser) { return this.payments.summary(id,user.id) }
   @UseGuards(JwtAuthGuard) @Post('courses/:id')
   start(@Param('id') id: string, @Body() body: StartPaymentDto, @CurrentUser() user: AuthUser) { return this.payments.start(id,user.id,body) }
+  @UseGuards(JwtAuthGuard) @Get(':id/receipt') @Header('Cache-Control','no-store')
+  async receipt(@Param('id') id:string,@CurrentUser() user:AuthUser){const pdf=await this.payments.receipt(id,user);return new StreamableFile(pdf,{type:'application/pdf',disposition:'attachment; filename="EchoFreelance-receipt.pdf"'})}
   @UseGuards(JwtAuthGuard) @Post(':id/check')
   check(@Param('id') id: string, @CurrentUser() user: AuthUser) { return this.payments.check(id,user) }
   @UseGuards(JwtAuthGuard, RolesGuard) @Roles(Role.Admin) @Post(':id/recover')

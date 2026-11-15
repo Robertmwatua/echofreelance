@@ -1,4 +1,5 @@
-import { IsInt, IsOptional, IsString, Max, Min, MinLength } from 'class-validator'
+import { IsInt, IsOptional, IsString,
+  IsUrl, Max, Min, MinLength } from 'class-validator'
 
 export class CreateReviewDto {
   @IsInt()
@@ -19,8 +20,7 @@ export class CreateResourceDto {
   @MinLength(2)
   title!: string
 
-  @IsString()
-  @MinLength(8)
+  @IsUrl({protocols:['https'],require_protocol:true})
   url!: string
 
   @IsOptional()

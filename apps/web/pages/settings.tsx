@@ -1,8 +1,9 @@
 import Link from 'next/link'
+import {useRouter} from 'next/router'
 import { FormEvent, useEffect, useState } from 'react'
 import DocumentHead from '../components/DocumentHead'
 import { RequireRole } from '../components/RequireRole'
-import { api, getStoredUser, setAuth, UserProfile } from '../lib/api'
+import { api, clearAuth, getStoredUser, setAuth, UserProfile } from '../lib/api'
 
 export default function SettingsPage() {
   return (
@@ -13,6 +14,7 @@ export default function SettingsPage() {
 }
 
 function SettingsForm({ initial }: { initial: UserProfile }) {
+  const router=useRouter()
   const [name, setName] = useState(initial.name || '')
   const [headline, setHeadline] = useState(initial.headline || '')
   const [bio, setBio] = useState(initial.bio || '')
@@ -64,7 +66,7 @@ function SettingsForm({ initial }: { initial: UserProfile }) {
       setCurrentPassword('')
       setNewPassword('')
       setConfirm('')
-      setMessage(res.message || 'Password updated.')
+      clearAuth();router.replace('/login?reason=password-changed')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not update password')
     } finally {

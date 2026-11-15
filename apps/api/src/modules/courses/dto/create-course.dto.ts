@@ -1,5 +1,8 @@
 import {
   IsBoolean,
+  IsUrl,
+  Max,
+  ArrayUnique,
   IsArray,
   ValidateIf,
   ArrayMaxSize,
@@ -100,10 +103,12 @@ export class UpdateCourseDto {
 export class CreateLessonDto {
   @IsString()
   @MinLength(3)
+  @MaxLength(200)
   title!: string
 
   @IsString()
   @MinLength(10)
+  @MaxLength(50000)
   content!: string
 
   @IsOptional()
@@ -114,9 +119,21 @@ export class CreateLessonDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(1440)
   durationMinutes?: number
 
   @IsOptional()
-  @IsString()
+  @IsUrl({protocols:['https'],require_protocol:true})
   videoUrl?: string
+}
+
+export class UpdateLessonDto {
+ @IsString() @MinLength(3) @MaxLength(200) title!:string
+ @IsString() @MinLength(10) @MaxLength(50000) content!:string
+ @IsInt() @Min(1) @Max(1440) durationMinutes!:number
+ @IsOptional() @IsUrl({protocols:['https'],require_protocol:true}) videoUrl?:string|null
+ @IsBoolean() published!:boolean
+}
+export class ReorderLessonsDto {
+ @IsArray() @ArrayUnique() @ArrayMaxSize(200) @IsString({each:true}) lessonIds!:string[]
 }

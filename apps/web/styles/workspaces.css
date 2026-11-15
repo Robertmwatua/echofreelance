@@ -184,3 +184,13 @@ html.dark .studio-error,html.dark .studio-danger { color: var(--link); }
 .ef-fee-list { display:grid; gap:1.5rem; grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr)); }
 .ef-payment-records { list-style:none; padding:0; }
 @media(min-width:640px) { .ef-fee-totals {grid-template-columns:repeat(3,minmax(0,1fr));} }
+
+.ef-workspace-nav {display:flex;gap:8px;flex-wrap:wrap;border-block:var(--border-rule);padding:16px 0;}
+.ef-workspace-nav a {font-family:var(--font-mono);font-size:12px;min-height:44px;display:flex;align-items:center;padding:8px 12px;border:1px solid var(--rule);}
+.ef-workspace-nav a[aria-current=page] {background:var(--signal);color:rgb(var(--button-ink-rgb));border-color:var(--ink);}
+.ef-operation-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:24px;list-style:none;padding:0;}
+.ef-split-workspace {display:grid;gap:32px;grid-template-columns:minmax(0,1fr);}
+.ef-readable-copy {white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8;}
+.ef-honeypot {position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;}
+@media(min-width:900px){.ef-split-workspace{grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:48px;}}
+@media print{.ef-workspace-nav{display:none;}}

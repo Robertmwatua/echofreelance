@@ -1,0 +1,11 @@
+[
+ {"id":"cmwfjdr2q0000cp11ev0po44e","title":"Certificate in Computer Applications","feeKes":12500,"duration":"2 months"},
+ {"id":"cmwfjdr2q000acp11s4w4naa9","title":"AI & Machine Learning","feeKes":145000,"duration":"6 months"},
+ {"id":"cmwfjdr2q000bcp11kh7eepoe","title":"Blockchain & Web3 Development","feeKes":95000,"duration":"4 months"},
+ {"id":"cmwfjdr2q000ccp11z99tl7bg","title":"Quantum Computing & Algorithms","feeKes":195000,"duration":"8 months"},
+ {"id":"cmwfjdr2r000dcp11n78f7kzq","title":"Sustainable Technology & Green IT","feeKes":65000,"duration":"3 months"},
+ {"id":"cmwfjdr2r000ecp11rfv4cy76","title":"Custom Software Development","feeKes":130000,"duration":"6 months"},
+ {"id":"cmwfjdr2r000fcp11bokeuzv8","title":"Digital Transformation Strategy","feeKes":45000,"duration":"2 months"},
+ {"title":"Advanced Digital Professional","feeKes":22000,"duration":"3 months","category":"Professional Digital Programs","description":"Build practical skills in advanced Excel, design and AI basics. Contact admissions for intake dates and the teaching schedule.","roadmapSteps":["Advanced Excel","Design","AI basics"]},
+ {"title":"Kids’ Tech Explorer (Holiday)","feeKes":8000,"duration":"4 weeks","category":"Foundation Programs","description":"A holiday programme introducing children to code and digital creativity. Contact admissions about age suitability, supervision and intake dates.","roadmapSteps":["Introduction to code","Digital creativity"]}
+]

@@ -1,9 +1,10 @@
+import { GoogleSignIn } from '../components/GoogleSignIn'
 import { TechPhoto } from '../components/TechPhoto'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FormEvent, useState } from 'react'
 import DocumentHead from '../components/DocumentHead'
-import { api, homeForRole, setAuth } from '../lib/api'
+import { api, homeForRole, safeNext, setAuth } from '../lib/api'
 
 
 export default function LoginPage() {
@@ -21,7 +22,7 @@ export default function LoginPage() {
     try {
       const res = await api.login({ email, password })
       setAuth(res.accessToken, res.user)
-      router.push(next || homeForRole(res.user.role))
+      router.push(safeNext(next,homeForRole(res.user.role)))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
@@ -42,8 +43,9 @@ export default function LoginPage() {
             <p className="ef-muted mt-2 text-sm">
               Access your courses, live classrooms, and learning hub.
             </p>
+            {router.query.reason==='password-changed'&&<p className="ef-toast mt-6" role="status">Password updated. Please sign in again.</p>}
             {router.query.reason === 'session-expired' && <p role="status" className="ef-panel mt-6 text-sm">Your session expired or is no longer valid. Sign in again to continue.</p>}
-            <form onSubmit={onSubmit} className="ef-panel mt-6 w-full space-y-4">
+            <GoogleSignIn/><form onSubmit={onSubmit} className="ef-panel mt-6 w-full space-y-4">
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Email</span>
                 <input
@@ -72,6 +74,7 @@ export default function LoginPage() {
                 {busy ? 'Signing in…' : 'Sign in'}
               </button>
             </form>
+            <Link href="/forgot-password" className="ef-btn-ghost mt-5 inline-block">Forgot your password?</Link>
             <p className="mt-6 text-sm ef-muted">
               New student?{' '}
               <Link href="/register" className="text-fern hover:underline">

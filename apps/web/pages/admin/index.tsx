@@ -71,6 +71,7 @@ function AdminConsole() {
           </Link>
         </div>
 
+        <section className="mt-8"><h2 className="text-3xl">Your school workspace</h2><nav aria-label="Admin workspaces" className="ef-operation-grid mt-5">{[['/admin/planner','Plan the week','Shared tasks, classes and deadlines'],['/admin/enquiries','Admissions inbox','Reply to course questions and record follow-ups'],['/admin/careers','Careers & applicants','Publish roles and review applications'],['/admin/reconciliation','Payment follow-ups','Find delayed requests and outstanding balances']].map(([href,title,detail])=><Link key={href} href={href} className="ef-panel"><h3 className="text-2xl">{title} →</h3><p className="ef-muted mt-3">{detail}</p></Link>)}</nav></section>
         {error && <Toast error>{error}</Toast>}
         {message && <Toast>{message}</Toast>}
 

@@ -1,3 +1,4 @@
+import { accessibleLesson } from '../../common/lesson-access'
 import {
   ForbiddenException,
   Injectable,
@@ -16,41 +17,26 @@ export class ProgressService {
   ) {}
 
   async completeLesson(lessonId: string, user: AuthUser) {
-    const lesson = await this.prisma.lesson.findUnique({
-      where: { id: lessonId },
-      include: { course: true },
-    })
-    if (!lesson) {
-      throw new NotFoundException('Lesson not found')
-    }
-
-    const enrolled = await this.prisma.enrollment.findUnique({
-      where: {
-        userId_courseId: { userId: user.id, courseId: lesson.courseId },
-      },
-    })
-    if (!enrolled && user.role === Role.Student) {
-      throw new ForbiddenException('Enroll in the course first')
-    }
-
+    const lesson=await accessibleLesson(this.prisma,lessonId,user)
+    const enrolled=await this.prisma.enrollment.findUnique({where:{userId_courseId:{userId:user.id,courseId:lesson.courseId}}})
     const progress = await this.prisma.lessonProgress.upsert({
       where: { userId_lessonId: { userId: user.id, lessonId } },
       create: { userId: user.id, lessonId },
       update: { completedAt: new Date() },
     })
 
-    const certificate = await this.campus.issueCertificateIfEligible(
+    const certificate = enrolled ? await this.campus.issueCertificateIfEligible(
       user.id,
       lesson.courseId,
-    )
+    ) : null
 
     return { ...progress, certificate }
   }
 
   async courseProgress(courseId: string, userId: string) {
-    const total = await this.prisma.lesson.count({ where: { courseId } })
+    const total = await this.prisma.lesson.count({ where: { courseId,published:true } })
     const lessons = await this.prisma.lesson.findMany({
-      where: { courseId },
+      where: { courseId,published:true },
       select: { id: true },
     })
     const completed = await this.prisma.lessonProgress.count({
@@ -69,8 +55,8 @@ export class ProgressService {
       include: {
         course: {
           include: {
-            _count: { select: { lessons: true } },
-            lessons: { select: { id: true } },
+            _count: { select: { lessons: {where:{published:true}} } },
+            lessons: { where:{published:true}, select: { id: true } },
           },
         },
       },

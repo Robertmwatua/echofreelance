@@ -1,3 +1,4 @@
+import { LessonEditor } from '../../../components/tutor/LessonEditor'
 import { CourseFeeEditor } from '../../../components/CourseFeeEditor'
 import { RoadmapEditor, roadmapLines } from '../../../components/tutor/RoadmapEditor'
 import { useConfirmation } from '../../../components/Confirmation'
@@ -112,7 +113,7 @@ function ManageCourse() {
       setLessonTitle('')
       setLessonContent('')
       await load()
-      setMessage('Lesson added.')
+      setMessage('Draft lesson added. Edit and publish it when ready.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not add lesson')
     } finally {
@@ -381,53 +382,13 @@ function ManageCourse() {
 
             <section className="ef-panel mt-8">
               <h2 className="font-display text-2xl text-ink" id="lessons">Lessons</h2>
-              <ul className="mt-4 space-y-3">
-                {(course.lessons || []).map((lesson) => (
-                  <li key={lesson.id} className="border-t border-moss/10 pt-3">
-                    <p className="font-medium">
-                      {lesson.order + 1}. {lesson.title}
-                    </p>
-                    <p className="text-sm ef-muted">{lesson.durationMinutes} min</p>
-                    {(lesson.resources || []).length > 0 && (
-                      <ul className="mt-1 text-xs ef-muted">
-                        {lesson.resources!.map((r) => (
-                          <li key={r.id}>
-                            Resource: {r.title}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
-              </ul>
-
+              <LessonEditor courseId={id} lessons={course.lessons||[]} refresh={load}/>
               <form onSubmit={addLesson} className="mt-6 space-y-3 border-t border-line pt-6">
-                <h3 className="font-semibold">Add lesson</h3>
-                <input
-                  required
-                  placeholder="Lesson title"
-                  value={lessonTitle}
-                  onChange={(e) => setLessonTitle(e.target.value)}
-                  className="ef-input text-sm"
-                />
-                <textarea
-                  required
-                  placeholder="Lesson content / lab brief"
-                  rows={4}
-                  value={lessonContent}
-                  onChange={(e) => setLessonContent(e.target.value)}
-                  className="ef-input text-sm"
-                />
-                <input
-                  type="number"
-                  min={1}
-                  value={lessonMinutes}
-                  onChange={(e) => setLessonMinutes(Number(e.target.value))}
-                  className="ef-input w-40 text-sm"
-                />
-                <button type="submit" disabled={busy} className="ef-btn-ghost">
-                  Add lesson
-                </button>
+                <h3 className="font-semibold">Add a draft lesson</h3>
+                <label className="block">Lesson title<input required minLength={3} maxLength={200} value={lessonTitle} onChange={e=>setLessonTitle(e.target.value)} className="ef-input mt-2"/></label>
+                <label className="block">Teaching notes / lab brief<textarea required minLength={10} maxLength={50000} rows={6} value={lessonContent} onChange={e=>setLessonContent(e.target.value)} className="ef-input mt-2"/></label>
+                <label className="block">Duration in minutes<input type="number" required min={1} max={1440} value={lessonMinutes} onChange={e=>setLessonMinutes(Number(e.target.value))} className="ef-input mt-2"/></label>
+                <button type="submit" disabled={busy} className="ef-btn-ghost">Add draft lesson</button>
               </form>
 
               {(course.lessons || []).length > 0 && (
@@ -442,7 +403,7 @@ function ManageCourse() {
                     <option value="">Select lesson</option>
                     {(course.lessons || []).map((l) => (
                       <option key={l.id} value={l.id}>
-                        {l.order + 1}. {l.title}
+                        {l.order + 1}. {l.title} ({l.published?'published':'draft'})
                       </option>
                     ))}
                   </select>

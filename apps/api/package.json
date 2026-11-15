@@ -12,7 +12,8 @@
     "prisma:seed": "ts-node --transpile-only prisma/seed.ts",
     "db:setup": "prisma migrate deploy && prisma db seed",
     "test:live": "npm run build && node --test tests/live-classroom.cjs",
-    "test:payments": "npm run build && node tests/payments.cjs"
+    "test:payments": "npm run build && node tests/payments.cjs",
+    "test:school": "npm run build && node tests/school-operations.cjs"
   },
   "prisma": {
     "seed": "ts-node --transpile-only prisma/seed.ts"
@@ -26,19 +27,24 @@
     "@nestjs/platform-express": "^10.0.0",
     "@prisma/client": "^5.0.0",
     "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.11.0",
     "@types/passport-jwt": "^4.0.1",
-    "@types/jsonwebtoken": "^9.0.5",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "google-auth-library": "^11.3.4",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^10.5.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "pdfkit": "^0.20.2",
     "prisma": "^5.0.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
-    "typescript": "^5.2.0"
+    "typescript": "^5.2.0",
+    "@types/pdfkit": "^0.17.7",
+    "@types/nodemailer": "^8.0.2"
   },
   "devDependencies": {
     "ts-node": "^10.9.2",
