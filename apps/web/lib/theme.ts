@@ -3,9 +3,9 @@ const KEY = 'ef_theme'
 export type Theme = 'dark' | 'light'
 
 export function getStoredTheme(): Theme {
-  if (typeof window === 'undefined') return 'dark'
+  if (typeof window === 'undefined') return 'light'
   const v = localStorage.getItem(KEY)
-  return v === 'light' ? 'light' : 'dark'
+  return v === 'dark' ? 'dark' : 'light'
 }
 
 export function applyTheme(theme: Theme) {

@@ -1,3 +1,4 @@
+import '../styles/editorial-home.css'
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { SiteShell } from '../components/SiteShell'

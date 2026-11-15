@@ -16,7 +16,7 @@ import { AskTutor } from './AskTutor'
 export function SiteShell({ children }: { children: ReactNode }) {
   const router = useRouter()
   const [user, setUser] = useState<UserProfile | null>(null)
-  const [theme, setTheme] = useState<Theme>('dark')
+  const [theme, setTheme] = useState<Theme>('light')
   const [unread, setUnread] = useState(0)
   const [openNotifs, setOpenNotifs] = useState(false)
   const [notifs, setNotifs] = useState<AppNotification[]>([])
@@ -158,6 +158,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
           {/* right: actions */}
           <div className="ml-auto flex items-center gap-2">
+            {router.pathname === '/' && <button className="hidden px-2 py-3 text-xs sm:block" onClick={() => window.dispatchEvent(new KeyboardEvent('keydown', {key:'k',ctrlKey:true,bubbles:true}))}>Search <span className="ml-1 font-mono">Ctrl K</span></button>}
             <button type="button" onClick={() => setTheme(toggleTheme())} className="ef-icon-btn" aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>
               {theme === 'dark' ? (
                 <svg viewBox="0 0 24 24" aria-hidden><circle cx="12" cy="12" r="4.2" /><path d="M12 2.6v2M12 19.4v2M2.6 12h2M19.4 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4" /></svg>

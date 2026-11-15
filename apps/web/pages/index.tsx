@@ -1,119 +1,26 @@
-import { TechPhoto } from '../components/TechPhoto'
-import { AskAnything } from '../components/AskAnything'
-import { LiveDot } from '../components/LiveDot'
-import { CardSkeletons, FeedbackCard } from '../components/PageFeedback'
-import Link from 'next/link';
-import { CourseCard } from '../components/CourseCard';
-import { useEffect, useState } from 'react';
-import DocumentHead from '../components/DocumentHead';
-import { api, Course, VirtualClass } from '../lib/api';
-import { SITE_NAME } from '../lib/brand';
-export default function Home() {
-    const [courses, setCourses] = useState<Course[]>([]);
-    const [sessions, setSessions] = useState<VirtualClass[] | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
-    const [attempt, setAttempt] = useState(0);
-    useEffect(() => {
-        let active = true;
-        setLoading(true);
-        setError(false);
-        api.courses().then(c => { if (active)
-            setCourses(c); }).catch(() => { if (active)
-            setError(true); }).finally(() => { if (active)
-            setLoading(false); });
-        api.classes().then(list => { if (active) setSessions(list) }).catch(() => { if (active) setSessions(null) });
-        return () => { active = false; };
-    }, [attempt]);
-    const rated = courses.filter(c => c.avgRating != null && (c.reviewCount || 0) > 0);
-    const reviews = rated.reduce((sum, c) => sum + (c.reviewCount || 0), 0);
-    const rating = reviews ? (rated.reduce((sum, c) => sum + c.avgRating! * (c.reviewCount || 0), 0) / reviews).toFixed(1) : null;
-    const live = sessions?.filter(c => c.status === 'Live') || [];
-    const tutors = new Set(live.map(c => c.host?.id).filter(Boolean)).size;
-    return <>
-    <DocumentHead title={SITE_NAME}/>
-    <main>
-      {/* ── hero ─────────────────────────────────────────── */}
-      <section className="ef-home-hero">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:py-20">
-          <div>
-            <p className="ef-eyebrow flex items-center gap-3"><span className="h-px w-8 bg-fern" aria-hidden /> A practical education in technology</p>
-            <h1 className="ef-hero-heading mt-7">
-              Find your<br /><span className="ef-editorial-word">direction</span> in tech.
-            </h1>
-            <p className="ef-muted mt-7 max-w-md text-base leading-7 sm:text-lg">
-              Cybersecurity, software and cloud — practical courses and live classes with tutors who answer.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/courses" className="ef-btn">Explore courses <span aria-hidden>↗</span></Link>
-              <Link href="/classes" className="ef-btn-ghost">Find a live class</Link>
-            </div>
-            <div className="mt-8 max-w-xl"><AskAnything /></div>
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import DocumentHead from '../components/DocumentHead'
+import { CommandPalette } from '../components/CommandPalette'
+import { api, Course, CourseReview, VirtualClass, formatPrice, formatWhen } from '../lib/api'
+type LandingCourse = Course & { archived?: boolean; durationMinutes?: number }
+function durationLabel(minutes: number) { return `${Math.floor(minutes / 60) ? `${Math.floor(minutes / 60)}h ` : ''}${minutes % 60 ? `${minutes % 60}m` : ''}`.trim() }
 
-            <dl className="ef-stat-strip mt-10">
-              <div>
-                <dt>Course rating</dt>
-                <dd>{rating ? <>{rating} <span className="text-moss" aria-hidden>★</span></> : 'Not rated yet'}</dd>
-              </div>
-              <div>
-                <dt>Learn by doing</dt>
-                <dd>{!loading && !error ? `${courses.length} course${courses.length === 1 ? '' : 's'}` : 'Browse courses'}</dd>
-              </div>
-              <div>
-                <dt>Live classroom</dt>
-                <dd className="flex items-center gap-2">
-                  {live.length > 0 && <LiveDot />}
-                  {sessions === null ? 'Tutor-led sessions' : tutors ? `${tutors} tutor${tutors === 1 ? '' : 's'} live` : 'View schedule'}
-                </dd>
-              </div>
-            </dl>
-          </div>
-          <TechPhoto />
-        </div>
-      </section>
-
-      {/* ── what you get ─────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-5 pt-10 sm:px-6 sm:pt-12">
-        <ul className="grid gap-x-8 sm:grid-cols-3">
-          {[
-            ['01', 'Learn by doing', 'Put new skills to work with assignments and challenges.'],
-            ['02', 'Meet your tutors', 'Ask questions and learn together in live classes.'],
-            ['03', 'See your progress', 'Track lessons and collect course certificates.'],
-          ].map(([n, title, body]) => (
-            <li key={n} className="ef-feature-card">
-              <span className="ef-feature-num" aria-hidden>{n}</span>
-              <h2 className="mt-4 font-display text-lg tracking-tight">{title}</h2>
-              <p className="ef-muted mt-2.5 text-sm leading-relaxed">{body}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* ── catalogue ────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="ef-eyebrow">Find your starting point</p>
-            <h2 className="mt-3 font-display text-3xl tracking-tight sm:text-4xl">Explore courses</h2>
-          </div>
-          <Link href="/courses" className="ef-link text-sm">View all courses →</Link>
-        </div>
-        {loading ? (
-          <CardSkeletons label="Loading courses" />
-        ) : error ? (
-          <FeedbackCard error title="Unable to load courses" description="We couldn’t connect to the catalog. Please try again in a moment." retry={() => setAttempt(a => a + 1)} />
-        ) : courses.length ? (
-          <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.slice(0, 3).map(course => <li key={course.id}><CourseCard course={course} /></li>)}
-          </ul>
-        ) : (
-          <div className="ef-panel mt-10 text-center">
-            <h3 className="font-display text-2xl tracking-tight">New courses are on the way</h3>
-            <p className="ef-muted mx-auto mt-3 max-w-sm">Create an account and you’ll be ready the moment the first one opens.</p>
-            <Link href="/register" className="ef-btn mt-7">Create account</Link>
-          </div>
-        )}
-      </section>
-    </main>
-  </>;
+const command = "printf '\\x45\\x43\\x48\\x4f\\n'"
+function WorkshopTerminal() {
+  const [text,setText]=useState(''),[done,setDone]=useState(false),[copied,setCopied]=useState('')
+  useEffect(()=>{const motion=matchMedia('(prefers-reduced-motion: reduce)');let timer:ReturnType<typeof setTimeout>;let n=0;function finish(){clearTimeout(timer);setText(command);setDone(true)}function tick(){if(motion.matches)return finish();setText(command.slice(0,n++));if(n<=command.length)timer=setTimeout(tick,45);else setDone(true)}const listener=()=>{if(motion.matches)finish()};motion.addEventListener('change',listener);if(motion.matches)finish();else timer=setTimeout(tick,650);return()=>{clearTimeout(timer);motion.removeEventListener('change',listener)}},[])
+  return <div className="paper-terminal"><div><span>workshop / bytes-to-text</span><button onClick={async()=>{try{await navigator.clipboard.writeText(command);setCopied('Copied')}catch{setCopied('Select the command to copy it')}}}>{copied||'Copy command'}</button></div><pre><span className="terminal-note"># Four bytes. One word.</span>{'\n'}<span className="terminal-prompt">$ </span><code>{text}</code>{'\n'}<span>{done?'ECHO':' '}</span></pre><span className="sr-only" role="status">{copied}</span></div>
+}
+export default function Home(){
+ const [courses,setCourses]=useState<LandingCourse[]>([]),[sessions,setSessions]=useState<VirtualClass[]>([]),[quote,setQuote]=useState<CourseReview|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[classError,setClassError]=useState(false),[attempt,setAttempt]=useState(0)
+ useEffect(()=>{let active=true;setLoading(true);setError('');setClassError(false);api.courses().then(async list=>{if(!active)return;const ready=(list as LandingCourse[]).filter(c=>c.published&&!c.archived&&(c.lessonCount||0)>0);setCourses(ready);const rated=ready.find(c=>(c.reviewCount||0)>0);if(rated){try{const feedback=await api.courseReviews(rated.id);if(active)setQuote(feedback.reviews.find(r=>r.comment?.trim()&&r.user.name)||null)}catch{}}}).catch(e=>{if(active)setError(e.message)}).finally(()=>{if(active)setLoading(false)});api.classes().then(list=>{if(active)setSessions(list)}).catch(()=>{if(active)setClassError(true)});return()=>{active=false}},[attempt])
+ const next=sessions.filter(s=>s.status==='Live'||(s.status==='Scheduled'&&new Date(s.startsAt).getTime()>Date.now())).sort((a,b)=>(a.status==='Live'?-1:b.status==='Live'?1:0)||new Date(a.startsAt).getTime()-new Date(b.startsAt).getTime())[0]
+ return <><DocumentHead title="EchoFreelance — Less watching. More doing."/><main className="paper-home">
+ <section className="paper-hero paper-wrap" aria-labelledby="paper-title"><h1 id="paper-title"><span>Less watching.</span><span>More <span className="paper-circle">doing.<svg viewBox="0 0 500 180" fill="none" aria-hidden="true" preserveAspectRatio="none"><path d="M471 48C405-9 74-2 22 67c-54 75 112 121 287 97 119-16 199-67 155-114C418 0 199-9 92 23"/></svg></span></span></h1>
+ <div className="paper-hero-bottom"><div className="paper-copy"><p>Learn cybersecurity, software and cloud by working through problems—with a real tutor to ask when you get stuck.</p><div className="paper-actions"><Link href="/classes" className="paper-primary">Join a live class <span aria-hidden>↗</span></Link><Link href="/courses" className="paper-link">Or take a look at the courses →</Link></div><p className="paper-note">Bring your questions.<br/>You don’t need to know the answer already.</p></div>
+ <div className="paper-workbench"><span className="paper-stamp">Bring a problem.</span><figure className="paper-photo"><img src="/wallpapers/student-collaboration.webp" width="1536" height="1024" alt="Illustrative scene of two people collaborating at a coding workspace" fetchPriority="high"/><figcaption>Code, discuss, try again.</figcaption></figure><figure className="paper-notebook" aria-label="A notebook-style network diagram"><svg viewBox="0 0 290 235" aria-hidden="true"><path d="M32 0v235M0 45h290M0 75h290M0 105h290M0 135h290M0 165h290M0 195h290" className="notebook-lines"/><g fill="none" stroke="currentColor" strokeWidth="2"><rect x="65" y="54" width="59" height="37"/><rect x="170" y="128" width="59" height="37"/><rect x="65" y="160" width="59" height="37"/><path d="m124 73 75 55M95 91v69m89-44 14 12 27-31"/></g></svg><figcaption>Notes first. Then try it.</figcaption></figure><WorkshopTerminal/></div></div></section>
+ <section className="paper-workshop paper-wrap" aria-labelledby="workshop-title"><p className="paper-section-number">01 / The workshop</p><div className="paper-workshop-grid"><div><h2 id="workshop-title">A tutor.<br/>A problem.<br/><span className="paper-wave">Your turn.<svg viewBox="0 0 300 14" aria-hidden="true" preserveAspectRatio="none"><path d="M1 9C34-2 62 17 98 8S163 3 198 8s65-5 101-3"/></svg></span></h2><p className="paper-method">Follow the lesson. Try the assignment. Bring the part that didn’t work to a live class. That’s the learning loop.</p></div><div className="paper-proof"><article className="paper-ticket"><div className="paper-ticket-top"><span>{next?.status==='Live'?'In session':'Next live class'}</span><span aria-hidden>↗</span></div><h3>{next?next.title:classError?'Check the class schedule.':'Watch for the next session.'}</h3>{next?<><p>{next.host?.name||'School tutor'}<br/><time dateTime={next.startsAt}>{formatWhen(next.startsAt)}</time></p><Link href={`/classes/${next.id}`}>View class and joining details →</Link></>:<><p>Confirmed sessions and joining details appear in the live classes schedule.</p><Link href="/classes">See scheduled classes →</Link></>}</article>{quote?<blockquote className="paper-quote"><p>“{quote.comment}”</p><footer>{quote.user.name} · course review</footer></blockquote>:<aside className="paper-quote"><h3>Stuck is a good place to ask.</h3><p>Bring the error message, the unfinished exercise, or the question you nearly didn’t ask.</p></aside>}</div></div></section>
+ <section className="paper-programs" aria-labelledby="program-title"><div className="paper-wrap"><p className="paper-section-number">02 / On the workbench</p><div className="paper-program-header"><h2 id="program-title">Start with something<br/>you want to make work.</h2><Link className="paper-link" href="/courses">All courses →</Link></div>{loading?<div className="paper-loading" role="status">Checking the course catalogue…</div>:error?<div className="paper-loading" role="alert"><p>We couldn’t load the courses.</p><button className="paper-text-button" onClick={()=>setAttempt(a=>a+1)}>Try again →</button></div>:courses.length?<ul className="paper-course-grid">{courses.slice(0,3).map(c=><li key={c.id} className="paper-index-card"><div className="paper-index-code"><span>{c.category} / {c.id.slice(-4).toUpperCase()}</span><span>{c.level}</span></div><div className="paper-index-body"><h3><Link href={`/courses/${c.id}`}>{c.title}</Link></h3><p>{c.description}</p><dl><div><dt>Lessons</dt><dd>{c.lessonCount}</dd></div><div><dt>{c.durationMinutes?'Duration':'Course fee'}</dt><dd>{c.durationMinutes?durationLabel(c.durationMinutes):formatPrice(c.priceCents)}</dd></div></dl></div><div className="paper-index-footer"><span>{c.tutor?.name||'School tutor'}</span><Link href={`/courses/${c.id}`}>View course →</Link></div></li>)}</ul>:<div className="paper-loading"><h3>Lessons are being prepared.</h3><p>Ask the school about course availability, fees and the next intake.</p><a className="paper-text-button" href="mailto:ecofreelancetechnologyplus@gmail.com">Talk to admissions →</a></div>}</div></section>
+ </main><CommandPalette/></>
 }
