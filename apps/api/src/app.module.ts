@@ -1,3 +1,4 @@
+import { PaymentsModule } from './modules/payments/payments.module'
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { HealthController } from './health.controller'
@@ -25,6 +26,7 @@ import { PrismaModule } from './prisma/prisma.module'
     NotificationsModule,
     CampusModule,
     CommunityModule,
+    PaymentsModule,
   ],
   controllers: [HealthController],
 })

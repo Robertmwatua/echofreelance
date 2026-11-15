@@ -21,7 +21,6 @@ function NewCourseForm() {
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<string>(CATEGORIES[0])
   const [level, setLevel] = useState('Beginner')
-  const [priceCents, setPriceCents] = useState(0)
   const [roadmap, setRoadmap] = useState('')
   const [publicPreview, setPublicPreview] = useState(false)
   const published = false
@@ -53,7 +52,6 @@ function NewCourseForm() {
         description,
         category: category.trim() || 'General',
         level,
-        priceCents,
         roadmapSteps: roadmapLines(roadmap),
         publicPreview,
         published,
@@ -125,17 +123,7 @@ function NewCourseForm() {
                 </select>
               </label>
             </div>
-            <label className="block text-sm">
-              <span className="mb-1.5 block font-medium text-ink/85">Price (cents)</span>
-              <input
-                type="number"
-                min={0}
-                value={priceCents}
-                onChange={(e) => setPriceCents(Number(e.target.value))}
-                className="ef-input"
-              />
-              <span className="mt-1 block text-xs ef-muted">0 = free</span>
-            </label>
+            <p className="ef-muted text-sm">School fees are set and confirmed by an administrator, in KES.</p>
             <p className="ef-muted text-sm">New courses start as drafts. Add lessons, then publish from your studio.</p>
             {error && <p className="text-sm ef-text-danger ef-toast">{error}</p>}
             <RoadmapEditor value={roadmap} change={setRoadmap} listed={publicPreview} setListed={setPublicPreview}/><button type="submit" disabled={busy} className="ef-btn w-full sm:w-auto">

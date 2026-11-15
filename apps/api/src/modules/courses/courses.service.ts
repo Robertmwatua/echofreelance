@@ -253,6 +253,7 @@ export class CoursesService {
   async update(id: string, user: AuthUser, dto: UpdateCourseDto) {
     const course = await this.requireCourse(id)
     this.assertCanManage(course.tutorId, user)
+    if (dto.priceCents !== undefined && dto.priceCents !== course.priceCents) throw new ForbiddenException('An administrator must confirm fees using the school fee controls.')
     if (dto.published === true) {
       if (dto.archived ?? course.archived) throw new BadRequestException('Restore this course before publishing.')
       const lessons = await this.prisma.lesson.count({ where: { courseId: id } })
@@ -295,6 +296,7 @@ export class CoursesService {
   async remove(id: string, user: AuthUser) {
     const course = await this.requireCourse(id)
     this.assertCanManage(course.tutorId, user)
+    if (await this.prisma.courseFeeAccount.count({ where: { courseId: id } })) throw new BadRequestException('This course has fee records. Archive it instead to preserve student statements and receipts.')
     await this.prisma.course.delete({ where: { id } })
     return { ok: true }
   }
@@ -335,6 +337,9 @@ export class CoursesService {
     if (existing) {
       throw new ConflictException('Already enrolled in this course')
     }
+
+    if (!course.feeConfirmed) throw new BadRequestException('The school has not confirmed fees for this course yet.')
+    if (course.priceCents > 0) throw new ForbiddenException('Pay your first instalment through M-Pesa to unlock this course.')
 
     return this.prisma.enrollment.create({
       data: { courseId, userId },
@@ -516,6 +521,7 @@ export class CoursesService {
       category?: string
       level: string
       priceCents: number
+      feeConfirmed?: boolean
       published: boolean
       archived?: boolean
       roadmapSteps?: unknown
@@ -550,7 +556,9 @@ export class CoursesService {
       roadmap: Array.isArray(course.roadmapSteps) ? course.roadmapSteps.filter((step): step is string => typeof step === 'string') : programmeRoadmaps[course.id]?.steps || [],
       publicPreview: course.publicPreview ?? Boolean(programmeRoadmaps[course.id]),
       roadmapStatus: course.roadmapSteps != null ? 'Tutor-authored learning roadmap' : programmeRoadmaps[course.id] ? 'Proposed learning roadmap' : undefined,
-      feesPending: programmeRoadmaps[course.id]?.feesPending || false,
+      feeConfirmed: course.feeConfirmed === true,
+      currency: 'KES',
+      feesPending: course.feeConfirmed !== true,
       enrollmentOpen: course.published && !course.archived && (course._count?.lessons || 0) > 0,
       ...(programmeRoadmaps[course.id]?.description && course.description.includes('Fees, duration, intake dates and lesson content are awaiting confirmation.') ? { description: programmeRoadmaps[course.id].description } : {}),
     }

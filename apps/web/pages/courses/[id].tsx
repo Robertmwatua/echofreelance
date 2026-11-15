@@ -231,11 +231,16 @@ export default function CourseDetailPage() {
                   </Link>
                 ) : course.enrollmentOpen === false ? (
                   <a href={`mailto:ecofreelancetechnologyplus@gmail.com?subject=${encodeURIComponent('Course enquiry: '+course.title)}`} className="ef-btn">Ask about the next intake →</a>
+                ) : course.feesPending ? (
+                  <p className="ef-toast">The school is confirming fees. Please check back before enrolling.</p>
+                ) : course.priceCents > 0 ? (
+                  <Link href={`/fees?course=${encodeURIComponent(course.id)}`} className="ef-btn">Pay an instalment & enroll →</Link>
                 ) : (
                   <button type="button" disabled={busy} onClick={enroll} className="ef-btn">
                     {busy ? 'Enrolling…' : 'Enroll'}
                   </button>
                 )}
+                {course.enrolled && <Link href={`/fees?course=${encodeURIComponent(course.id)}`} className="ef-btn-ghost">Fees & receipts →</Link>}
                 {course.enrolled && course.progress && course.progress.percent === 100 && (
                   <button type="button" disabled={busy} onClick={claimCert} className="ef-btn-ghost">
                     Get certificate

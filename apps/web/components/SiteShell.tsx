@@ -206,6 +206,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                     <span className="ml-1 text-[10px]   text-fern">{role}</span>
                   </p>
                   <hr className="ef-divider my-1" />
+                  <Link href="/fees" className="ef-account-action">Fees & receipts</Link>
                   <Link href="/notes" className="ef-account-action">Notes</Link>
                   <Link href="/certificates/mine" className="ef-account-action">Certificates</Link>
                   <Link href="/settings" className="ef-account-action">Settings</Link>
@@ -263,6 +264,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   )}
                   <Link href="/notes" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Notes</Link>
                   <Link href="/certificates/mine" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Certificates</Link>
+                  <Link href="/fees" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Fees & receipts</Link>
                   <Link href="/settings" className="ef-drawer-link" onClick={() => setMenuOpen(false)}>Settings</Link>
 
                   <div className="mt-4 flex items-center gap-3  px-3 py-3">

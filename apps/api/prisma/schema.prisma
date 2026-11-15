@@ -64,6 +64,7 @@ model User {
   lessonNotes           LessonNote[]
   classNotes            ClassNote[]
   classReminders        ClassReminder[]
+  feeAccounts           CourseFeeAccount[]
 }
 
 model Course {
@@ -73,6 +74,7 @@ model Course {
   category       String               @default("General")
   level          String               @default("Beginner")
   priceCents     Int                  @default(0)
+  feeConfirmed   Boolean              @default(false)
   published      Boolean              @default(false)
   archived       Boolean              @default(false)
   roadmapSteps   Json?
@@ -90,6 +92,7 @@ model Course {
   certificates   Certificate[]
   announcements  CourseAnnouncement[]
   discussions    DiscussionPost[]
+  feeAccounts    CourseFeeAccount[]
 }
 
 model Lesson {
@@ -355,4 +358,36 @@ model ClassReminder {
   deliveredAt DateTime?
   @@unique([classId, userId])
   @@index([deliveredAt, remindAt])
+}
+
+// Fee is quoted once per student/course. Later course price changes do not rewrite it.
+model CourseFeeAccount {
+  id String @id @default(cuid())
+  userId String
+  courseId String
+  totalCents Int
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  payments CoursePayment[]
+  @@unique([userId, courseId])
+}
+
+model CoursePayment {
+  id String @id @default(cuid())
+  accountId String
+  account CourseFeeAccount @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  amountCents Int
+  phone String
+  status String @default("Initiating")
+  requestKey String @unique
+  activeKey String? @unique
+  providerId String? @unique
+  receipt String? @unique
+  detail String @default("Preparing your M-Pesa request.")
+  createdAt DateTime @default(now())
+  verifiedAt DateTime?
+  settledAt DateTime?
+  @@index([accountId, createdAt])
+  @@index([status, createdAt])
 }

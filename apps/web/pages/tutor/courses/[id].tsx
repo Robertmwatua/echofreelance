@@ -1,3 +1,4 @@
+import { CourseFeeEditor } from '../../../components/CourseFeeEditor'
 import { RoadmapEditor, roadmapLines } from '../../../components/tutor/RoadmapEditor'
 import { useConfirmation } from '../../../components/Confirmation'
 import Link from 'next/link'
@@ -30,7 +31,6 @@ function ManageCourse() {
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('Cybersecurity')
   const [level, setLevel] = useState('Beginner')
-  const [priceCents, setPriceCents] = useState(0)
   const [roadmap, setRoadmap] = useState('')
   const [publicPreview, setPublicPreview] = useState(false)
   const [published, setPublished] = useState(false)
@@ -63,7 +63,6 @@ function ManageCourse() {
     setDescription(data.description)
     setCategory(data.category || 'Cybersecurity')
     setLevel(data.level)
-    setPriceCents(data.priceCents)
     setPublished(data.published)
     setRoadmap((data.roadmap || []).join('\n'))
     setPublicPreview(Boolean(data.publicPreview))
@@ -86,7 +85,6 @@ function ManageCourse() {
         description,
         category: category.trim() || 'General',
         level,
-        priceCents,
         roadmapSteps: roadmapLines(roadmap),
         publicPreview,
         published: published !== course?.published ? published : undefined,
@@ -278,16 +276,7 @@ function ManageCourse() {
                   </select>
                 </label>
               </div>
-              <label className="block text-sm">
-                <span className="mb-1 block font-medium">Price (cents)</span>
-                <input
-                  type="number"
-                  min={0}
-                  value={priceCents}
-                  onChange={(e) => setPriceCents(Number(e.target.value))}
-                  className="ef-input"
-                />
-              </label>
+              <p className="ef-muted text-sm">School fees are set and confirmed by an administrator, in KES.</p>
               <RoadmapEditor value={roadmap} change={setRoadmap} listed={publicPreview} setListed={setPublicPreview}/><label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -308,6 +297,7 @@ function ManageCourse() {
                 Delete course
               </button>
             </form>
+            {course && <CourseFeeEditor course={course} updated={load}/>}
 
             <section className="ef-panel mt-10">
               <h2 className="font-display text-2xl text-ink" id="students">Student performance</h2>

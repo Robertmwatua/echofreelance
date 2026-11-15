@@ -176,3 +176,11 @@ html.dark .studio-error,html.dark .studio-danger { color: var(--link); }
  .studio-heading>div {flex-wrap:wrap}
  .studio-grid {grid-template-columns:minmax(0,1fr)}
 }
+
+/* Fee statements keep money and status readable on narrow screens. */
+.ef-fee-totals { display: grid; gap: 1.25rem; grid-template-columns: 1fr; border-block: var(--border-hard); padding-block: 1.5rem; }
+.ef-fee-totals dt { font-family: var(--font-mono); font-size: .8rem; color: var(--muted); }
+.ef-fee-totals dd { margin: .5rem 0 0; font-size: 1.4rem; font-weight: 700; overflow-wrap: anywhere; }
+.ef-fee-list { display:grid; gap:1.5rem; grid-template-columns:repeat(auto-fit,minmax(min(100%,20rem),1fr)); }
+.ef-payment-records { list-style:none; padding:0; }
+@media(min-width:640px) { .ef-fee-totals {grid-template-columns:repeat(3,minmax(0,1fr));} }

@@ -49,6 +49,8 @@ export type CourseSession = {
 }
 
 export type Course = {
+  feeConfirmed?: boolean
+  currency?: string
   publicPreview?: boolean
   roadmap?: string[]
   roadmapStatus?: string
@@ -328,7 +330,18 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return data as T
 }
 
+export type CoursePayment = { id: string; amountCents: number; status: 'Initiating'|'Pending'|'Succeeded'|'Failed'|'Review'; receipt: string|null; detail: string; createdAt: string; settledAt: string|null; phone: string; providerId: string|null }
+export type FeeStatement = { courseId: string; title: string; currency: 'KES'; feeConfirmed: boolean; totalCents: number; paidCents: number; balanceCents: number; legacyAccess: boolean; enrolled: boolean; canPay: boolean; configured: boolean; payments: CoursePayment[] }
+export type AdminPayment = CoursePayment & { user: { name: string|null; email: string }; course: { id: string; title: string }; totalCents: number; paidCents: number; balanceCents: number }
+
 export const api = {
+  feeStatement: (id: string) => request<FeeStatement>(`/payments/courses/${id}`),
+  myFees: () => request<FeeStatement[]>('/payments/mine'),
+  setCourseFee: (id: string, amountKes: number) => request<{message: string}>(`/payments/courses/${id}/fee`, {method: 'PATCH', body: JSON.stringify({amountKes})}),
+  startPayment: (id: string, body: {amountKes: number; phone: string; requestKey: string}) => request<CoursePayment>(`/payments/courses/${id}`, {method: 'POST', body: JSON.stringify(body)}),
+  checkPayment: (id: string) => request<CoursePayment>(`/payments/${id}/check`, {method: 'POST'}),
+  recoverPayment: (id: string, providerId: string) => request<CoursePayment>(`/payments/${id}/recover`, {method: 'POST', body: JSON.stringify({providerId})}),
+  adminPayments: (offset: number) => request<{total: number; configured: boolean; payments: AdminPayment[]}>(`/payments/admin?offset=${offset}`),
   health: () => request<{ status: string }>('/health'),
   register: (body: { email: string; password: string; name?: string }) =>
     request<AuthResponse>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
@@ -565,9 +578,13 @@ export const api = {
     }),
 }
 
+export function formatKes(cents: number) {
+  return `KES ${(cents/100).toLocaleString('en-KE', {maximumFractionDigits: 2})}`
+}
+
 export function formatPrice(cents: number) {
   if (cents === 0) return 'Free'
-  return `$${(cents / 100).toFixed(2)}`
+  return `KES ${(cents / 100).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
 }
 
 export function formatWhen(iso: string) {
