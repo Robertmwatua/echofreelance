@@ -29,6 +29,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButton = useRef<HTMLButtonElement>(null)
   const [scrolled, setScrolled] = useState(false)
+  const headerRef = useRef<HTMLElement>(null)
 
   useEffect(()=>{
     const focusPage=()=>{
@@ -40,6 +41,17 @@ export function SiteShell({ children }: { children: ReactNode }) {
   },[router.events])
 
   useEffect(()=>watchTheme(setTheme),[])
+
+  // Page-level sticky toolbars need to know how tall this header is.
+  useEffect(()=>{
+    const header=headerRef.current
+    if(!header||typeof ResizeObserver==='undefined')return
+    const publish=()=>document.documentElement.style.setProperty('--site-header-h',`${header.offsetHeight}px`)
+    publish()
+    const observer=new ResizeObserver(publish)
+    observer.observe(header)
+    return()=>observer.disconnect()
+  },[])
 
   const refreshUnread = useCallback(() => {
     if (!getStoredUser()) {
@@ -144,7 +156,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen font-sans text-ink">
-      <header className={`ef-site-header ${scrolled ? 'is-scrolled' : ''}`}>
+      <header ref={headerRef} className={`ef-site-header ${scrolled ? 'is-scrolled' : ''}`}>
 
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-5 py-3 sm:px-7">
           <Link href="/" className="ef-wordmark" aria-label={SITE_NAME}>EchoFreelance.<small>Tech School</small></Link>
@@ -298,7 +310,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
       </header>
       <a href="#main-content" className="ef-skip-link">Skip to content</a>
-      {router.pathname !== '/' && !router.pathname.startsWith('/admin') && router.pathname !== '/tutor/courses/[id]' && <nav className="ef-breadcrumb" aria-label="Breadcrumb"><Link href="/">← Home</Link><span aria-hidden="true">/</span><span>{router.pathname.startsWith('/tutor') ? 'Teaching studio' : router.pathname.split('/')[1].replace('discussions','Community')}</span></nav>}<div id="main-content" tabIndex={-1}>{children}</div>
+      {router.pathname !== '/' && router.pathname !== '/courses' && !router.pathname.startsWith('/admin') && router.pathname !== '/tutor/courses/[id]' && <nav className="ef-breadcrumb" aria-label="Breadcrumb"><Link href="/">← Home</Link><span aria-hidden="true">/</span><span>{router.pathname.startsWith('/tutor') ? 'Teaching studio' : router.pathname.split('/')[1].replace('discussions','Community')}</span></nav>}<div id="main-content" tabIndex={-1}>{children}</div>
 
       {/* mobile bottom tab bar */}
       <nav className="ef-tabbar xl:hidden" aria-label="Primary">

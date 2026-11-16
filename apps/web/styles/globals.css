@@ -149,9 +149,9 @@ main :where(section, article, form)[id] { scroll-margin-top: 6rem; }
  .ef-hero>p:last-of-type {grid-column:2;align-self:end;max-width:390px;padding-bottom:4px}
  .ef-hero>div {grid-column:1/-1}
 }
-.ef-rise,.catalogue-grid>li,.ef-session-card {animation:editorial-reveal var(--motion-reveal) backwards}
-.catalogue-grid>li:nth-child(2),.ef-session-card:nth-child(2) {animation-delay:var(--reveal-step)}
-.catalogue-grid>li:nth-child(3),.ef-session-card:nth-child(3) {animation-delay:calc(var(--reveal-step)*2)}
+.ef-rise,.ef-session-card{animation:editorial-reveal var(--motion-reveal) backwards}
+.ef-session-card:nth-child(2){animation-delay:var(--reveal-step)}
+.ef-session-card:nth-child(3){animation-delay:calc(var(--reveal-step)*2)}
 .ef-ask {display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .ef-ask-input {flex:1;min-width:180px}
 .ef-kbd {font:11px var(--font-mono);color:var(--muted)}
