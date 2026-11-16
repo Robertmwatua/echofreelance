@@ -224,3 +224,91 @@
  .adm-row-actions>*{flex:1 1 auto;justify-content:center}
  .adm-empty,.adm-error{flex-direction:column;align-items:flex-start;gap:var(--s3)}
 }
+
+/* ---- Table toolbar and chrome ----------------------------------------- */
+.admin-workspace .admin-table-space{display:block}
+.adm-search{
+ display:flex;align-items:center;gap:var(--s2);flex:1 1 240px;min-width:200px;
+ height:40px;padding:0 var(--s3);border:1px solid var(--line);border-radius:var(--r);
+ background:var(--surface);color:var(--muted);
+}
+.adm-search:focus-within{border-color:var(--text);outline:2px solid var(--accent);outline-offset:2px}
+.adm-search svg{width:16px;height:16px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:1.7}
+.adm-search input{
+ flex:1;min-width:0;height:100%;border:0;background:transparent;outline:none;
+ font:400 14px var(--font-ui);color:var(--text);
+}
+.adm-search input::placeholder{color:var(--muted)}
+.adm-select{position:relative;display:inline-flex}
+.adm-select select{
+ appearance:none;height:40px;padding:0 var(--s8) 0 var(--s3);
+ border:1px solid var(--line);border-radius:var(--r);background:var(--surface);
+ color:var(--text);font:400 13px var(--font-ui);color-scheme:inherit;cursor:pointer;
+}
+.adm-select select:hover{border-color:var(--text)}
+.adm-select select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.adm-select svg{
+ position:absolute;right:var(--s3);top:50%;translate:0 -50%;pointer-events:none;
+ width:14px;height:14px;fill:none;stroke:var(--muted);stroke-width:1.8;
+}
+.adm-select-label{display:grid;gap:var(--s1);font:600 12px var(--font-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+.admin-workspace .admin-result-row{
+ display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2) var(--s3);
+ margin-bottom:var(--s3);min-height:28px;font:400 13px var(--font-ui);color:var(--muted);
+}
+.admin-workspace .admin-bulk{
+ display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3);
+ margin-bottom:var(--s3);padding:var(--s3);border:1px solid var(--line-strong);
+ border-radius:var(--r);background:var(--surface-raised);
+}
+.admin-workspace .admin-bulk strong{font:600 13px var(--font-ui);color:var(--text)}
+
+/* Sortable headers: plain text, an arrow only on the column in use. */
+.admin-workspace .admin-sort-button{
+ display:inline-flex;align-items:center;gap:var(--s1);padding:0;border:0;background:transparent;
+ font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit;cursor:pointer;
+}
+.admin-workspace .admin-sort-button:hover{color:var(--text)}
+.admin-workspace .admin-sort-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.admin-workspace th[aria-sort]:not([aria-sort=none]) .admin-sort-button{color:var(--text)}
+.admin-workspace .admin-sort-arrow{font-size:11px;line-height:1}
+.admin-workspace .admin-number{text-align:right;font-variant-numeric:tabular-nums}
+
+.admin-workspace .admin-table-footer{
+ display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--s3);
+ margin-top:var(--s6);padding-top:var(--s4);border-top:1px solid var(--line);
+ font:400 13px var(--font-ui);color:var(--muted);
+}
+.admin-workspace .admin-cell-skeleton{
+ display:block;height:12px;width:70%;border-radius:3px;
+ background:rgb(var(--muted-rgb) / .18);animation:editorial-pulse 1.5s ease-in-out infinite;
+}
+.admin-workspace .admin-openable-row{cursor:pointer}
+
+@media(max-width:767px){
+ .adm-search{flex:1 1 100%}
+ .admin-workspace .admin-table-footer{justify-content:flex-start}
+}
+
+/* ---- Tutor studio on the same shell ----------------------------------- */
+/* The studio keeps its own internals; only the frame is shared with admin. */
+.admin-workspace.studio{padding-bottom:var(--s12)}
+.admin-workspace .studio-subnav{
+ display:flex;gap:var(--s4);flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;
+ margin:0 0 var(--s6);padding:0;border:0;border-bottom:1px solid var(--line);
+}
+.admin-workspace .studio-subnav::-webkit-scrollbar{display:none}
+.admin-workspace .studio-subnav .ef-action-button{
+ flex-shrink:0;white-space:nowrap;min-height:40px;padding:0 0 10px;
+ border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;
+ font:500 14px var(--font-ui);color:var(--muted);box-shadow:none;
+}
+.admin-workspace .studio-subnav .ef-action-button:hover:not(:disabled){
+ background:transparent;color:var(--text);transform:none;box-shadow:none;
+}
+.admin-workspace .studio-subnav .ef-action-button[aria-current=page]{
+ color:var(--text);border-bottom-color:var(--accent);background:transparent;
+}
+.admin-workspace .studio-heading{margin:0 0 var(--s4)}
+.admin-workspace .studio-heading h1{font:600 clamp(26px,2.4vw,32px)/1.2 var(--font-ui);letter-spacing:-.02em;color:var(--text)}
