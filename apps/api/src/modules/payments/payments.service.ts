@@ -123,6 +123,7 @@ export class PaymentsService {
           const fresh = await tx.coursePayment.findUnique({ where: { id: payment.id }, include: { account: true } })
           if (!fresh || fresh.status !== 'Pending') return
           await tx.coursePayment.update({ where: { id: payment.id }, data: { status: 'Succeeded', receipt: String(result.TransactionReceipt).toUpperCase(), settledAt: new Date(), activeKey: null, detail: 'Payment verified and added to your fee statement.' } })
+          await tx.notification.upsert({where:{id:`payment-confirmed-${payment.id}`},update:{},create:{id:`payment-confirmed-${payment.id}`,userId:fresh.account.userId,title:'Payment confirmed',body:`KES ${(payment.amountCents/100).toLocaleString('en-KE')} received. Your receipt and updated balance are ready.`,href:`/fees?course=${fresh.account.courseId}`}})
           const aggregate=await tx.coursePayment.aggregate({where:{accountId:fresh.accountId,status:'Succeeded'},_sum:{amountCents:true}})
           if ((aggregate._sum.amountCents||0)>=fresh.account.unlockCents) await tx.enrollment.upsert({ where: { userId_courseId: { userId: fresh.account.userId, courseId: fresh.account.courseId } }, create: { userId: fresh.account.userId, courseId: fresh.account.courseId }, update: {} })
         })

@@ -1,3 +1,4 @@
+import {learning} from '../../lib/learning-api'
 import {Button} from '../../components/Button'
 import { FeedbackCard, CardSkeletons } from '../../components/PageFeedback'
 import { useConfirmation } from '../../components/Confirmation'
@@ -61,6 +62,8 @@ export default function ClassDetailPage() {
     if (!id) return
     load().catch((e: Error) => setError(e.message))
   }, [id])
+
+  async function markAttendance(userId:string,status:string){setBusy(true);setError('');setMessage('');try{await learning.mark(id,userId,status);await load();setMessage('Attendance saved.')}catch(e){setError(e instanceof Error?e.message:'Could not save attendance.')}finally{setBusy(false)}}
 
   async function register() {
     if (!getStoredUser()) {
@@ -264,21 +267,13 @@ export default function ClassDetailPage() {
                     {roster.attendees.map((a) => (
                       <li
                         key={a.id}
-                        className="flex items-center justify-between gap-3 py-3 text-sm"
+                        className="learning-roster-row"
                       >
                         <div>
                           <p className="font-medium">{a.name || a.email}</p>
                           {a.name && <p className="text-xs ef-muted">{a.email}</p>}
                         </div>
-                        <span
-                          className={
-                            a.attended
-                              ? 'ef-pill-live !normal-case tracking-normal'
-                              : 'ef-pill-done !normal-case tracking-normal'
-                          }
-                        >
-                          {a.attended ? 'Present' : 'Registered'}
-                        </span>
+                        <label className="learning-attendance-control"><span className="sr-only">Attendance for {a.name||a.email}</span><select className="ef-input" value={a.attendanceStatus||'Unmarked'} disabled={busy||new Date(item.startsAt)>new Date()||item.status==='Cancelled'} onChange={e=>markAttendance(a.id,e.target.value)}>{['Unmarked','Present','Absent','Excused'].map(status=><option key={status}>{status}</option>)}</select></label>
                       </li>
                     ))}
                     {roster.attendees.length === 0 && (

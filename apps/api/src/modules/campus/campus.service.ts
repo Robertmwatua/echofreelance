@@ -1,3 +1,4 @@
+import {randomUUID} from 'crypto'
 import { accessibleLesson } from '../../common/lesson-access'
 import {
   BadRequestException,
@@ -139,6 +140,12 @@ export class CampusService {
   }
 
   async issueCertificateIfEligible(userId: string, courseId: string) {
+    const enrollment=await this.prisma.enrollment.findUnique({where:{userId_courseId:{userId,courseId}}})
+    if(!enrollment)return null
+    const requiredAssignments=await this.prisma.assignment.findMany({where:{courseId,published:true,requiredForCertificate:true},include:{submissions:{where:{userId}}}})
+    if(requiredAssignments.some(a=>!a.submissions.some(s=>s.status==='Graded'&&s.grade!==null&&s.grade/a.maxPoints*100>=a.passPercent)))return null
+    const quizzes=await this.prisma.lessonQuiz.findMany({where:{published:true,requiredForCertificate:true,lesson:{courseId,published:true}},include:{attempts:{where:{userId,passed:true}}}})
+    if(quizzes.some(q=>!q.attempts.some(a=>a.revision===q.revision)))return null
     const total = await this.prisma.lesson.count({ where: { courseId,published:true } })
     if (total === 0) return null
     const lessons = await this.prisma.lesson.findMany({
@@ -158,12 +165,14 @@ export class CampusService {
     const course = await this.prisma.course.findUnique({ where: { id: courseId } })
     if (!course) return null
 
-    const code = `EF-${courseId.slice(-4).toUpperCase()}-${userId.slice(-4).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`
-    const cert = await this.prisma.certificate.create({
-      data: { code, userId, courseId },
+    const code = `EF-${randomUUID().toUpperCase()}`
+    const cert = await this.prisma.certificate.upsert({
+      where:{userId_courseId:{userId,courseId}},
+      update:{},
+      create: { code, userId, courseId },
       include: {
         course: { select: { id: true, title: true } },
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true } },
       },
     })
 
@@ -198,7 +207,7 @@ export class CampusService {
       where: { code },
       include: {
         course: { select: { id: true, title: true, category: true, level: true } },
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true } },
       },
     })
     if (!cert) throw new NotFoundException('Certificate not found')
@@ -212,7 +221,7 @@ export class CampusService {
     if (!enrolled) throw new ForbiddenException('Not enrolled')
     const cert = await this.issueCertificateIfEligible(user.id, courseId)
     if (!cert) {
-      throw new BadRequestException('Finish all lessons to earn a certificate')
+      throw new BadRequestException('Complete every published lesson and pass all quizzes and assignments marked required for your certificate.')
     }
     return cert
   }

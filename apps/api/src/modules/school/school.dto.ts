@@ -32,6 +32,7 @@ export class ReviewApplicationDto {
   @IsString() @MaxLength(5000) reviewNotes!: string
 }
 export class TaskDto {
+  @IsOptional() @IsIn(["Task","Intake","Deadline"]) kind?:string
   @IsString() @MinLength(3) @MaxLength(150) title!: string
   @IsString() @MaxLength(3000) details!: string
   @IsDateString() dueAt!: string

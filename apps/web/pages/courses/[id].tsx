@@ -1,3 +1,4 @@
+import {CourseQuizzes} from '../../components/learning/CourseQuizzes'
 import {Button,NavigationLink} from '../../components/Button'
 import Link from 'next/link'
 import Head from 'next/head'
@@ -36,6 +37,7 @@ export default function CourseDetailPage() {
   const [busy, setBusy] = useState(false)
   const [submitFor, setSubmitFor] = useState<string | null>(null)
   const [submitText, setSubmitText] = useState('')
+  const [submitLink,setSubmitLink]=useState('')
   const [rating, setRating] = useState(5)
   const [reviewComment, setReviewComment] = useState('')
   const [discussBody, setDiscussBody] = useState('')
@@ -119,11 +121,12 @@ export default function CourseDetailPage() {
     setBusy(true)
     setError('')
     try {
-      await api.submitAssignment(submitFor, { content: submitText })
+      await api.submitAssignment(submitFor, { content: submitText,linkUrl:submitLink||undefined })
       setSubmitFor(null)
       setSubmitText('')
       await load()
-      setMessage('Assignment submitted.')
+      setSubmitLink('')
+      setMessage('Assignment submitted. Your tutor will review it and leave feedback here.')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Submit failed')
     } finally {
@@ -260,6 +263,7 @@ export default function CourseDetailPage() {
               {error && course && <p role="alert" className="mt-4 ef-text-danger">{error}</p>}
             </div>
 
+            {(course.enrolled||course.canManage)&&<nav className="learning-course-nav mt-8" aria-label="Course tools"><a href="#course-lessons">Lessons ↓</a><a href="#assignments">Assignments & feedback ↓</a><a href="#quizzes">Quizzes ↓</a></nav>}
             {!!course.roadmap?.length && <section className="mt-10" aria-labelledby="roadmap-title"><p className="ef-section-label">Programme / the route ahead</p><h2 id="roadmap-title" className="mt-3 text-3xl">Your learning roadmap</h2><p className="ef-muted mt-3 max-w-2xl">{course.roadmapStatus || 'Learning roadmap'}. Topics and sequence may be refined by your tutor; this outline is separate from the lessons below.</p><ol className="ef-roadmap mt-6">{course.roadmap.map((step,index)=><li key={step}><span className="ef-meta">{String(index+1).padStart(2,'0')}</span><h3>{step}</h3></li>)}</ol>{course.enrollmentOpen === false && <p className="ef-toast" role="status">The programme is available to explore. Lesson content and enrollment are being prepared; contact admissions for intake dates{course.feesPending?', fees':''} and availability.</p>}</section>}
 
             {announcements.length > 0 && (
@@ -327,7 +331,7 @@ export default function CourseDetailPage() {
             )}
 
             <section className="mt-10">
-              <h2 className="font-display text-2xl text-ink">Syllabus</h2>
+              <h2 id="course-lessons" className="font-display text-2xl text-ink">Lessons</h2>
               {course.lessons?.length === 0 && <p className="ef-panel mt-4 ef-muted">The tutor hasn’t added lessons yet.</p>}
               <ul className="mt-4 space-y-4">
                 {(course.lessons || []).map((lesson) => (
@@ -451,7 +455,7 @@ export default function CourseDetailPage() {
             </section>
 
             <section className="mt-10">
-              <h2 className="font-display text-2xl text-ink">Assignments</h2>
+              <h2 id="assignments" className="font-display text-2xl text-ink">Assignments & feedback</h2><p className="ef-muted mt-3">Submit your answer or a project link. Your grade and tutor’s comments appear here.</p>
               {assignments.length === 0 && (
                 <p className="ef-muted mt-3 text-sm">No assignments yet.</p>
               )}
@@ -468,11 +472,13 @@ export default function CourseDetailPage() {
                           }`
                         : ''}
                     </p>
+                    {a.mySubmission?.feedback&&<div className="learning-answer-review mt-3"><strong>Tutor feedback</strong><p className="mt-2 whitespace-pre-wrap">{a.mySubmission.feedback}</p></div>}
+                    {a.mySubmission?.linkUrl&&<a href={a.mySubmission.linkUrl} target="_blank" rel="noopener noreferrer" className="ef-navigation-link mt-3">Your submitted project ↗</a>}<p className="ef-meta mt-3">{a.requiredForCertificate?`Required for certificate · Pass mark ${a.passPercent}%`:'Practice assignment'}{a.dueAt?` · Due ${new Date(a.dueAt).toLocaleString()}`:''}</p>
                     {course.enrolled && (
                       <Button
                         type="button"
                         className="mt-3 text-sm text-fern hover:underline"
-                        onClick={() => setSubmitFor(a.id)}
+                        onClick={() => {setSubmitFor(a.id);setSubmitText(a.mySubmission?.content||'');setSubmitLink(a.mySubmission?.linkUrl||'')}}
                       >
                         {a.mySubmission ? 'Resubmit' : 'Submit work'}
                       </Button>
@@ -502,6 +508,7 @@ export default function CourseDetailPage() {
                     onChange={(e) => setSubmitText(e.target.value)}
                     placeholder="Write your answer / lab notes…"
                   />
+                  <label className="ef-field"><span>Project or document link (optional)</span><input className="ef-input" type="url" value={submitLink} onChange={e=>setSubmitLink(e.target.value)} placeholder="https://…"/></label>
                   <div className="flex gap-2">
                     <Button type="submit" disabled={busy} className="ef-btn">
                       Send
@@ -518,6 +525,7 @@ export default function CourseDetailPage() {
               )}
             </section>
 
+            {(course.enrolled||course.canManage)&&<CourseQuizzes courseId={id}/>}
             <section className="mt-10">
               <h2 className="font-display text-2xl text-ink">Reviews</h2>
               {reviews && reviews.count === 0 && (

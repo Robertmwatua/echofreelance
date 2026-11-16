@@ -1,3 +1,4 @@
+import {Button} from '../../components/Button'
 import { CardSkeletons } from '../../components/PageFeedback'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -29,11 +30,11 @@ export default function CertificatePage() {
         {!cert && !error && <CardSkeletons label="Loading certificate" count={1}/>}
         {error && <p className="mt-8 ef-text-danger ef-toast">{error}</p>}
         {cert && (
-          <div className="ef-panel mt-6 text-center">
+          <div className="ef-panel mt-6 text-center learning-certificate">
             <p className="text-xs font-semibold  font-mono text-fern">
               EchoFreelance Tech School
             </p>
-            <h1 className="mt-4   text-ink ef-title">Certificate of completion</h1>
+            <h1 className="mt-4 text-ink ef-staff-title">Certificate of completion</h1>
             <p className="ef-muted mt-6 text-lg">This certifies that</p>
             <p className="mt-2 font-display text-2xl text-ink">
               {cert.user?.name || cert.user?.email || 'Learner'}
@@ -47,7 +48,7 @@ export default function CertificatePage() {
               Issued {new Date(cert.issuedAt).toLocaleDateString()}
             </p>
             <p className="mt-2 font-mono text-xs text-fern">{cert.code}</p>
-            <Link
+            <Button className="mt-6 print:hidden" onClick={()=>window.print()}>Print / save as PDF</Button><Link
               href={`/courses/${cert.course.id}`}
               className="mt-8 inline-block text-sm text-fern hover:underline"
             >

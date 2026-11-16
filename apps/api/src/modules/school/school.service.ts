@@ -72,14 +72,14 @@ export class SchoolService {
     if(Math.abs(dueAt.getTime()-Date.now())>366*86400000)throw new BadRequestException('Choose a task date within a year of today.')
     if(dto.assigneeId&&!await this.prisma.user.findFirst({where:{id:dto.assigneeId,role:{in:['Admin','Tutor']}}}))throw new BadRequestException('Assign tasks to a current tutor or admin.')
     if(id&&!await this.prisma.schoolTask.findUnique({where:{id}}))throw new NotFoundException()
-    const data={title:dto.title.trim(),details:dto.details.trim(),dueAt,assigneeId:dto.assigneeId||null}
+    const data={title:dto.title.trim(),details:dto.details.trim(),dueAt,assigneeId:dto.assigneeId||null,...(dto.kind?{kind:dto.kind}:{})}
     return id?this.prisma.schoolTask.update({where:{id},data}):this.prisma.schoolTask.create({data:{...data,createdById:userId}})
   }
   async taskDone(id:string,done:boolean){if(!await this.prisma.schoolTask.findUnique({where:{id}}))throw new NotFoundException();return this.prisma.schoolTask.update({where:{id},data:{done}})}
   async agenda(){const now=new Date(),end=new Date(Date.now()+30*86400000);const [classes,assignments,newEnquiries,newApplications,tasks]=await Promise.all([
-    this.prisma.virtualClass.findMany({where:{endsAt:{gte:now},startsAt:{lte:end},status:{in:['Live','Scheduled']}},orderBy:{startsAt:'asc'},take:50,include:{host:{select:{name:true}},course:{select:{title:true}}}}),
+    this.prisma.virtualClass.findMany({where:{endsAt:{gte:now},startsAt:{lte:end},status:{in:['Live','Scheduled']}},orderBy:{startsAt:'asc'},take:50,include:{host:{select:{id:true,name:true}},course:{select:{title:true}}}}),
     this.prisma.assignment.findMany({where:{published:true,dueAt:{gte:now,lte:end}},orderBy:{dueAt:'asc'},take:50,select:{id:true,title:true,courseId:true,dueAt:true}}),
-    this.prisma.admissionEnquiry.count({where:{status:'New'}}),this.prisma.jobApplication.count({where:{status:'Received'}}),this.tasks()]);return {classes:classes.map(c=>({id:c.id,title:c.title,startsAt:c.startsAt,endsAt:c.endsAt,status:c.status,host:c.host,course:c.course})),assignments,newEnquiries,newApplications,tasks}}
+    this.prisma.admissionEnquiry.count({where:{status:'New'}}),this.prisma.jobApplication.count({where:{status:'Received'}}),this.tasks()]);return {classes:classes.map(c=>({id:c.id,title:c.title,startsAt:c.startsAt,endsAt:c.endsAt,status:c.status,host:c.host,course:c.course,conflicts:classes.filter(other=>other.id!==c.id&&other.hostId===c.hostId&&other.startsAt<c.endsAt&&other.endsAt>c.startsAt).map(other=>other.title)})),assignments,newEnquiries,newApplications,tasks}}
   async activity(offset=0){
     // TODO: a durable event log is needed for deleted records and staff action history.
     const take=Math.min(offset+40,1000)

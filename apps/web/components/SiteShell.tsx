@@ -24,6 +24,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const [unread, setUnread] = useState(0)
   const [openNotifs, setOpenNotifs] = useState(false)
   const [notifs, setNotifs] = useState<AppNotification[]>([])
+  const [notifLoading,setNotifLoading]=useState(false),[notifError,setNotifError]=useState(''),[notifBusy,setNotifBusy]=useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const menuButton = useRef<HTMLButtonElement>(null)
   const [scrolled, setScrolled] = useState(false)
@@ -87,15 +88,15 @@ export function SiteShell({ children }: { children: ReactNode }) {
     setOpenNotifs(next)
     setMenuOpen(false)
     if (!next || !getStoredUser()) return
+    setNotifLoading(true);setNotifError('')
     try {
       const list = await api.notifications()
       setNotifs(list)
-    } catch {
-      setNotifs([])
-    }
+    } catch {setNotifError('Notifications couldn’t load. Close and reopen to try again.')}finally{setNotifLoading(false)}
   }
 
   async function readOne(n: AppNotification) {
+    setNotifBusy(n.id);setNotifError('')
     try {
       await api.markNotificationRead(n.id)
       setNotifs((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)))
@@ -104,19 +105,16 @@ export function SiteShell({ children }: { children: ReactNode }) {
         setOpenNotifs(false)
         router.push(n.href)
       }
-    } catch {
-      /* ignore */
-    }
+    } catch {setNotifError('Could not update this notification. Please try again.')}finally{setNotifBusy('')}
   }
 
   async function readAll() {
+    setNotifBusy('all');setNotifError('')
     try {
       await api.markAllNotificationsRead()
       setNotifs((prev) => prev.map((x) => ({ ...x, read: true })))
       setUnread(0)
-    } catch {
-      /* ignore */
-    }
+    } catch {setNotifError('Could not update this notification. Please try again.')}finally{setNotifBusy('')}
   }
 
   function logout() {
@@ -171,18 +169,18 @@ export function SiteShell({ children }: { children: ReactNode }) {
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <p className="ef-eyebrow">Notifications</p>
                       {unread > 0 && (
-                        <Button type="button" onClick={readAll} className="text-xs text-fern hover:underline">Mark all read</Button>
+                        <Button type="button" onClick={readAll} disabled={!!notifBusy} className="text-xs text-fern hover:underline">Mark all read</Button>
                       )}
                     </div>
-                    {notifs.length === 0 ? (
+                    {notifError&&<p role="alert" className="ef-text-danger text-sm mb-3">{notifError}</p>}{notifLoading?<p role="status" className="ef-muted text-sm">Loading notifications…</p>:notifs.length === 0 ? (
                       <p className="ef-muted text-sm">No notifications yet.</p>
                     ) : (
                       <ul className="max-h-72 space-y-1 overflow-y-auto">
                         {notifs.map((n) => (
                           <li key={n.id}>
-                            <Button type="button" onClick={() => readOne(n)} className={`w-full  px-2.5 py-2 text-left text-sm transition-colors hover:bg-mist ${n.read ? 'opacity-60' : ''}`}>
+                            <Button type="button" onClick={() => readOne(n)} disabled={!!notifBusy} aria-busy={notifBusy===n.id} className={`w-full  px-2.5 py-2 text-left text-sm transition-colors hover:bg-mist ${n.read ? 'opacity-60' : ''}`}>
                               <span className="block font-medium text-ink">{n.title}</span>
-                              <span className="ef-muted mt-0.5 block text-xs">{n.body}</span>
+                              <span className="ef-muted mt-0.5 block text-xs">{n.body}</span><time className="ef-meta mt-2 block" dateTime={n.createdAt}>{new Date(n.createdAt).toLocaleString()}</time>
                             </Button>
                           </li>
                         ))}

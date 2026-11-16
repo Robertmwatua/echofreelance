@@ -331,7 +331,7 @@ export class CoursesService {
   }
   async removeLesson(courseId:string,lessonId:string,user:AuthUser){
     const course=await this.requireCourse(courseId);this.assertCanManage(course.tutorId,user)
-    return this.prisma.$transaction(async tx=>{const lesson=await tx.lesson.findFirst({where:{id:lessonId,courseId},include:{_count:{select:{progress:true,notes:true,resources:true}}}});if(!lesson)throw new NotFoundException('Lesson not found');if(lesson.published||lesson._count.progress||lesson._count.notes||lesson._count.resources)throw new BadRequestException('Only private drafts without student progress, notes or resource links can be deleted. Unpublish or remove links first; keep teaching records with student activity.');await tx.lesson.delete({where:{id:lessonId}});const remaining=await tx.lesson.findMany({where:{courseId},orderBy:{order:'asc'},select:{id:true}});for(let order=0;order<remaining.length;order++)await tx.lesson.update({where:{id:remaining[order].id},data:{order}});return {ok:true}},{isolationLevel:'Serializable'})
+    return this.prisma.$transaction(async tx=>{const lesson=await tx.lesson.findFirst({where:{id:lessonId,courseId},include:{quiz:{select:{_count:{select:{attempts:true}}}},_count:{select:{progress:true,notes:true,resources:true}}}});if(!lesson)throw new NotFoundException('Lesson not found');if(lesson.published||lesson._count.progress||lesson._count.notes||lesson._count.resources||lesson.quiz?._count.attempts)throw new BadRequestException('Only private drafts without student progress, quiz attempts, notes or resource links can be deleted. Unpublish or remove links first; keep teaching records with student activity.');await tx.lesson.delete({where:{id:lessonId}});const remaining=await tx.lesson.findMany({where:{courseId},orderBy:{order:'asc'},select:{id:true}});for(let order=0;order<remaining.length;order++)await tx.lesson.update({where:{id:remaining[order].id},data:{order}});return {ok:true}},{isolationLevel:'Serializable'})
   }
   async reorder(courseId:string,user:AuthUser,ids:string[]) {
     const course=await this.requireCourse(courseId);this.assertCanManage(course.tutorId,user)
@@ -396,33 +396,8 @@ export class CoursesService {
       orderBy: { createdAt: 'asc' },
     })
 
-    const sessions = await this.prisma.virtualClass.findMany({
-      where: {
-        courseId,
-        status: { in: ['Scheduled', 'Live', 'Completed'] },
-      },
-      select: { id: true },
-    })
-    const sessionIds = sessions.map((s) => s.id)
-    const sessionsTotal = sessionIds.length
-
-    const attendanceRows =
-      sessionsTotal === 0
-        ? []
-        : await this.prisma.classAttendance.findMany({
-            where: {
-              classId: { in: sessionIds },
-              enteredAt: { not: null },
-            },
-            select: { userId: true, classId: true },
-          })
-    const attendedByUser = new Map<string, Set<string>>()
-    for (const row of attendanceRows) {
-      const set = attendedByUser.get(row.userId) || new Set<string>()
-      set.add(row.classId)
-      attendedByUser.set(row.userId, set)
-    }
-
+    const sessions=await this.prisma.virtualClass.findMany({where:{courseId,status:{in:['Live','Completed']},startsAt:{lte:new Date()}},select:{id:true,startsAt:true}})
+    const attendanceRows=sessions.length?await this.prisma.classAttendance.findMany({where:{classId:{in:sessions.map(s=>s.id)}},select:{userId:true,classId:true,attendanceStatus:true,enteredAt:true}}):[]
     const students = []
     for (const e of enrollments) {
       const completed = totalLessons
@@ -450,7 +425,10 @@ export class CoursesService {
               (graded.reduce((sum, s) => sum + (s.grade || 0), 0) / graded.length) * 10,
             ) / 10
 
-      const sessionsAttended = attendedByUser.get(e.userId)?.size || 0
+      const eligible=new Set(sessions.filter(s=>s.startsAt>=e.createdAt).map(s=>s.id))
+      const recorded=attendanceRows.filter(r=>r.userId===e.userId&&eligible.has(r.classId)&&(r.attendanceStatus==='Present'||r.attendanceStatus==='Absent'||(!r.attendanceStatus&&r.enteredAt)))
+      const sessionsTotal=recorded.length
+      const sessionsAttended=recorded.filter(r=>r.attendanceStatus==='Present'||(!r.attendanceStatus&&r.enteredAt)).length
 
       students.push({
         id: e.user.id,
@@ -475,7 +453,7 @@ export class CoursesService {
       courseId,
       title: course.title,
       studentCount: students.length,
-      sessionsTotal,
+      sessionsTotal:sessions.length,
       students,
     }
   }

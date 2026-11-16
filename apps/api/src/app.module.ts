@@ -1,3 +1,4 @@
+import {LearningModule} from './modules/learning/learning.module'
 import { SchoolModule } from './modules/school/school.module'
 import { PaymentsModule } from './modules/payments/payments.module'
 import { Module } from '@nestjs/common'
@@ -29,6 +30,7 @@ import { PrismaModule } from './prisma/prisma.module'
     CommunityModule,
     PaymentsModule,
     SchoolModule,
+    LearningModule,
   ],
   controllers: [HealthController],
 })

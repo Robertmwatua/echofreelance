@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -163,6 +164,13 @@ export class ClassesService {
     }
   }
 
+  private async checkSlot(tx:any,hostId:string,startsAt:Date,endsAt:Date,exclude?:string){
+    if(endsAt<=startsAt)throw new BadRequestException('End time must be after start time.')
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${hostId}))`
+    const overlap=await tx.virtualClass.findFirst({where:{hostId,id:exclude?{not:exclude}:undefined,status:{in:['Scheduled','Live']},startsAt:{lt:endsAt},endsAt:{gt:startsAt}}})
+    if(overlap)throw new ConflictException(`This tutor already has “${overlap.title}” during that time. Choose another time.`)
+  }
+
   async create(user: AuthUser, dto: CreateVirtualClassDto) {
     const course = await this.prisma.course.findUnique({ where: { id: dto.courseId } })
     if (!course) {
@@ -178,7 +186,9 @@ export class ClassesService {
       throw new BadRequestException('endsAt must be after startsAt')
     }
 
-    const created = await this.prisma.virtualClass.create({
+    const created = await this.prisma.$transaction(async tx=>{
+      await this.checkSlot(tx,user.id,new Date(dto.startsAt),new Date(dto.endsAt))
+      return tx.virtualClass.create({
       data: {
         courseId: dto.courseId,
         hostId: user.id,
@@ -193,9 +203,10 @@ export class ClassesService {
         host: { select: { id: true, name: true, email: true } },
       },
     })
+    })
 
     if (!dto.meetingUrl) {
-      return this.prisma.virtualClass.update({
+      const provisioned=await this.prisma.virtualClass.update({
         where: { id: created.id },
         data: {
           meetingUrl: this.jaas.meetingUrlForClass(created.id),
@@ -205,8 +216,11 @@ export class ClassesService {
           host: { select: { id: true, name: true, email: true } },
         },
       })
+      await this.announceClass(created.courseId,created.id,"Class scheduled",created.title)
+      return provisioned
     }
 
+    await this.announceClass(created.courseId,created.id,"Class scheduled",created.title)
     return created
   }
 
@@ -235,7 +249,9 @@ export class ClassesService {
     const endsAt = new Date(startsAt.getTime() + duration * 60 * 1000)
     const title = dto.title?.trim() || `Instant class · ${course.title}`
 
-    const created = await this.prisma.virtualClass.create({
+    const created = await this.prisma.$transaction(async tx=>{
+      await this.checkSlot(tx,user.id,startsAt,endsAt)
+      return tx.virtualClass.create({
       data: {
         courseId: dto.courseId,
         hostId: user.id,
@@ -248,6 +264,7 @@ export class ClassesService {
         meetingUrl: 'jaas:pending',
         status: 'Live',
       },
+    })
     })
 
     const meeting = await this.prisma.virtualClass.update({
@@ -361,20 +378,12 @@ export class ClassesService {
       orderBy: { joinedAt: 'asc' },
     })
 
-    return {
-      classId: id,
-      title: virtualClass.title,
-      registered: rows.length,
-      entered: rows.filter((r) => r.enteredAt).length,
-      attendees: rows.map((r) => ({
-        id: r.user.id,
-        name: r.user.name,
-        email: r.user.email,
-        registeredAt: r.joinedAt,
-        enteredAt: r.enteredAt,
-        attended: Boolean(r.enteredAt),
-      })),
-    }
+    const enrolled=await this.prisma.enrollment.findMany({where:{courseId:virtualClass.courseId},include:{user:{select:{id:true,name:true,email:true}}}})
+    const members=new Map(rows.map(r=>[r.userId,r.user]))
+    for(const e of enrolled)members.set(e.userId,e.user)
+    return {classId:id,title:virtualClass.title,registered:rows.length,entered:rows.filter(r=>r.enteredAt).length,
+      attendees:[...members.values()].map(u=>{const r=rows.find(r=>r.userId===u.id);const status=r?.attendanceStatus||(r?.enteredAt?'Present':'Unmarked');return {id:u.id,name:u.name,email:u.email,registeredAt:r?.joinedAt||null,enteredAt:r?.enteredAt||null,attendanceStatus:status,attended:status==='Present'}})}
+
   }
 
   async update(id: string, user: AuthUser, dto: UpdateVirtualClassDto) {
@@ -386,7 +395,12 @@ export class ClassesService {
       throw new ForbiddenException('Only the host or admin can update this class')
     }
 
-    return this.prisma.virtualClass.update({
+    const updated=await this.prisma.$transaction(async tx=>{
+      const current=await tx.virtualClass.findUniqueOrThrow({where:{id}})
+      const status=dto.status||current.status
+      if(!["Cancelled","Completed"].includes(status))await this.checkSlot(tx,current.hostId,new Date(dto.startsAt||current.startsAt),new Date(dto.endsAt||current.endsAt),id)
+      else if(new Date(dto.endsAt||current.endsAt)<=new Date(dto.startsAt||current.startsAt))throw new BadRequestException("End time must be after start time.")
+      return tx.virtualClass.update({
       where: { id },
       data: {
         ...(dto.title !== undefined ? { title: dto.title } : {}),
@@ -398,6 +412,9 @@ export class ClassesService {
         ...(dto.status !== undefined ? { status: dto.status as never } : {}),
       },
     })
+    })
+    await this.announceClass(updated.courseId,id,"Class updated",`${updated.title} · ${updated.status}. Check the latest class time and details.`)
+    return updated
   }
 
   async register(id: string, userId: string) {
@@ -427,6 +444,11 @@ export class ClassesService {
       },
     })
   }
+  private async announceClass(courseId:string,id:string,title:string,body:string){
+    const students=await this.prisma.enrollment.findMany({where:{courseId},select:{userId:true}})
+    await this.notifications.notifyMany(students.map(s=>s.userId),title,body,`/classes/${id}`)
+  }
+
   private async classAccess(id: string, user: AuthUser, manage = false) {
     const detail = await this.findOne(id, user)
     if (manage ? !detail.canManage : !(detail.canManage || detail.enrolled)) {

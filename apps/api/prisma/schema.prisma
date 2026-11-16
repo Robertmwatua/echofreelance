@@ -42,6 +42,7 @@ model User {
   name                  String?
   sessionVersion        Int @default(0)
   authTokens            AccountToken[]
+  quizAttempts          QuizAttempt[]
   googleIdentities      GoogleIdentity[]
   passwordHash          String
   role                  Role                   @default(Student)
@@ -124,6 +125,7 @@ model Lesson {
   progress        LessonProgress[]
   resources       LessonResource[]
   notes           LessonNote[]
+  quiz            LessonQuiz?
 
   @@index([courseId, order])
 }
@@ -181,6 +183,8 @@ model ClassAttendance {
   id        String       @id @default(cuid())
   classId   String
   userId    String
+  attendanceStatus String?
+  markedAt DateTime?
   joinedAt  DateTime     @default(now())
   enteredAt DateTime?
   class     VirtualClass @relation(fields: [classId], references: [id], onDelete: Cascade)
@@ -209,6 +213,8 @@ model Assignment {
   title       String
   instructions String
   dueAt       DateTime?
+  requiredForCertificate Boolean @default(false)
+  passPercent Int @default(50)
   maxPoints   Int                    @default(100)
   published   Boolean                @default(true)
   createdAt   DateTime               @default(now())
@@ -459,6 +465,7 @@ model AdmissionEnquiry {
   @@index([status, createdAt])
 }
 model SchoolTask {
+  kind String @default("Task")
   id String @id @default(cuid())
   title String
   details String @default("")
@@ -495,4 +502,32 @@ model GoogleIdentity {
   userId String
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
+}
+
+// Answers remain server-side until an enrolled student submits an attempt.
+model LessonQuiz {
+  id String @id @default(cuid())
+  lessonId String @unique
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  title String
+  questions Json
+  passPercent Int @default(70)
+  requiredForCertificate Boolean @default(true)
+  published Boolean @default(false)
+  revision Int @default(1)
+  updatedAt DateTime @updatedAt
+  attempts QuizAttempt[]
+}
+model QuizAttempt {
+  id String @id @default(cuid())
+  quizId String
+  quiz LessonQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revision Int
+  answers Json
+  score Int
+  passed Boolean
+  createdAt DateTime @default(now())
+  @@index([quizId, userId, revision])
 }

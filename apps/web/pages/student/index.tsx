@@ -1,3 +1,4 @@
+import {AttendanceHistory} from '../../components/learning/AttendanceHistory'
 import {Button,NavigationLink} from '../../components/Button'
 import { CardSkeletons, FeedbackCard } from '../../components/PageFeedback'
 import Link from 'next/link';
@@ -70,8 +71,8 @@ function Learning({ userName }: {
       {loading ? <CardSkeletons label="Loading your learning space" /> : error ? <FeedbackCard error title="Unable to load your learning space" description="We couldn’t reach your dashboard right now. Please try again." retry={() => setAttempt(a => a + 1)} /> : <>
         <section className="ef-learning-feature mt-8  border border-line p-6 sm:p-10">
           <p className="ef-eyebrow">{next ? 'Next / pick up where you left off' : progress.length ? 'Well done' : 'Next / find a course'}</p>
-          <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight sm:text-4xl">{next ? next.title : progress.length ? 'You’ve completed your courses.' : 'Start with something you’re curious about.'}</h2>
-          <p className="ef-muted mt-3">{next ? `${next.completed} of ${next.total} lessons complete · ${next.category}` : 'Explore practical courses in cybersecurity, software, and cloud.'}</p>
+          <h2 className="mt-3 max-w-2xl font-display text-3xl tracking-tight sm:text-4xl">{next ? next.title : progress.length ? 'Your lessons are complete.' : 'Start with something you’re curious about.'}</h2>
+          <p className="ef-muted mt-3">{next ? `${next.completed} of ${next.total} lessons complete · ${next.category}` : progress.length?'Open your course to finish any required quizzes and assignments, then claim your certificate.':'Explore practical courses in cybersecurity, software, and cloud.'}</p>
           {next?.nextLesson&&<p className="ef-meta mt-3">Next lesson: {next.nextLesson.title}{next.lastLessonTitle?` · Last completed: ${next.lastLessonTitle}`:''}</p>}{next && <ProgressBar percent={next.percent} className="mt-6 max-w-lg"/>}
           <Link href={next ? `/courses/${next.courseId}${next.nextLesson?`#lesson-${next.nextLesson.id}`:''}` : '/courses'} className="ef-btn mt-6">{next ? 'Continue learning' : 'Explore courses'} <span className="ml-3" aria-hidden>→</span></Link>
         </section>
@@ -84,6 +85,6 @@ function Learning({ userName }: {
           <section className="ef-panel"><h2 className="font-display text-xl">Upcoming deadlines</h2>{deadlinesLoading ? <p className="ef-muted mt-4 text-sm" role="status">Loading assignments…</p> : deadlineError ? <div className="mt-4 text-sm"><p>Assignments couldn’t load.</p><Button className="ef-link mt-2" onClick={() => setAttempt(a => a + 1)}>Try again</Button></div> : deadlines.length ? <ul className="mt-4 space-y-4">{deadlines.map(a => <li key={a.id}><Link href={`/courses/${a.courseId}`} className="font-semibold hover:text-moss">{a.title} →</Link><p className="mt-1 text-sm ef-muted">Due {formatWhen(a.dueAt!)}</p></li>)}</ul> : <p className="ef-muted mt-4 text-sm">You’re all caught up. No upcoming assignments to submit.</p>}</section><section className=" border border-line p-6"><h2 className="font-display text-xl">Your toolkit</h2><div className="mt-4 flex flex-col gap-4 text-sm"><Link href="/careers" className="hover:text-moss">Careers & applications →</Link><Link href="/fees" className="hover:text-moss">Fees & receipts →</Link><Link href="/notes" className="hover:text-moss">Notes →</Link><Link href="/discussions" className="hover:text-moss">Community →</Link><Link href="/certificates/mine" className="hover:text-moss">Certificates →</Link></div></section></aside>
         </div>
       </>}
-    </main>
+    <AttendanceHistory/></main>
   </>;
 }

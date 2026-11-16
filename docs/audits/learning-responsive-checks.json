@@ -1,0 +1,254 @@
+[
+  {
+    "overflow": false,
+    "page": "/tutor",
+    "theme": "dark",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/tutor",
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/tutor",
+    "theme": "dark",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/admin/planner",
+    "theme": "dark",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/admin/planner",
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/admin/planner",
+    "theme": "dark",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/courses/qa-learning-0",
+    "theme": "dark",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/courses/qa-learning-0",
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/courses/qa-learning-0",
+    "theme": "dark",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/classes/qa-learning-class",
+    "theme": "dark",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/classes/qa-learning-class",
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/classes/qa-learning-class",
+    "theme": "dark",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/assignments/qa-learning-assignment",
+    "theme": "dark",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/assignments/qa-learning-assignment",
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/assignments/qa-learning-assignment",
+    "theme": "dark",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/tutor",
+    "theme": "light",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/tutor",
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/tutor",
+    "theme": "light",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/admin/planner",
+    "theme": "light",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/admin/planner",
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/admin/planner",
+    "theme": "light",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/courses/qa-learning-0",
+    "theme": "light",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/courses/qa-learning-0",
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/courses/qa-learning-0",
+    "theme": "light",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/classes/qa-learning-class",
+    "theme": "light",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/classes/qa-learning-class",
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/classes/qa-learning-class",
+    "theme": "light",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/assignments/qa-learning-assignment",
+    "theme": "light",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/assignments/qa-learning-assignment",
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/tutor/assignments/qa-learning-assignment",
+    "theme": "light",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/courses/qa-learning-0",
+    "theme": "light",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/courses/qa-learning-0",
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/courses/qa-learning-0",
+    "theme": "light",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/student",
+    "theme": "light",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/student",
+    "theme": "light",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/student",
+    "theme": "light",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/student",
+    "theme": "dark",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/student",
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/student",
+    "theme": "dark",
+    "width": 1440
+  },
+  {
+    "overflow": false,
+    "page": "/courses/qa-learning-0",
+    "theme": "dark",
+    "width": 390
+  },
+  {
+    "overflow": false,
+    "page": "/courses/qa-learning-0",
+    "theme": "dark",
+    "width": 768
+  },
+  {
+    "overflow": false,
+    "page": "/courses/qa-learning-0",
+    "theme": "dark",
+    "width": 1440
+  }
+]

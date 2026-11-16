@@ -170,6 +170,8 @@ export type CourseStudentReport = {
 }
 
 export type Assignment = {
+  requiredForCertificate?:boolean
+  passPercent?:number
   id: string
   courseId: string
   title: string
@@ -219,8 +221,9 @@ export type ClassRoster = {
     id: string
     name?: string | null
     email: string
-    registeredAt: string
+    registeredAt: string|null
     enteredAt?: string | null
+    attendanceStatus?:string
     attended: boolean
   }[]
 }
@@ -520,6 +523,8 @@ export const api = {
   courseAssignments: (courseId: string) =>
     request<Assignment[]>(`/courses/${courseId}/assignments`),
   createAssignment: (body: {
+    requiredForCertificate?:boolean
+    passPercent?:number
     courseId: string
     title: string
     instructions: string

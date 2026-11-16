@@ -2,10 +2,10 @@ import { request } from './api'
 export type Job={id:string;title:string;company:string;location:string;kind:string;description:string;deadline:string|null;published?:boolean;open?:boolean;_count?:{applications:number}}
 export type Enquiry={id:string;name:string;email:string;phone:string|null;message:string;status:string;notes:string;createdAt:string;course:{id:string;title:string}|null}
 export type Application={id:string;status:string;coverLetter:string;resumeUrl:string;portfolioUrl:string|null;reviewNotes:string;createdAt:string;job:{id:string;title:string;company:string};user:{name:string|null;email:string}}
-export type Task={id:string;title:string;details:string;dueAt:string;done:boolean;assigneeId:string|null;assignee:{id:string;name:string|null;email:string}|null}
-export type Agenda={tasks:Task[];newEnquiries:number;newApplications:number;classes:Array<{id:string;title:string;startsAt:string;endsAt:string;status:string;host:{name:string|null};course:{title:string}}>;assignments:Array<{id:string;title:string;courseId:string;dueAt:string}>}
+export type Task={kind?:'Task'|'Intake'|'Deadline';id:string;title:string;details:string;dueAt:string;done:boolean;assigneeId:string|null;assignee:{id:string;name:string|null;email:string}|null}
+export type Agenda={tasks:Task[];newEnquiries:number;newApplications:number;classes:Array<{id:string;title:string;startsAt:string;endsAt:string;status:string;conflicts?:string[];host:{name:string|null};course:{title:string}}>;assignments:Array<{id:string;title:string;courseId:string;dueAt:string}>}
 export type JobDraft=Omit<Job,'id'|'open'|'_count'> & {published:boolean}
-export type TaskDraft={title:string;details:string;dueAt:string;assigneeId:string|null}
+export type TaskDraft={kind?:'Task'|'Intake'|'Deadline';title:string;details:string;dueAt:string;assigneeId:string|null}
 const send=(method:string,body:unknown)=>({method,body:JSON.stringify(body)})
 export const school={
  myTasks:()=>request<Task[]>('/school/tasks/mine'),

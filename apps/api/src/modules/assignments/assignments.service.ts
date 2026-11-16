@@ -1,4 +1,6 @@
+import {CampusService} from '../campus/campus.service'
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -18,13 +20,19 @@ export class AssignmentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly campus: CampusService,
   ) {}
 
   async listForCourse(courseId: string, user?: AuthUser | null) {
+    const course=await this.prisma.course.findUnique({where:{id:courseId}})
+    if(!course)throw new NotFoundException('Course not found')
+    const staff=user?.role===Role.Admin||(user?.role===Role.Tutor&&course.tutorId===user.id)
+    // Assessment instructions and submissions are for enrolled learners and their teacher.
+    if(!staff){if(!user||!course.published)return [];const enrollment=await this.prisma.enrollment.findUnique({where:{userId_courseId:{userId:user.id,courseId}}});if(!enrollment)return []}
     const assignments = await this.prisma.assignment.findMany({
       where: {
         courseId,
-        ...(user?.role === Role.Tutor || user?.role === Role.Admin
+        ...(staff
           ? {}
           : { published: true }),
       },
@@ -44,6 +52,8 @@ export class AssignmentsService {
       instructions: a.instructions,
       dueAt: a.dueAt,
       maxPoints: a.maxPoints,
+      requiredForCertificate:a.requiredForCertificate,
+      passPercent:a.passPercent,
       published: a.published,
       submissionCount: a._count.submissions,
       mySubmission: user && Array.isArray(a.submissions) ? a.submissions[0] || null : null,
@@ -56,7 +66,7 @@ export class AssignmentsService {
     if (user.role !== Role.Admin && course.tutorId !== user.id) {
       throw new ForbiddenException('Only the course tutor can add assignments')
     }
-    return this.prisma.assignment.create({
+    const assignment=await this.prisma.assignment.create({
       data: {
         courseId: dto.courseId,
         authorId: user.id,
@@ -64,8 +74,13 @@ export class AssignmentsService {
         instructions: dto.instructions,
         dueAt: dto.dueAt ? new Date(dto.dueAt) : null,
         maxPoints: dto.maxPoints ?? 100,
+        requiredForCertificate:dto.requiredForCertificate??false,
+        passPercent:dto.passPercent??50,
       },
     })
+    const students=await this.prisma.enrollment.findMany({where:{courseId:dto.courseId},select:{userId:true}})
+    await this.notifications.notifyMany(students.map(s=>s.userId),"New assignment",dto.title,`/courses/${dto.courseId}#assignments`)
+    return assignment
   }
 
   async submit(assignmentId: string, user: AuthUser, dto: SubmitAssignmentDto) {
@@ -84,7 +99,7 @@ export class AssignmentsService {
       throw new ForbiddenException('Enroll in the course before submitting')
     }
 
-    return this.prisma.assignmentSubmission.upsert({
+    const result=await this.prisma.assignmentSubmission.upsert({
       where: {
         assignmentId_userId: { assignmentId, userId: user.id },
       },
@@ -105,6 +120,9 @@ export class AssignmentsService {
         submittedAt: new Date(),
       },
     })
+    const course=await this.prisma.course.findUnique({where:{id:assignment.courseId}})
+    if(course)await this.notifications.notify(course.tutorId,"Work submitted",`${user.name||"A student"} submitted ${assignment.title}.`,`/tutor/assignments/${assignmentId}`)
+    return result
   }
 
   async listSubmissions(assignmentId: string, user: AuthUser) {
@@ -119,6 +137,7 @@ export class AssignmentsService {
     return this.prisma.assignmentSubmission.findMany({
       where: { assignmentId },
       include: {
+        assignment:{select:{title:true,maxPoints:true,courseId:true,passPercent:true,requiredForCertificate:true}},
         user: { select: { id: true, name: true, email: true } },
       },
       orderBy: { submittedAt: 'desc' },
@@ -137,6 +156,7 @@ export class AssignmentsService {
     ) {
       throw new ForbiddenException('Only the tutor can grade')
     }
+    if(dto.grade>submission.assignment.maxPoints)throw new BadRequestException(`Grade cannot exceed ${submission.assignment.maxPoints} points.`)
     const graded = await this.prisma.assignmentSubmission.update({
       where: { id: submissionId },
       data: {
@@ -154,6 +174,7 @@ export class AssignmentsService {
       `/courses/${submission.assignment.courseId}`,
     )
 
+    await this.campus.issueCertificateIfEligible(submission.userId,submission.assignment.courseId)
     return graded
   }
 }
