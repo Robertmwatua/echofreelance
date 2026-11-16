@@ -46,7 +46,7 @@ def pin(img):
     return img
 
 def paper(img):
-    """Warm, quiet version for the light theme.
+    """Warm, quiet paper tone, used in both themes.
 
     OSM ships roads and ground only ~16 levels apart, which goes flat once the colour is
     pulled out, so the top of the range is stretched before the paper tint goes on.
@@ -58,29 +58,10 @@ def paper(img):
         return int(round(min(1.0, max(0.0, l)) * 255))
     lit = gray.point([tone(v) for v in range(256)])
     out = Image.merge("RGB", (lit, lit, lit))
-    tint = Image.new("RGB", img.size, (255, 253, 247))   # --surface, light theme
+    tint = Image.new("RGB", img.size, (255, 253, 247))   # warm off-white
     return Image.blend(out, Image.composite(tint, out, lit), 0.4)
 
-def night(img):
-    """Re-tone the light basemap into a dark one: sunken ground, lit roads, legible labels.
-
-    Roads are the near-white top of the range and labels the dark bottom, so each gets its
-    own curve and the brighter of the two wins.
-    """
-    gray = img.convert("L")
-    ground = 0.09
-    def tone(v):
-        l = v / 255.0
-        ink = max(0.0, (1.0 - l)) * 0.58          # labels and outlines come back up
-        road = max(0.0, (l - 0.949) / 0.051) * 0.44  # the near-white road fill lights up
-        return int(round(min(1.0, ground + max(ink, road)) * 255))
-    lit = gray.point([tone(v) for v in range(256)])
-    tint = Image.new("RGB", img.size, (116, 119, 107))   # --rule, dark theme
-    out = Image.merge("RGB", (lit, lit, lit))
-    out = Image.blend(out, Image.composite(tint, out, lit), 0.22)
-    return Image.blend(out, Image.new("RGB", img.size, (34, 35, 30)), 0.12)
 
 base = stitch()
-pin(paper(base.copy())).save(sys.argv[1], "PNG", optimize=True)
-pin(night(base.copy())).save(sys.argv[2], "PNG", optimize=True)
-print("wrote", sys.argv[1], sys.argv[2])
+pin(paper(base)).save(sys.argv[1], "PNG", optimize=True)
+print("wrote", sys.argv[1])

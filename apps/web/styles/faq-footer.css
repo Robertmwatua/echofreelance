@@ -109,11 +109,12 @@
 .school-footer-email span{min-width:0;overflow-wrap:anywhere}
 .school-footer-map{position:relative;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
 .school-footer-map>a{display:block;text-decoration:none}
+/* One light map in both themes: on the dark footer it reads as a lit card rather
+   than another dark panel, which is the separation the footer wants there. */
 .school-footer-map-canvas{
  display:block;aspect-ratio:1000/400;
- background:var(--surface) url(/map-malindi-light.png) center/cover no-repeat;
+ background:var(--surface) url(/map-malindi.png) center/cover no-repeat;
 }
-[data-theme="dark"] .school-footer-map-canvas{background-image:url(/map-malindi-dark.png)}
 .school-footer-map-open{
  display:flex;justify-content:space-between;align-items:center;gap:var(--s3);
  padding:10px 12px;min-height:44px;font:600 13px/1.5 var(--font-ui);color:var(--text);

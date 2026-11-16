@@ -8,28 +8,24 @@ are one click away.
 
 - It paints immediately and always, with no third-party frame that can come back blank.
 - No Google cookies or tracking are loaded on every page of the site.
-- Two tones ship, so the map belongs to the light and the dark theme rather than glaring
-  white inside the dark footer.
 - Nothing in the footer can trap the page scroll.
 
-## The files
+## One map, both themes
 
-| File | Used by |
-| --- | --- |
-| `apps/web/public/map-malindi-light.png` | `.school-footer-map-canvas` |
-| `apps/web/public/map-malindi-dark.png` | `[data-theme="dark"] .school-footer-map-canvas` |
+`apps/web/public/map-malindi.png` is used in light and dark alike. A dark-toned variant was
+tried and dropped: against the dark footer the light map reads as a lit card, which is the
+separation that corner of the layout wants, while a dark map became another flat panel.
 
-Both are 1000×400 device pixels, centred on the coordinates in `apps/web/lib/brand.ts`
-(`-3.2196845, 40.1096298`) at zoom 17, with the school pinned in `--accent`.
+The file is 1000x400 device pixels, centred on the coordinates in `apps/web/lib/brand.ts`
+(`-3.2196845, 40.1096298`) at zoom 17, with the school pinned in `--accent`. It is rendered
+at roughly half that width, so it stays sharp on high-density screens.
 
 ## Regenerating
 
 Run this only when the school's coordinates change — it fetches about fifteen tiles:
 
 ```bash
-python3 apps/web/scripts/build-footer-map.py \
-  apps/web/public/map-malindi-light.png \
-  apps/web/public/map-malindi-dark.png
+python3 apps/web/scripts/build-footer-map.py apps/web/public/map-malindi.png
 ```
 
 Edit `LAT`, `LON` and `ZOOM` at the top of the script to match `brand.ts` first. The script
