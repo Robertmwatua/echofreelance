@@ -1,0 +1,82 @@
+[
+  {
+    "title": "Certificate in Computer Applications",
+    "pathway": "Foundation Programs",
+    "description": "Build a foundation in practical computer applications."
+  },
+  {
+    "title": "Typing Speed & Accuracy",
+    "pathway": "Foundation Programs",
+    "description": "Develop typing speed and accuracy."
+  },
+  {
+    "title": "Microsoft Office Mastery",
+    "pathway": "Foundation Programs",
+    "description": "Develop practical skills using Microsoft Office applications."
+  },
+  {
+    "title": "Internet & Email Professionalism",
+    "pathway": "Foundation Programs",
+    "description": "Develop professional internet and email skills."
+  },
+  {
+    "title": "Cloud Collaboration Tools",
+    "pathway": "Foundation Programs",
+    "description": "Learn about tools for collaborating in the cloud."
+  },
+  {
+    "title": "Advanced Excel & Data Analytics",
+    "pathway": "Professional Digital Programs",
+    "description": "Develop advanced spreadsheet and data analysis skills."
+  },
+  {
+    "title": "Digital Marketing & Branding",
+    "pathway": "Professional Digital Programs",
+    "description": "Explore digital marketing and brand building."
+  },
+  {
+    "title": "AI for Productivity",
+    "pathway": "Professional Digital Programs",
+    "description": "Explore artificial intelligence tools for productivity."
+  },
+  {
+    "title": "Remote Work Systems",
+    "pathway": "Professional Digital Programs",
+    "description": "Develop skills for working effectively in remote environments."
+  },
+  {
+    "title": "Cybersecurity & Digital Safety",
+    "pathway": "Professional Digital Programs",
+    "description": "Explore cybersecurity and safer digital practices."
+  },
+  {
+    "title": "Artificial Intelligence & Business Automation",
+    "pathway": "Advanced Technology Tracks",
+    "description": "Explore artificial intelligence and business automation."
+  },
+  {
+    "title": "Blockchain & Web3 Development",
+    "pathway": "Advanced Technology Tracks",
+    "description": "Explore blockchain and Web3 development."
+  },
+  {
+    "title": "Quantum Computing & Algorithms",
+    "pathway": "Advanced Technology Tracks",
+    "description": "Explore quantum computing and quantum algorithms."
+  },
+  {
+    "title": "Sustainable Technology & Green IT",
+    "pathway": "Advanced Technology Tracks",
+    "description": "Explore sustainable technology and green computing."
+  },
+  {
+    "title": "Custom Software Development",
+    "pathway": "Advanced Technology Tracks",
+    "description": "Develop skills in creating custom software solutions."
+  },
+  {
+    "title": "Digital Transformation Strategy",
+    "pathway": "Advanced Technology Tracks",
+    "description": "Explore strategies for digital transformation."
+  }
+]
