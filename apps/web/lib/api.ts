@@ -400,6 +400,13 @@ export const api = {
     const qs = params.toString()
     return request<Course[]>(qs ? `/courses?${qs}` : '/courses')
   },
+  homepageCourses: async ():Promise<Course[]> => {
+    try{return await request<Course[]>('/courses/homepage')}
+    catch(e){if(!(e instanceof Error)||!/Cannot GET|404|Course not found/i.test(e.message))throw e
+      return (await request<Course[]>('/courses')).filter(c=>c.published&&!c.archived&&c.title.trim()&&c.description.trim()).slice(0,3)}
+  },
+  homepageSelection: ()=>request<{courseIds:string[]}>('/courses/homepage-selection'),
+  saveHomepageSelection: (courseIds:string[])=>request<{courseIds:string[]}>('/courses/homepage-selection',{method:'PATCH',body:JSON.stringify({courseIds})}),
   course: (id: string) => request<Course>(`/courses/${id}`),
   myCourses: () => request<Course[]>('/courses/mine'),
   catalogue: async (query: Record<string,string>): Promise<{ courses: Course[]; total: number; totalCourses: number; categories: Record<string,number>; hasMore: boolean; suggested: Course[] }> => {

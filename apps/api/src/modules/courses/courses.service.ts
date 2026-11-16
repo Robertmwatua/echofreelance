@@ -77,6 +77,26 @@ export class CoursesService {
     })
   }
 
+  async homepageSelection() {
+    const saved = await this.prisma.homepageSelection.findUnique({where:{id:'homepage'}})
+    if (saved) return {courseIds:saved.courseIds}
+    return {courseIds:(await this.list()).filter(c=>c.published&&!c.archived&&c.title.trim()&&c.description.trim()).slice(0,3).map(c=>c.id)}
+  }
+
+  async homepage() {
+    const [{courseIds},courses] = await Promise.all([this.homepageSelection(),this.list()])
+    return courseIds.map(id=>courses.find(c=>c.id===id)).filter((c):c is typeof courses[number]=>Boolean(c?.published&&!c.archived&&c.title.trim()&&c.description.trim()))
+  }
+
+  async saveHomepageSelection(courseIds:string[]) {
+    return this.prisma.$transaction(async tx=>{
+      const eligible=await tx.course.findMany({where:{id:{in:courseIds},published:true,archived:false},select:{title:true,description:true}})
+      if(eligible.length!==courseIds.length||eligible.some(c=>!c.title.trim()||!c.description.trim()))throw new BadRequestException('Choose published, active courses with a title and description. Reload if a course changed.')
+      const saved=await tx.homepageSelection.upsert({where:{id:'homepage'},create:{id:'homepage',courseIds},update:{courseIds}})
+      return {courseIds:saved.courseIds}
+    },{isolationLevel:'Serializable'})
+  }
+
   async catalogue(query: Record<string, string>) {
     // Include approved programme previews; unrelated private drafts stay private.
     const all = await this.list()

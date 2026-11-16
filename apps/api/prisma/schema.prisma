@@ -531,3 +531,9 @@ model QuizAttempt {
   createdAt DateTime @default(now())
   @@index([quizId, userId, revision])
 }
+
+// One administrator-managed, ordered homepage selection.
+model HomepageSelection {
+  id String @id
+  courseIds String[] @default([])
+}

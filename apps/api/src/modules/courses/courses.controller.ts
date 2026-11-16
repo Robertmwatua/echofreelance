@@ -1,3 +1,4 @@
+import {HomepageSelectionDto} from './dto/homepage-selection.dto'
 import { programmeRoadmaps } from './programme-roadmaps'
 import {
   Body,
@@ -39,6 +40,19 @@ export class CoursesController {
   ) {
     return this.coursesService.list(user?.id, category, q)
   }
+
+  @Get('homepage')
+  homepage() { return this.coursesService.homepage() }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @Get('homepage-selection')
+  homepageSelection() { return this.coursesService.homepageSelection() }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.Admin)
+  @Patch('homepage-selection')
+  saveHomepageSelection(@Body() dto: HomepageSelectionDto) { return this.coursesService.saveHomepageSelection(dto.courseIds) }
 
   @Get('roadmap-templates')
   roadmapTemplates() { return Object.values(programmeRoadmaps).map(({ title, steps }) => ({ title, steps })) }
