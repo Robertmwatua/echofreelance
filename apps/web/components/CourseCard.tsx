@@ -1,15 +1,69 @@
-import {Button} from './Button'
 import Link from 'next/link'
 import { CourseSubjectIcon, subjectTone } from './catalogue/CourseSubjectIcon'
 import { useEffect, useState } from 'react'
 import { Course, formatPrice } from '../lib/api'
-import { categoryLabel, normalizeCategory } from './catalogue/CategoryTabs'
-export function durationLabel(minutes?:number){if(!minutes)return '';return `${Math.floor(minutes/60)?`${Math.floor(minutes/60)}h `:''}${minutes%60?`${minutes%60}m`:''}`.trim()}
-export function courseCode(course:Pick<Course,'id'|'category'>){const category=normalizeCategory(course.category);const prefix=category.includes('security')?'SEC':category.includes('cloud')?'CLD':category.includes('software')?'DEV':'COURSE';return `${prefix}-${course.id.slice(-4).toUpperCase()}`}
-export function CourseCard({course}:{course:Course}){
+import { categoryLabel } from './catalogue/CategoryTabs'
+
+function durationLabel(minutes?:number){if(!minutes)return '';return `${Math.floor(minutes/60)?`${Math.floor(minutes/60)}h `:''}${minutes%60?`${minutes%60}m`:''}`.trim()}
+
+/** The catalogue marks programmes by leaving the level unset.
+    TODO(content): add a real `type` field so programmes do not ride on a placeholder level. */
+export function isProgramme(course:Course){return !course.level||course.level==='Not specified'||!!course.programmeDuration}
+
+/** A course fee the school has not confirmed yet; never printed as a number. */
+function priceLabel(course:Course){return course.feesPending?'Fee on request':formatPrice(course.priceCents)}
+
+/** `3 stages · 2h 30m` — every piece is dropped when its field is missing.
+    TODO(content): there is no `format` field (online / on campus); add one to show it here. */
+function metaParts(course:Course){
+ const parts:string[]=[]
+ const stages=course.roadmap?.length
+ if(stages)parts.push(`${stages} stage${stages===1?'':'s'}`)
+ else if(course.lessonCount)parts.push(`${course.lessonCount} lesson${course.lessonCount===1?'':'s'}`)
+ const duration=course.programmeDuration?.trim()||durationLabel(course.durationMinutes)
+ if(duration)parts.push(duration)
+ return parts
+}
+
+export function CourseCard({course,showTutor=false}:{course:Course;showTutor?:boolean}){
  const [saved,setSaved]=useState(false)
  useEffect(()=>{try{setSaved(JSON.parse(localStorage.getItem('ef_saved_courses')||'[]').includes(course.id))}catch{}},[course.id])
  function save(){try{const ids:string[]=JSON.parse(localStorage.getItem('ef_saved_courses')||'[]');const next=saved?ids.filter(id=>id!==course.id):Array.from(new Set([...ids,course.id]));localStorage.setItem('ef_saved_courses',JSON.stringify(next));setSaved(!saved)}catch{}}
- const tutor=course.tutor?.name||course.instructor?.name||'School tutor'
- return <article className={`catalogue-card subject-${subjectTone(course.title+' '+course.category)}`}><Link href={`/courses/${course.id}`} className="catalogue-card-link"><div className="catalogue-ticket-code"><span>{courseCode(course)}</span><span>{course.level === 'Not specified' ? 'Programme' : course.level}</span></div><div className="catalogue-card-body"><div className="catalogue-subject"><span className="catalogue-subject-icon"><CourseSubjectIcon subject={course.title+' '+course.category}/></span><p>{categoryLabel(course.category)}</p></div><h2>{course.title}</h2>{!!course.roadmap?.length&&<ol className="catalogue-stage-preview" aria-label="Roadmap preview">{course.roadmap.slice(0,2).map((step,index)=><li key={step}><span>{String(index+1).padStart(2,'0')}</span>{step}</li>)}</ol>}<div className="catalogue-card-details"><p className="catalogue-instructor"><span className="ef-avatar !h-7 !w-7" aria-hidden>{tutor.split(' ').map(w=>w[0]).slice(0,2).join('')}</span>{tutor}</p><p className="catalogue-meta">{course.lessonCount?`${course.lessonCount} lesson${course.lessonCount===1?'':'s'}${course.durationMinutes?` · ${durationLabel(course.durationMinutes)}`:''}`:course.roadmap?.length?`${course.roadmap.length} stages in your learning roadmap`:'Lessons being prepared'}</p>{course.avgRating!=null&&!!course.reviewCount?<p className="catalogue-rating">★ {course.avgRating.toFixed(1)} <span className="ef-muted">({course.reviewCount} {course.reviewCount===1?'review':'reviews'})</span></p>:null}<div className="catalogue-price">{course.feesPending?'Fees to be confirmed':formatPrice(course.priceCents)}</div></div><span className="catalogue-open">{course.roadmap?.length ? 'Explore the roadmap' : 'View the course'} <span aria-hidden>↗</span></span></div></Link><Button className="catalogue-save" variant="secondary" aria-label={`${saved?'Unsave':'Save'} ${course.title} on this device`} aria-pressed={saved} onClick={save}><svg viewBox="0 0 24 24" width="18" height="18" fill={saved?'currentColor':'none'} stroke="currentColor" strokeWidth="1.6" aria-hidden><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg><span>{saved?'Saved':'Save'}</span></Button></article>
+
+ const programme=isProgramme(course)
+ const level=course.level&&course.level!=='Not specified'?course.level:''
+ const summary=course.description?.trim()||''
+ // Bullets stand in for a summary that is missing or too short to say anything.
+ const bullets=summary.length<60?course.roadmap?.slice(0,2)||[]:[]
+ const meta=metaParts(course)
+ const tutor=course.tutor?.name||course.instructor?.name||''
+
+ return <article className={`course-card subject-${subjectTone(course.title+' '+course.category)}`}>
+  <div className="course-card-head">
+   <div className="course-card-subject">
+    <span className="course-card-icon"><CourseSubjectIcon subject={course.title+' '+course.category}/></span>
+    <p className="course-card-category">{categoryLabel(course.category)}</p>
+   </div>
+   <div className="course-card-badges">
+    {level&&<span className="course-badge">{level}</span>}
+    {programme&&<span className="course-badge course-badge-programme">Programme</span>}
+   </div>
+  </div>
+  <div className="course-card-body">
+   <h2 className="course-card-title"><Link href={`/courses/${course.id}`}>{course.title}</Link></h2>
+   {summary&&<p className="course-card-summary">{summary}</p>}
+   {bullets.length>0&&<ul className="course-card-learn" aria-label="What you’ll learn">{bullets.map(step=><li key={step}>{step}</li>)}</ul>}
+   {meta.length>0&&<p className="course-card-meta">{meta.join(' · ')}</p>}
+   {showTutor&&tutor&&<p className="course-card-tutor">{tutor}</p>}
+  </div>
+  <div className="course-card-foot">
+   <p className={`course-price ${course.feesPending?'course-price-pending':''}`}>{priceLabel(course)}</p>
+   <div className="course-card-actions">
+    <button type="button" className="course-save" aria-label={`Save ${course.title}`} aria-pressed={saved} onClick={e=>{e.stopPropagation();save()}}>
+     <svg viewBox="0 0 24 24" fill={saved?'currentColor':'none'} aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg>
+    </button>
+    <svg className="course-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+   </div>
+  </div>
+ </article>
 }
