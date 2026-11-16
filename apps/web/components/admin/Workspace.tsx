@@ -4,7 +4,16 @@ import {ReactNode,useEffect,useRef,useState} from 'react'
 import {getStoredUser} from '../../lib/api'
 import {StudioDialog} from '../tutor/StudioDialog'
 export const Drawer=StudioDialog
-export function PageHeader({title,description,actions}:{title:string;description?:string;actions?:ReactNode}){return <header className="admin-page-header"><div><h1>{title}</h1>{description&&<p className="ef-muted mt-2">{description}</p>}</div><div className="flex flex-wrap gap-3">{actions}</div></header>}
+export function PageHeader({title,description,note,actions}:{title:string;description?:string;note?:ReactNode;actions?:ReactNode}){
+ return <header className="admin-page-header">
+  <div>
+   <h1>{title}</h1>
+   {description&&<p>{description}</p>}
+   {note&&<p className="admin-page-note"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>{note}</span></p>}
+  </div>
+  <div>{actions}</div>
+ </header>
+}
 export function StatCounter({title,value,detail,href}:{title:string;value:number;detail:string;href:string}){return <Link href={href} className={`admin-counter ${value?'admin-counter-active':'admin-counter-zero'}`}><span className="ef-meta">{title}</span><strong>{value.toLocaleString()}</strong>{value>0&&<span className="ef-meta">{detail}</span>}</Link>}
 export function QuickActionCard({title,detail,count,href}:{title:string;detail:string;count:string;href:string}){return <Link className="admin-quick" href={href}><span className="ef-meta">{count}</span><h3>{title} ↗</h3><p className="ef-muted">{detail}</p></Link>}
 export function EmptyState({title,children,href,action}:{title:string;children:ReactNode;href?:string;action?:string}){return <div className="admin-empty"><span className="ef-empty-icon" aria-hidden="true">○</span><h3>{title}</h3><p className="ef-muted mt-2">{children}</p>{href&&<NavigationLink className="ef-btn-ghost mt-4 inline-block" href={href}>{action} →</NavigationLink>}</div>}
