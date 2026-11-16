@@ -155,8 +155,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
           {/* right: actions */}
           <div className="ml-auto flex items-center gap-2">
-            <Button className="ef-nav-search hidden sm:inline-flex" onClick={() => window.dispatchEvent(new CustomEvent('ef:open-search'))}>Search <kbd>Ctrl K</kbd></Button>
-            <Button type="button" onClick={() => setTheme(toggleTheme())} className="ef-theme-toggle" aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}>{theme === 'dark' ? 'Light' : 'Dark'}</Button>
+            <Button className="ef-nav-search hidden sm:inline-flex" aria-label="Search (Ctrl K)" title="Search (Ctrl K)" onClick={() => window.dispatchEvent(new CustomEvent('ef:open-search'))}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></Button>
+            <Button type="button" onClick={() => setTheme(toggleTheme())} className="ef-theme-toggle" aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}><span aria-hidden="true" className="ef-theme-symbol">{theme === 'dark' ? '☀' : '☾'}</span></Button>
 
             {user && (
               <div className="relative">
@@ -193,9 +193,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
             {user ? (
               <details className="ef-account relative hidden xl:block" key={router.asPath} onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node)) event.currentTarget.open = false }}>
-                <summary className="ef-btn-ghost !py-2 cursor-pointer select-none text-sm">
+                <summary className="ef-account-summary" aria-label={'Account menu for '+(user.name||user.email)}>
                   <span className="ef-avatar !h-6 !w-6 !border-0 !bg-transparent !text-[11px] !text-fern">{(user.name || user.email).slice(0, 2).toUpperCase()}</span>
-                  <span className="max-w-[9rem] truncate">{user.name || user.email}</span>
+
                   <span aria-hidden className="opacity-60">⌄</span>
                 </summary>
                 <div className="ef-popover absolute right-0 mt-3 w-64 p-2">
