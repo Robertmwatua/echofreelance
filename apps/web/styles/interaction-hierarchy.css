@@ -279,6 +279,7 @@ a.admin-secondary{border:1px solid var(--rule);border-radius:var(--r);box-shadow
 a.admin-secondary:hover{transform:none;border-color:var(--ink)}
 .admin-counters{align-items:start}
 .admin-empty,.ef-feedback{display:grid;grid-template-columns:20px minmax(0,1fr);gap:0 12px;align-items:start}
+/* Text column by default. Children were placed one selector at a time before, and anything
+   missed auto-placed into the 20px icon column and wrapped one character per line. */
+.admin-empty>*,.ef-feedback>*{grid-column:2}
 .admin-empty>.ef-empty-icon,.ef-feedback>.ef-empty-icon{grid-column:1;grid-row:1;margin:0}
-.admin-empty>h3,.ef-feedback>h2{grid-column:2}
-.admin-empty>p,.admin-empty>a,.ef-feedback>div{grid-column:2}
