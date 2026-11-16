@@ -2,16 +2,30 @@
    This is the only palette/type/spacing/shadow/motion definition file. */
 :root {
   --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s6:24px;--s8:32px;--s12:48px;
-  --page:1200px;--r:6px;
+  --page:1200px;--r:6px;--space-13:96px;
   color-scheme: light;
-  --danger: #b42318;
+  background-color:var(--bg);
+  --bg: rgb(var(--paper-rgb));
+  --text: rgb(var(--ink-rgb));
+  --surface-raised: #FFFFFF;
+  --line: rgb(var(--rule-rgb));
+  --line-strong: #6B665C;
+  --accent: #FF4D1C;
+  --accent-text: rgb(var(--link-rgb));
+  --on-accent: rgb(var(--button-ink-rgb));
+  --focus: var(--accent-text);
+  --success: #216244; --success-bg: #E5F3E8;
+  --warning: #765609; --warning-bg: #FFF2CC;
+  --danger: #B42318; --danger-bg: #FDECE8;
+  --print-paper: #FFFFFF; --print-ink: #14130F;
+  --bg-footer: #EAE6DD;
   --paper-rgb: 244 241 234;
   --ink-rgb: 20 19 15;
   --surface-rgb: 255 253 247;
   --muted-rgb: 98 95 85;
-  --rule-rgb: 199 193 180;
-  --link-rgb: 166 44 12;
-  --orange-rgb: 255 79 31;
+  --rule-rgb: 140 135 123;
+  --link-rgb: 185 53 19;
+  --orange-rgb: 255 77 28;
   --button-ink-rgb: 20 19 15;
   --inverse-paper-rgb: 25 26 22;
   --inverse-ink-rgb: 244 241 234;
@@ -80,14 +94,20 @@
   --c-action: var(--orange-rgb);
   --c-action-text: var(--button-ink-rgb);
 }
-html.dark {
+[data-theme="dark"] {
+  --bg-footer: #22231E;
+  --surface-raised: #292A24;
+  --line-strong: #969A8C;
+  --success: #A5D9B8; --success-bg: #1D382C;
+  --warning: #E8CE83; --warning-bg: #3B331C;
+  --danger: #FFB4AB; --danger-bg: #442723;
   color-scheme: dark;
   --paper-rgb: 25 26 22;
   --ink-rgb: 244 241 234;
   --surface-rgb: 34 35 30;
   --muted-rgb: 188 183 170;
-  --rule-rgb: 87 89 78;
-  --link-rgb: 255 165 135;
+  --rule-rgb: 116 119 107;
+  --link-rgb: 255 122 82;
 }
 @keyframes editorial-reveal {
   from { opacity: 0; transform: translateY(24px); }
@@ -98,8 +118,8 @@ html.dark {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
-.dark { --danger: #ffb4ab; }
+
 
 /* Subject ink: readable accents for course illustrations in both themes. */
 :root{--subject-security:#286047;--subject-code:#34558c;--subject-creative:#864633;--subject-foundation:#745a14}
-html.dark{--subject-security:#a5d9b8;--subject-code:#a7c5f4;--subject-creative:#f3b6a4;--subject-foundation:#e8ce83}
+[data-theme="dark"]{--subject-security:#a5d9b8;--subject-code:#a7c5f4;--subject-creative:#f3b6a4;--subject-foundation:#e8ce83}

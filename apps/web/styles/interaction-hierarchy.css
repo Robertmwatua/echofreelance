@@ -11,7 +11,7 @@
 .ef-action-button.ef-button-secondary:active:not(:disabled),.ef-action-button.ef-button-danger:active:not(:disabled){transform:none;box-shadow:none}
 .ef-action-button.ef-button-primary{border-color:rgb(var(--button-ink-rgb));box-shadow:4px 4px 0 var(--ink)}
 .ef-action-button:focus:not(:focus-visible){outline:none}
-.ef-action-button:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+.ef-action-button:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .ef-workspace-nav{border-top:0;border-bottom:1px solid var(--rule);padding:0;gap:8px}
 .ef-workspace-nav a{font:600 14px var(--font-ui);border:0;border-bottom:2px solid transparent;padding:12px;box-shadow:none}
 .ef-workspace-nav a[aria-current=page]{background:transparent;color:var(--ink);border-color:var(--signal)}

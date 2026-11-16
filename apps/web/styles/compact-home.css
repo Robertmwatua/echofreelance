@@ -66,10 +66,3 @@ body:has(.paper-home)::after{display:none}
  .paper-home .paper-index-body h3{font-size:22px}
  .paper-home .paper-index-footer{padding-block:8px}
 }
-body:has(.paper-home) .ef-footer-inner{padding-block:32px}
-body:has(.paper-home) .ef-footer-inner>.grid{gap:24px}
-@media(max-width:767px){
- body:has(.paper-home) .ef-footer-inner>.grid{grid-template-columns:1fr 1fr;gap:24px 16px}
- body:has(.paper-home) .ef-footer-inner>.grid>div:first-child{grid-column:1/-1}
- body:has(.paper-home) .ef-footer-inner>.grid>div:first-child>p{max-width:100%;margin-top:8px;font-size:13px}
-}

@@ -11,8 +11,9 @@ import {
   normalizeRole,
   UserProfile,
 } from '../lib/api'
-import { SITE_NAME } from '../lib/brand'
-import { applyTheme, getStoredTheme, Theme, toggleTheme } from '../lib/theme'
+import {Footer} from './Footer'
+import {SITE_NAME} from '../lib/brand'
+import { watchTheme, Theme, toggleTheme } from '../lib/theme'
 import dynamic from 'next/dynamic'
 const CommandPalette=dynamic(()=>import('./CommandPalette').then(m=>m.CommandPalette),{ssr:false})
 const AskTutor=dynamic(()=>import('./AskTutor').then(m=>m.AskTutor),{ssr:false})
@@ -38,6 +39,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
     return()=>router.events.off('routeChangeComplete',focusPage)
   },[router.events])
 
+  useEffect(()=>watchTheme(setTheme),[])
+
   const refreshUnread = useCallback(() => {
     if (!getStoredUser()) {
       setUnread(0)
@@ -50,9 +53,6 @@ export function SiteShell({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    const t = getStoredTheme()
-    applyTheme(t)
-    setTheme(t)
     setUser(getStoredUser())
     refreshUnread()
     setMenuOpen(false)
@@ -328,55 +328,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <CommandPalette />
 
       <div className="ef-install-wrap"><InstallApp/></div>
-      <footer className="ef-footer">
-        <div className="ef-footer-inner py-14 sm:py-16">
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="lg:col-span-2">
-              <Link href="/" className="ef-wordmark">EchoFreelance.<small>Tech School / Malindi, Kenya</small></Link>
-              <p className="ef-muted mt-4 max-w-sm text-sm leading-relaxed">
-                Practical courses and live classes in cybersecurity, software and cloud — taught by tutors you can actually talk to.
-              </p>
-            </div>
-
-            <div>
-              <p className="ef-drawer-label">Learn</p>
-              <ul className="mt-3 space-y-2.5 text-sm">
-                <li><Link href="/courses" className="ef-footer-link">Courses</Link></li>
-                <li><Link href="/classes" className="ef-footer-link">Live classes</Link></li>
-                <li><Link href="/challenges" className="ef-footer-link">Challenges</Link></li>
-                <li><Link href="/discussions" className="ef-footer-link">Community</Link></li><li><Link href="/careers" className="ef-footer-link">Careers</Link></li><li><Link href="/admissions" className="ef-footer-link">Admissions</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="ef-drawer-label">Your account</p>
-              <ul className="mt-3 space-y-2.5 text-sm">
-                {user ? (
-                  <>
-                    <li><Link href="/notes" className="ef-footer-link">Notes</Link></li>
-                    <li><Link href="/certificates/mine" className="ef-footer-link">Certificates</Link></li>
-                    <li><Link href="/fees" className="ef-footer-link">Fees & receipts</Link></li><li><Link href="/settings" className="ef-footer-link">Settings</Link></li>
-                  </>
-                ) : (
-                  <>
-                    <li><Link href="/login" className="ef-footer-link">Log in</Link></li>
-                    <li><Link href="/register" className="ef-footer-link">Join the school</Link></li>
-                  </>
-                )}
-              </ul>
-            </div>
-          </div>
-
-          <hr className="ef-divider my-10" />
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="ef-muted text-xs">© {new Date().getFullYear()} {SITE_NAME}</p><Link href="/privacy" className="ef-footer-link text-xs">Privacy policy</Link>
-            <Button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="ef-footer-link self-start text-xs sm:self-auto">
-              Back to top ↑
-            </Button>
-          </div>
-        </div>
-      </footer>
+      <Footer signedIn={Boolean(user)}/>
     </div>
   )
 }

@@ -1,0 +1,40 @@
+/* Theme-only rules. No layout changes; old names alias the canonical tokens. */
+html,body{background-color:var(--bg);color:var(--text)}
+html[data-theme-ready] body,html[data-theme-ready] header,html[data-theme-ready] footer,
+html[data-theme-ready] main,html[data-theme-ready] section,html[data-theme-ready] article,
+html[data-theme-ready] table,html[data-theme-ready] th,html[data-theme-ready] td,
+html[data-theme-ready] input,html[data-theme-ready] textarea,html[data-theme-ready] select,
+html[data-theme-ready] button,html[data-theme-ready] a{
+ transition-property:background-color,border-color,color,outline-color;
+ transition-duration:150ms;transition-timing-function:ease;
+}
+:where(input,textarea,select),.ef-input,.studio-select,.studio-search,.studio-search input,
+.admin-table-tools .ef-input,.ef-field input,.ef-field textarea,.ef-field select,
+.ef-staff-form .ef-input,.studio-pagination select{
+ background-color:var(--surface);color:var(--text);border-color:var(--line-strong);caret-color:var(--text);color-scheme:inherit;
+}
+select option{background-color:var(--surface);color:var(--text)}
+select,.ef-staff-form select{appearance:auto;background-image:none!important}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:1}
+input[type=checkbox],input[type=radio]{accent-color:var(--accent-text)}
+input[type=date],input[type=datetime-local],input[type=time]{color:var(--text);background-color:var(--surface)}
+:where(a,button,input,textarea,select,summary,[tabindex]):focus-visible{outline-color:var(--focus)}
+:where(.admin-data-table,.studio-table,.ef-form-panel,.ef-course-summary,.ef-dialog,.studio-dialog,.ef-popover){background-color:var(--surface);color:var(--text)}
+.ef-card-art{background:var(--surface-raised);color:var(--text);border-color:var(--line)}
+.ef-auth-layout figure,.ef-auth-layout figure img{background-color:var(--surface);border-color:var(--line)}
+.school-status{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:var(--r);font:500 12px/1.5 var(--font-ui);color:var(--muted);background:var(--surface-raised);white-space:normal}
+.school-status-dot{width:6px;height:6px;flex-shrink:0;border-radius:50%;background:currentColor}
+.school-status-success{color:var(--success);background:var(--success-bg)}
+.school-status-warning{color:var(--warning);background:var(--warning-bg)}
+.school-status-danger{color:var(--danger);background:var(--danger-bg)}
+.studio-status[data-status=published]{color:var(--success);background:var(--success-bg)!important}
+.studio-status[data-status=draft],.studio-status[data-status=archived]{color:var(--muted)}
+.studio-status>span.is-published{background:var(--success)}
+.ef-toast[role=alert],.ef-payment-alert,.ef-field-error,.ef-text-danger{color:var(--danger)}
+.ef-toast[role=alert]{background:var(--danger-bg);border-color:var(--danger)}
+.ef-toast[role=status]{color:var(--success);background:var(--success-bg);border-color:var(--success)}
+.ef-toast[role=alert]::before,.ef-toast[role=status]::before{color:currentColor}
+.ef-pill-live{color:var(--success);background:var(--success-bg)}
+.school-map{border-top:1px solid var(--line);padding-top:var(--s6)}
+.school-map iframe{display:block;width:100%;margin-block:var(--s6);border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+@media(prefers-reduced-motion:reduce){html[data-theme-ready] *{transition:none!important}}

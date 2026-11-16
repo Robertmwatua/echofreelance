@@ -1,0 +1,37 @@
+.ef-tutor-scrim{z-index:100;background:rgb(var(--scrim-rgb) / .55);backdrop-filter:none}
+.ef-tutor-panel{
+ z-index:101;top:auto;right:24px;bottom:80px;left:auto;width:min(420px,calc(100vw - 48px));
+ max-width:none;height:min(660px,calc(var(--chat-viewport-height,100dvh) - 112px));
+ border:1px solid var(--line-strong);border-radius:var(--r);background:var(--surface);color:var(--text);
+ overflow:hidden;box-shadow:none;
+}
+.ef-tutor-head{flex-shrink:0;padding:var(--s4);gap:var(--s3);background:var(--surface-raised);border-bottom:1px solid var(--line)}
+.school-chat-title{display:block;font:700 16px/1.4 var(--font-ui);color:var(--text)}
+.school-chat-subtitle{font:500 12px/1.5 var(--font-ui);color:var(--muted)}
+.ef-tutor-head>.ef-ask-icon{width:32px;height:32px;display:grid;place-items:center;color:var(--accent-text);flex-shrink:0}
+.ef-tutor-head .school-chat-reset{margin-left:auto;padding:8px;min-height:40px;border:0;white-space:nowrap;font-size:12px}
+.ef-tutor-head .ef-icon-btn{flex-shrink:0;width:40px;min-width:40px;height:40px;padding:8px;border:0;background:transparent;color:var(--text)}
+.ef-tutor-head .ef-icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7}
+.ef-tutor-log{overscroll-behavior:contain;padding:var(--s4);gap:var(--s4);scrollbar-gutter:stable}
+.ef-bub{max-width:94%;border:0;border-radius:var(--r);font:400 15px/1.6 var(--font-ui);padding:var(--s3) var(--s4);min-width:0;overflow-wrap:anywhere}
+.ef-bub.bot{background:var(--bg);color:var(--text)}
+.ef-bub.me{background:var(--surface-raised);color:var(--text);border-left:2px solid var(--accent-text)}
+.school-chat-speaker{display:block;font:600 12px/1.5 var(--font-ui);color:var(--muted);margin-bottom:var(--s1)}
+.ef-bub .ef-chip{min-height:44px;display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:var(--r);padding:8px 12px;font:600 13px/1.5 var(--font-ui);background:var(--surface);color:var(--accent-text);text-decoration:none}
+.ef-bub .ef-chip:hover{border-color:var(--line-strong);text-decoration:underline}
+.ef-tutor-suggest{display:grid;grid-template-columns:1fr 1fr;gap:var(--s2);padding:0 var(--s4) var(--s4);flex-shrink:0}
+.ef-tutor-suggest .ef-action-button{padding:var(--s2);text-align:left;justify-content:flex-start;font-size:12px;line-height:1.5;min-height:44px;background:var(--surface);color:var(--text);border-color:var(--line)}
+.ef-tutor-form{align-items:flex-end;flex-shrink:0;gap:var(--s2);padding:var(--s3) var(--s4);border-top:1px solid var(--line)}
+.ef-tutor-form textarea{flex:1;min-width:0;resize:none;min-height:48px;max-height:120px;margin:0;border:1px solid var(--line-strong);border-radius:var(--r);padding:12px;font:400 16px/1.5 var(--font-ui);background:var(--surface);color:var(--text)}
+.ef-tutor-form .school-chat-send{flex-shrink:0;width:44px;min-width:44px;min-height:48px;padding:12px;border-radius:var(--r)}
+.school-chat-disclosure{flex-shrink:0;padding:0 var(--s4) calc(var(--s3) + env(safe-area-inset-bottom,0px));font:400 12px/1.5 var(--font-ui);color:var(--muted)}
+.school-chat-disclosure a{color:var(--accent-text);text-decoration:underline;text-underline-offset:3px}
+@media(max-width:639px){
+ .ef-tutor-panel{top:var(--chat-viewport-top,0px);bottom:auto;right:0;left:0;width:100%;height:var(--chat-viewport-height,100dvh);max-height:none;border:0;border-radius:0}
+ .ef-tutor-head{padding-top:calc(var(--s3) + env(safe-area-inset-top,0px))}
+ .ef-tutor-head>.ef-ask-icon{display:none}
+ .ef-tutor-log{padding:var(--s3)}
+ .ef-tutor-suggest{padding-inline:var(--s3)}
+ .ef-tutor-form{padding-inline:var(--s3)}
+}
+@media(max-height:520px){.ef-tutor-suggest{display:none}.ef-tutor-head{padding-block:var(--s2)}}

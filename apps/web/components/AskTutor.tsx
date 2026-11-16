@@ -1,5 +1,6 @@
 import {Button} from './Button'
 import Link from 'next/link'
+import {createPortal} from 'react-dom'
 import { useCallback, useEffect, useRef, useState } from 'react'
 function HelpIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden><path d="M5 4h14v12H9l-4 4V4Z" strokeLinejoin="round"/><path d="M9 8h6M9 12h4" strokeLinecap="round"/></svg>
@@ -15,7 +16,7 @@ type Msg = { id: number; from: 'bot' | 'me'; text: string; links?: { label: stri
 const ANSWERS: { id: string; k: string[]; w?: string[]; a: string; links?: { label: string; href: string }[] }[] = [
   {
     id: 'start',
-    k: ['where do i start', 'beginner', 'new to', 'never coded', 'from scratch', 'first course'],
+    k: ['where should i start', 'where to start', 'where do i start', 'beginner', 'new to', 'never coded', 'from scratch', 'first course'],
     w: ['start', 'begin', 'learn'],
     a: 'Start with a course marked Beginner — they assume no background. Pick the track that sounds most like the job you want rather than the one that sounds hardest.',
     links: [{ label: 'Browse courses', href: '/courses' }],
@@ -35,14 +36,14 @@ const ANSWERS: { id: string; k: string[]; w?: string[]; a: string; links?: { lab
   },
   {
     id: 'price',
-    k: ['how much', 'cost', 'price', 'free', 'pay', 'fee'],
-    a: 'Each course shows its price on the course page. Check the available enrollment options there, and ask the tutor if you need help with access.',
+    k: ['how much', 'cost', 'price', 'free', 'pay', 'payment', 'payments', 'fee', 'fees'],
+    a: 'Your course page shows tuition, the required deposit and any available discount. Pay by M-Pesa, then check confirmed payments and your balance in Fees & receipts. Ask admissions if a payment needs review.',
     links: [{ label: 'See prices', href: '/courses' }],
   },
   {
     id: 'certificate',
     k: ['certificate', 'certification', 'credential', 'proof'],
-    a: 'Finish all the lessons in a course and a certificate is issued to your account. It carries a verification code anyone can check.',
+    a: 'Complete the required lessons and pass the required assignments and quizzes to earn your course certificate. It includes a code that can be verified publicly.',
     links: [{ label: 'Your certificates', href: '/certificates/mine' }],
   },
   {
@@ -54,8 +55,8 @@ const ANSWERS: { id: string; k: string[]; w?: string[]; a: string; links?: { lab
   {
     id: 'human',
     k: ['human', 'real person', 'talk to someone', 'tutor', 'contact'],
-    a: 'For anything I cannot answer, ask in the community — tutors read it — or bring it to a live class and ask directly.',
-    links: [{ label: 'Community', href: '/discussions' }, { label: 'Live classes', href: '/classes' }],
+    a: 'For account, fees or course enquiries, contact admissions. You can also ask course questions in the community or at a live class.',
+    links: [{ label: 'Talk to admissions', href: '/admissions' }, { label: 'Community', href: '/discussions' }],
   },
   {
     id: 'hello',
@@ -77,7 +78,7 @@ export function AskTutor() {
   const [value, setValue] = useState('')
   const panelRef = useRef<HTMLElement>(null)
   const logRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const idRef = useRef(0)
 
   const scroll = useCallback(() => {
@@ -124,12 +125,24 @@ export function AskTutor() {
     }
   }, [open])
 
+  useEffect(()=>{
+    if(!open)return
+    const viewport=window.visualViewport
+    const resize=()=>{
+      panelRef.current?.style.setProperty('--chat-viewport-height',(viewport?.height||window.innerHeight)+'px')
+      panelRef.current?.style.setProperty('--chat-viewport-top',(viewport?.offsetTop||0)+'px')
+      scroll()
+    }
+    resize();viewport?.addEventListener('resize',resize);viewport?.addEventListener('scroll',resize)
+    return()=>{viewport?.removeEventListener('resize',resize);viewport?.removeEventListener('scroll',resize)}
+  },[open,scroll])
+
   /* other components can open the panel with a question ready */
   useEffect(() => {
     const onAsk = (e: Event) => {
       const q = (e as CustomEvent<{ q?: string }>).detail?.q
       setOpen(true)
-      if (q) setValue(q)
+      if (q) setValue(q.slice(0,1200))
     }
     window.addEventListener('ef:ask-tutor', onAsk as EventListener)
     return () => window.removeEventListener('ef:ask-tutor', onAsk as EventListener)
@@ -141,20 +154,20 @@ export function AskTutor() {
     let score = 0
     for (const e of ANSWERS) {
       let n = 0
-      for (const k of e.k) if (t.includes(k)) n += k.includes(' ') ? 5 : 3
-      for (const k of e.w || []) if (t.includes(k)) n += 1
+      for (const k of e.k) if (t.includes(' '+k+' ')) n += k.includes(' ') ? 5 : 3
+      for (const k of e.w || []) if (t.includes(' '+k+' ')) n += 1
       if (n > score) { score = n; best = e }
     }
     return score >= 3 ? best : null
   }
 
   function send(text: string) {
-    const question = text.trim()
+    const question = text.trim().slice(0,1200)
     if (!question) return
     const hit = match(question)
     setMsgs(m => [...m,
       { id: ++idRef.current, from: 'me', text: question },
-      { id: ++idRef.current, from: 'bot', text: hit?.a || 'I can help with common questions about the school. For this question, ask a tutor in the community.', links: hit?.links || [{ label: 'Ask the community', href: '/discussions' }] },
+      { id: ++idRef.current, from: 'bot', text: hit?.a || 'I can help with common questions about the school. For this question, contact admissions or ask your course tutor.', links: hit?.links || [{ label: 'Talk to admissions', href: '/admissions' }] },
     ])
     setValue('')
     scroll()
@@ -162,22 +175,22 @@ export function AskTutor() {
 
   return (
     <>
-      <Button type="button" onClick={() => setOpen(true)} className="ef-tutor-fab" aria-label="Ask the study assistant">
+      <Button type="button" onClick={() => setOpen(true)} className="ef-tutor-fab" aria-label="Ask for help" aria-expanded={open} aria-controls="ef-school-chat">
         <HelpIcon />
-        <span className="sr-only">Help</span>
+        <span className="school-help-label">Ask for help</span>
       </Button>
 
-      {open && (
+      {open && createPortal(
         <>
           <div className="ef-tutor-scrim" onClick={() => setOpen(false)} aria-hidden />
-          <aside ref={panelRef} className="ef-tutor-panel" role="dialog" aria-label="Study assistant" aria-modal="true">
+          <aside id="ef-school-chat" ref={panelRef} className="ef-tutor-panel" role="dialog" aria-label="Study assistant" aria-modal="true">
             <header className="ef-tutor-head">
               <span className="ef-ask-icon"><HelpIcon /></span>
               <div className="min-w-0">
-                <b className="block text-sm font-semibold text-ink">Study assistant</b>
-                <span className="font-accent text-[10px]   text-fern">Automated · not a tutor</span>
+                <b className="school-chat-title">School assistant</b>
+                <span className="school-chat-subtitle">Automated guide · not a tutor</span>
               </div>
-              <Button type="button" onClick={() => setOpen(false)} className="ef-icon-btn ml-auto !h-9 !w-9" aria-label="Close">
+              <Button type="button" className="school-chat-reset" disabled={msgs.length<=1} onClick={()=>{setMsgs([]);setValue('');inputRef.current?.focus()}}>New chat</Button><Button type="button" onClick={() => setOpen(false)} className="ef-icon-btn" aria-label="Close assistant">
                 <svg viewBox="0 0 24 24" aria-hidden><path d="M6 6l12 12M18 6L6 18" /></svg>
               </Button>
             </header>
@@ -185,7 +198,7 @@ export function AskTutor() {
             <div className="ef-tutor-log" ref={logRef} role="log" aria-live="polite">
               {msgs.map((m) => (
                 <div key={m.id} className={`ef-bub ${m.from}`}>
-                  <p>{m.text}</p>
+                  <span className="school-chat-speaker">{m.from==='me'?'You':'School guide'}</span><p>{m.text}</p>
                   {m.links && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {m.links.map((l) => (
@@ -207,22 +220,26 @@ export function AskTutor() {
             )}
 
             <form className="ef-tutor-form" onSubmit={(e) => { e.preventDefault(); send(value) }}>
-              <input
+              <textarea
                 ref={inputRef}
+                rows={2}
+                maxLength={1200}
+                aria-describedby="school-chat-disclosure"
+                onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.nativeEvent.isComposing){e.preventDefault();send(value)}}}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 className="ef-ask-input !px-3"
-                placeholder="Ask about courses, classes, certificates…"
+                placeholder="Ask about courses, fees or classes…"
                 aria-label="Ask the study assistant"
               />
-              <Button type="submit" className="ef-btn !min-h-0 !px-3.5 !py-2" aria-label="Send">
+              <Button type="submit" disabled={!value.trim()} className="ef-btn school-chat-send" aria-label="Send message">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M21.4 3.8 10.3 14.9" /><path d="M21.4 3.8 14.5 20.6l-4.2-5.7-5.7-4.2L21.4 3.8Z" />
                 </svg>
               </Button>
-            </form>
+            </form><p id="school-chat-disclosure" className="school-chat-disclosure">Automated answers. <Link href="/admissions" onClick={()=>setOpen(false)}>Ask admissions for personal help →</Link></p>
           </aside>
-        </>
+        </>, document.body
       )}
     </>
   )

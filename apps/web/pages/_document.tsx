@@ -1,8 +1,9 @@
 import { Head, Html, Main, NextScript } from 'next/document'
+import {THEME_BOOTSTRAP} from '../lib/theme'
 
 export default function Document() {
   return (
-    <Html lang="en" className="light">
+    <Html lang="en">
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -12,7 +13,7 @@ export default function Document() {
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('ef_theme');document.documentElement.classList.toggle('dark',(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)));}catch(e){}})();`,
+            __html: THEME_BOOTSTRAP,
           }}
         />
       </Head>
