@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import {SITE_NAME,SCHOOL_CONTACT_EMAIL,SCHOOL_LOCATION,SCHOOL_WHATSAPP_URL,SCHOOL_MAP_URL,SCHOOL_MAP_EMBED_URL} from '../lib/brand'
+import {SITE_NAME,SCHOOL_CONTACT_EMAIL,SCHOOL_LOCATION,SCHOOL_WHATSAPP_URL,SCHOOL_MAP_URL} from '../lib/brand'
 
 /** Shared footer. Contact details come only from existing public content/config. */
 export function Footer({signedIn}:{signedIn:boolean}) {
@@ -23,7 +23,14 @@ export function Footer({signedIn}:{signedIn:boolean}) {
       {SCHOOL_CONTACT_EMAIL&&<a className="school-footer-email" href={`mailto:${SCHOOL_CONTACT_EMAIL}`}><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 6 9 7 9-7"/></svg><span>{SCHOOL_CONTACT_EMAIL}</span></a>}
       {SCHOOL_WHATSAPP_URL&&<a href={SCHOOL_WHATSAPP_URL} target="_blank" rel="noreferrer">WhatsApp ↗</a>}
      </div>
-     <div className="school-footer-map"><iframe src={SCHOOL_MAP_EMBED_URL} title="School location in Malindi on Google Maps" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen/><a href={SCHOOL_MAP_URL} target="_blank" rel="noreferrer"><span>Open in Google Maps</span><span aria-hidden="true">↗</span></a></div>
+     {/* Self-hosted preview (see docs/footer-map.md): the footer paints a map with no third-party frame. */}
+     <div className="school-footer-map">
+      <a href={SCHOOL_MAP_URL} target="_blank" rel="noreferrer">
+       <span className="school-footer-map-canvas" aria-hidden="true"/>
+       <span className="school-footer-map-open"><span>Open in Google Maps</span><span aria-hidden="true">↗</span></span>
+      </a>
+      <p className="school-footer-map-credit">Map data © OpenStreetMap</p>
+     </div>
     </div>}
 
    </nav>
