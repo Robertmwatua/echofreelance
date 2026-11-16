@@ -20,15 +20,11 @@ npm run dev:api   # :4000
 npm run dev:web   # :3000
 ```
 
-## Demo accounts (password `password123` — change in Settings)
+## Accounts and course data
 
-| Role    | Email                         |
-|---------|-------------------------------|
-| Admin   | admin@echofreelance.dev       |
-| Tutor   | tutor@echofreelance.dev       |
-| Student | student@echofreelance.dev     |
-
-Catalog starts empty: tutors create courses & live sessions. Live rooms open in-browser (Jitsi).
+Use real registered accounts and manage course content through the tutor studio.
+The seed command creates no accounts or sample content and does not reset data.
+Existing school administrators can assign Tutor or Admin roles.
 
 ## Surfaces
 
