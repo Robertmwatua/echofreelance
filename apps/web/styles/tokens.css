@@ -1,6 +1,8 @@
 /* EchoFreelance editorial system. Values extracted from the approved homepage.
    This is the only palette/type/spacing/shadow/motion definition file. */
 :root {
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s6:24px;--s8:32px;--s12:48px;
+  --page:1200px;--r:6px;
   color-scheme: light;
   --danger: #b42318;
   --paper-rgb: 244 241 234;
@@ -15,8 +17,8 @@
   --inverse-ink-rgb: 244 241 234;
   --scrim-rgb: 20 19 15;
   --fixed-muted-rgb: 98 95 85;
-  --shadow-inverse-card: 6px 6px 0 var(--muted);
-  --shadow-inverse-pressed: 4px 4px 0 var(--muted);
+  --shadow-inverse-card: none;
+  --shadow-inverse-pressed: none;
   --paper: rgb(var(--paper-rgb));
   --ink: rgb(var(--ink-rgb));
   --surface: rgb(var(--surface-rgb));
@@ -36,8 +38,8 @@
   --type-body: 16px;
   --type-ui: 14px;
   --type-meta: 12px;
-  --tracking-display: -.065em;
-  --tracking-card: -.045em;
+  --tracking-display: -.03em;
+  --tracking-card: -.03em;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -51,15 +53,15 @@
   --space-11: 64px;
   --space-12: 86px;
   --page-gutter: clamp(20px, 3vw, 48px);
-  --page-width: 1440px;
+  --page-width: var(--page);
   --reading-width: 1100px;
   --copy-width: 700px;
-  --border-hard: 2px solid var(--ink);
+  --border-hard: 1px solid var(--rule);
   --border-rule: 1px solid var(--rule);
-  --shadow-offset: 4px 4px 0 var(--ink);
-  --shadow-card: 6px 6px 0 var(--ink);
-  --shadow-raised: 8px 8px 0 var(--ink);
-  --shadow-pressed: 2px 2px 0 var(--ink);
+  --shadow-offset: none;
+  --shadow-card: none;
+  --shadow-raised: none;
+  --shadow-pressed: none;
   --motion-fast: 150ms;
   --motion-reveal: 650ms;
   --reveal-step: 90ms;

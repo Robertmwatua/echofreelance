@@ -29,6 +29,15 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const menuButton = useRef<HTMLButtonElement>(null)
   const [scrolled, setScrolled] = useState(false)
 
+  useEffect(()=>{
+    const focusPage=()=>{
+      document.querySelectorAll<HTMLDetailsElement>('.ef-account,.ef-manage-menu').forEach(menu=>menu.open=false)
+      requestAnimationFrame(()=>{const heading=document.querySelector<HTMLElement>('main h1');if(heading){heading.tabIndex=-1;heading.focus({preventScroll:true})}})
+    }
+    router.events.on('routeChangeComplete',focusPage)
+    return()=>router.events.off('routeChangeComplete',focusPage)
+  },[router.events])
+
   const refreshUnread = useCallback(() => {
     if (!getStoredUser()) {
       setUnread(0)
@@ -52,8 +61,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const close = (event: MouseEvent | KeyboardEvent) => {
-      const account = document.querySelector<HTMLDetailsElement>('.ef-account')
-      if (account && (event instanceof KeyboardEvent ? event.key === 'Escape' : !account.contains(event.target as Node))) account.open = false
+      document.querySelectorAll<HTMLDetailsElement>('.ef-account,.ef-manage-menu').forEach(account=>{
+        if(event instanceof KeyboardEvent ? event.key==='Escape' : !account.contains(event.target as Node))account.open=false
+      })
     }
     document.addEventListener('click', close)
     document.addEventListener('keydown', close)
@@ -150,7 +160,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
             {(role === 'Tutor' || role === 'Admin') && (
               <Link href="/tutor" aria-current={isActive('/tutor') ? 'page' : undefined} className="ef-nav-link">Tutor</Link>
             )}
-            {role === 'Admin' && <details className="ef-manage-menu"><summary className="ef-nav-link">Manage ▾</summary><nav aria-label="School management"><Link href="/admin">Admin overview</Link><Link href="/admin/people">People & tutors</Link><Link href="/admin/courses">Courses</Link><Link href="/admin/payments">Fees & payments</Link></nav></details>}
+            {role === 'Admin' && <details className="ef-manage-menu" key={router.asPath} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node))event.currentTarget.open=false}}><summary className="ef-nav-link">Manage ▾</summary><nav aria-label="School management"><Link href="/admin">Admin overview</Link><Link href="/admin/people">People & tutors</Link><Link href="/admin/courses">Courses</Link><Link href="/admin/payments">Fees & payments</Link></nav></details>}
           </nav>
 
           {/* right: actions */}
@@ -319,7 +329,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
       <div className="ef-install-wrap"><InstallApp/></div>
       <footer className="ef-footer">
-        <div className="mx-auto max-w-6xl px-6 py-14 sm:px-7 sm:py-16">
+        <div className="ef-footer-inner py-14 sm:py-16">
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-2">
               <Link href="/" className="ef-wordmark">EchoFreelance.<small>Tech School / Malindi, Kenya</small></Link>
